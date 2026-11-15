@@ -42,7 +42,10 @@ void main() {
         expect(p.ausfuehrbar, true);
         expect(p.angriffe, 1);
         expect(p.freie, 1);
-        expect(p.zielwert, gefechtswerteFuer(snap).at - erschwernis);
+        expect(
+          p.zielwert,
+          gefechtswerteFuer(snap, katalog: null).at - erschwernis,
+        );
         expect(p.modifikatoren.any((m) => m.name == 'Distanzklasse'), false);
       },
     );
@@ -65,7 +68,7 @@ void main() {
         ),
       );
       expect(p.ausfuehrbar, true);
-      expect(p.zielwert, gefechtswerteFuer(snap).at - 8);
+      expect(p.zielwert, gefechtswerteFuer(snap, katalog: null).at - 8);
     },
   );
   test('Drei DK, fehlender Schritt und fehlende AT bleiben gesperrt', () {

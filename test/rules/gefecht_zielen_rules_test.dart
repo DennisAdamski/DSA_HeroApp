@@ -46,7 +46,7 @@ Gefechtszustand _bezahlen(GefechtAuftrag a) {
     if (s.angriffeVerbraucht + s.paradenVerbraucht == 2) {
       s = naechsteGefechtsrunde(s);
     }
-    s = bezahleGefechtsVorbereitung(s, snap);
+    s = bezahleGefechtsVorbereitung(s, snap, null);
   }
   return naechsteGefechtsrunde(s);
 }
@@ -67,7 +67,7 @@ void main() {
         epicAdvantagesActive: false,
       );
       final a = zielauftrag(erleichterung: 4);
-      expect(gefechtsZieldauer(snap, a), 4);
+      expect(gefechtsZieldauer(snap, a, null), 4);
       expect(
         pruefeGefechtsZielbeginn(
           const Gefechtszustand(iniWurf: 6),
@@ -127,7 +127,7 @@ void main() {
   test('Ansagezeit und optionale Zielzeit werden getrennt bezahlt', () {
     final snap = fixture.ladeSnapshot();
     final a = zielauftrag(erleichterung: 4, ansage: 5);
-    expect(gefechtsZieldauer(snap, a), 11);
+    expect(gefechtsZieldauer(snap, a, null), 11);
     final s = _bezahlen(a);
     final p = pruefeGefechtsZielschuss(s, snap, testCatalog);
     expect(p.ausfuehrbar, true);
@@ -158,7 +158,13 @@ void main() {
           Gefechtsmodifikator('Gezielter Schuss', 8),
         ],
       );
-      final p = ergaenzeGefechtsZielen(basis, s, fixture.ladeSnapshot(), a);
+      final p = ergaenzeGefechtsZielen(
+        basis,
+        s,
+        fixture.ladeSnapshot(),
+        a,
+        null,
+      );
       expect(p.zielwert, 12);
       expect(p.erschwernis, 8);
       expect(

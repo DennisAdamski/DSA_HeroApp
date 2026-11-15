@@ -62,6 +62,7 @@ void main() {
                   zustand: s,
                   snapshot: snap,
                   kampfmittel: fixture.mittel,
+                  katalog: null,
                 ),
               ),
             );

@@ -20,8 +20,12 @@ Future<void> zeigeGefechtsLaden({
   if (s == null || snap == null) return;
   final anfang = await showDialog<bool>(
     context: context,
-    builder: (_) =>
-        GefechtLadedialog(zustand: s, snapshot: snap, kampfmittel: kampfmittel),
+    builder: (_) => GefechtLadedialog(
+      zustand: s,
+      snapshot: snap,
+      kampfmittel: kampfmittel,
+      katalog: ref.read(heroRulesCatalogProvider(heroId)).asData?.value,
+    ),
   );
   if (anfang == null || !context.mounted) return;
   final aktuell = ref.read(gefechtMitInitiativeProvider(heroId));
@@ -34,6 +38,7 @@ Future<void> zeigeGefechtsLaden({
           aktuell,
           frisch,
           kampfmittel,
+          ref.read(heroRulesCatalogProvider(heroId)).asData?.value,
           anfangGeladen: anfang,
         ),
       );
@@ -46,5 +51,11 @@ void setzeGefechtsVorbereitungFort(WidgetRef ref, String heroId) {
   if (s == null || snap == null || s.handlung?.vorbereitung == null) return;
   ref
       .read(gefechtProvider(heroId).notifier)
-      .setzen(bezahleGefechtsVorbereitung(s, snap));
+      .setzen(
+        bezahleGefechtsVorbereitung(
+          s,
+          snap,
+          ref.read(heroRulesCatalogProvider(heroId)).asData?.value,
+        ),
+      );
 }

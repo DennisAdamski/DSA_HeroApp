@@ -110,9 +110,9 @@ void main() {
       testCatalog,
       zielauftrag,
     );
-    s = bezahleGefechtsVorbereitung(s, snap);
-    s = bezahleGefechtsVorbereitung(naechsteGefechtsrunde(s), snap);
-    final w = gefechtswerteFuer(snap);
+    s = bezahleGefechtsVorbereitung(s, snap, null);
+    s = bezahleGefechtsVorbereitung(naechsteGefechtsrunde(s), snap, null);
+    final w = gefechtswerteFuer(snap, katalog: null);
     expect(s.handlung!.verbleibend, 0);
     expect(
       gefechtUmwandlungMoeglich(s, Gefechtsumwandlung.zweiteAttacke, werte: w),
@@ -134,7 +134,7 @@ void main() {
       gefechtUmwandlungMoeglich(
         s,
         Gefechtsumwandlung.zweiteAttacke,
-        werte: gefechtswerteFuer(basis),
+        werte: gefechtswerteFuer(basis, katalog: null),
       ),
       false,
     );
@@ -146,6 +146,7 @@ void main() {
       const Gefechtszustand(iniWurf: 6),
       snap,
       mittel,
+      null,
       anfangGeladen: false,
     );
     final neben = ladeSnapshot(dauer: 1, nebenhand: true);
@@ -168,7 +169,13 @@ void main() {
       snap.hero.combatConfig.selectedWeapon,
       false,
     );
-    final neu = beginneGefechtsLaden(leer, snap, mittel, anfangGeladen: true);
+    final neu = beginneGefechtsLaden(
+      leer,
+      snap,
+      mittel,
+      null,
+      anfangGeladen: true,
+    );
     expect(neu.handlung!.verbleibend, 3);
     expect(
       gefechtsLadezustand(neu, snap.hero.combatConfig.selectedWeapon),
@@ -186,15 +193,16 @@ void main() {
       const Gefechtszustand(iniWurf: 6),
       snap,
       mittel,
+      null,
       anfangGeladen: false,
     );
-    final p = pruefeGefechtsVorbereitung(s, ladeSnapshot(dauer: 8));
+    final p = pruefeGefechtsVorbereitung(s, ladeSnapshot(dauer: 8), null);
     expect(p.bezahlt, 1);
     expect(p.rest, 7);
     expect(p.hinweise.join(), contains('erhalten'));
     final anders = ladeSnapshot(geschoss: 1);
     expect(
-      pruefeGefechtsVorbereitung(s, anders).gruende.join(),
+      pruefeGefechtsVorbereitung(s, anders, null).gruende.join(),
       contains('Geschossprofil'),
     );
   });
@@ -210,7 +218,7 @@ void main() {
       kontext: const Gefechtskontext(kontakt: 'Goblin'),
     );
     expect(
-      pruefeGefechtsVorbereitung(andererKontakt, snap).gruende.join(),
+      pruefeGefechtsVorbereitung(andererKontakt, snap, null).gruende.join(),
       contains('Zielkontakt geändert'),
     );
     final ohneId = ladeSnapshot(id: '');
@@ -219,6 +227,7 @@ void main() {
         const Gefechtszustand(iniWurf: 6),
         ohneId,
         const GefechtsKampfmittelwahl(GefechtsKampfmittelArt.hauptwaffe, ''),
+        null,
         anfangGeladen: false,
       ),
       throwsStateError,
@@ -227,18 +236,18 @@ void main() {
   test('Laden bezahlt regulär über Runden und lädt erst am Ende', () {
     final snap = ladeSnapshot();
     var s = const Gefechtszustand(iniWurf: 6);
-    s = beginneGefechtsLaden(s, snap, mittel, anfangGeladen: false);
+    s = beginneGefechtsLaden(s, snap, mittel, null, anfangGeladen: false);
     expect(s.handlung!.vorbereitung!.bezahlteAktionen, 1);
     expect(
       gefechtsLadezustand(s, snap.hero.combatConfig.selectedWeapon),
       false,
     );
-    s = bezahleGefechtsVorbereitung(s, snap);
+    s = bezahleGefechtsVorbereitung(s, snap, null);
     expect(s.paradenVerbraucht, 1);
-    expect(() => bezahleGefechtsVorbereitung(s, snap), throwsStateError);
+    expect(() => bezahleGefechtsVorbereitung(s, snap, null), throwsStateError);
     s = naechsteGefechtsrunde(s);
-    s = bezahleGefechtsVorbereitung(s, snap);
-    s = bezahleGefechtsVorbereitung(s, snap);
+    s = bezahleGefechtsVorbereitung(s, snap, null);
+    s = bezahleGefechtsVorbereitung(s, snap, null);
     expect(s.handlung, isNull);
     expect(gefechtsLadezustand(s, snap.hero.combatConfig.selectedWeapon), true);
   });
@@ -250,18 +259,24 @@ void main() {
         const Gefechtszustand(iniWurf: 6),
         snap,
         mittel,
+        null,
         anfangGeladen: false,
       );
-      s = bezahleGefechtsVorbereitung(s, snap);
+      s = bezahleGefechtsVorbereitung(s, snap, null);
       s = naechsteGefechtsrunde(s);
-      s = bezahleGefechtsVorbereitung(s, snap);
-      final p = pruefeGefechtsVorbereitung(s, ladeSnapshot(schnell: true));
+      s = bezahleGefechtsVorbereitung(s, snap, null);
+      final p = pruefeGefechtsVorbereitung(
+        s,
+        ladeSnapshot(schnell: true),
+        null,
+      );
       expect(p.rest, 0);
       expect(p.bezahlt, 3);
       expect(p.hinweise.join(), contains('erhalten'));
       final fertig = bezahleGefechtsVorbereitung(
         s,
         ladeSnapshot(schnell: true),
+        null,
       );
       expect(fertig.angriffeVerbraucht, s.angriffeVerbraucht);
       expect(fertig.paradenVerbraucht, s.paradenVerbraucht);
@@ -274,11 +289,15 @@ void main() {
       const Gefechtszustand(iniWurf: 6),
       snap,
       mittel,
+      null,
       anfangGeladen: false,
     );
     for (final anders in [ladeSnapshot(id: 'b'), ladeSnapshot(geschoss: 1)]) {
-      expect(pruefeGefechtsVorbereitung(s, anders).ausfuehrbar, false);
-      expect(() => bezahleGefechtsVorbereitung(s, anders), throwsStateError);
+      expect(pruefeGefechtsVorbereitung(s, anders, null).ausfuehrbar, false);
+      expect(
+        () => bezahleGefechtsVorbereitung(s, anders, null),
+        throwsStateError,
+      );
     }
     final abbruch = s.copyWith(ohneHandlung: true);
     expect(abbruch.angriffeVerbraucht, 1);
@@ -290,8 +309,12 @@ void main() {
   test('Unbekannter Anfang und Zusatzparade ersetzen keine Ladezahlung', () {
     final snap = ladeSnapshot();
     expect(
-      () =>
-          beginneGefechtsLaden(const Gefechtszustand(iniWurf: 6), snap, mittel),
+      () => beginneGefechtsLaden(
+        const Gefechtszustand(iniWurf: 6),
+        snap,
+        mittel,
+        null,
+      ),
       throwsStateError,
     );
     const leer = Gefechtszustand(
@@ -301,7 +324,8 @@ void main() {
       zusatzVerbraucht: 0,
     );
     expect(
-      () => beginneGefechtsLaden(leer, snap, mittel, anfangGeladen: false),
+      () =>
+          beginneGefechtsLaden(leer, snap, mittel, null, anfangGeladen: false),
       throwsStateError,
     );
   });
@@ -318,16 +342,20 @@ void main() {
       expect(s.handlung!.art, Gefechtshandlungsart.zielen);
       expect(s.handlung!.vorbereitung!.schussauftrag, same(zielauftrag));
       expect(s.zielstand!.bezahlteAktionen, 1);
-      s = bezahleGefechtsVorbereitung(s, snap);
+      s = bezahleGefechtsVorbereitung(s, snap, null);
       s = naechsteGefechtsrunde(s);
-      s = bezahleGefechtsVorbereitung(s, snap);
+      s = bezahleGefechtsVorbereitung(s, snap, null);
       expect(s.zielstand!.bezahlteAktionen, 3);
       expect(s.handlung!.verbleibend, 0);
-      final doppelt = bezahleGefechtsVorbereitung(s, snap);
+      final doppelt = bezahleGefechtsVorbereitung(s, snap, null);
       expect(doppelt.angriffeVerbraucht, s.angriffeVerbraucht);
       expect(doppelt.zielstand!.bezahlteAktionen, 3);
       expect(
-        pruefeGefechtsVorbereitung(s, ladeSnapshot(geschoss: 1)).ausfuehrbar,
+        pruefeGefechtsVorbereitung(
+          s,
+          ladeSnapshot(geschoss: 1),
+          null,
+        ).ausfuehrbar,
         false,
       );
     },
@@ -344,6 +372,7 @@ void main() {
         const Gefechtszustand(iniWurf: 6),
         snap,
         neben,
+        null,
         anfangGeladen: false,
       );
       expect(s.handlung, isNull);

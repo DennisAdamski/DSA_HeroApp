@@ -63,8 +63,12 @@ int _ladezeit(HeroComputedSnapshot snap, GefechtsKampfmittelwahl wahl) =>
     : snap.combatPreviewStats.reloadTime;
 
 /// Die Zusatzzeit folgt derselben Ansageregel wie die Schussfreigabe.
-int gefechtsZieldauer(HeroComputedSnapshot snap, GefechtAuftrag a) {
-  final w = gefechtswerteFuer(snap, kampfmittel: a.kampfmittel);
+int gefechtsZieldauer(
+  HeroComputedSnapshot snap,
+  GefechtAuftrag a,
+  RulesCatalog? k,
+) {
+  final w = gefechtswerteFuer(snap, katalog: k, kampfmittel: a.kampfmittel);
   final ansage = gefechtsFernkampfansage(
     a.fernkampfansage,
     taw: snap.hero.talents[w.waffe?.talentId]?.talentValue ?? 0,
@@ -96,7 +100,7 @@ Gefechtspruefung pruefeGefechtsZielbeginn(
           zielkontakt: (a.kontext ?? s.kontext).zielkennung,
           ansage: a.fernkampfansage,
           zielErleichterung: a.zielErleichterung,
-          bezahlteAktionen: gefechtsZieldauer(snap, a),
+          bezahlteAktionen: gefechtsZieldauer(snap, a, k),
           geschossId: w.rangedProfile.selectedProjectileOrNull?.id ?? '',
           waffenprofilKey: gefechtsZielprofilKey(w),
         );
@@ -109,7 +113,7 @@ Gefechtspruefung pruefeGefechtsZielbeginn(
   );
   final zahlen = pruefeManuelleGefechtsaktion(
     s,
-    gefechtswerteFuer(snap, kampfmittel: wahl),
+    gefechtswerteFuer(snap, katalog: k, kampfmittel: wahl),
     kosten: 1,
   );
   final ohneZielwahl = a.fernkampfansage <= 0 && a.zielErleichterung <= 0;
@@ -140,7 +144,8 @@ Gefechtspruefung pruefeGefechtsZielbeginn(
 Gefechtszustand beginneGefechtsLaden(
   Gefechtszustand s,
   HeroComputedSnapshot snap,
-  GefechtsKampfmittelwahl wahl, {
+  GefechtsKampfmittelwahl wahl,
+  RulesCatalog? k, {
   bool? anfangGeladen,
 }) {
   final gruende = _profilgruende(snap, wahl);
@@ -172,6 +177,7 @@ Gefechtszustand beginneGefechtsLaden(
       ),
     ),
     snap,
+    k,
   );
 }
 
@@ -195,7 +201,7 @@ Gefechtszustand beginneGefechtsZielen(
     waffenprofilKey: gefechtsZielprofilKey(w),
     geschossId: w.rangedProfile.selectedProjectileOrNull!.id,
     bezahlteAktionen: 0,
-    anfangsdauer: gefechtsZieldauer(snap, a),
+    anfangsdauer: gefechtsZieldauer(snap, a, k),
     schussauftrag: a,
   );
   final neu = bestaetigeGefechtsLadung(s, w, true).copyWith(
@@ -208,13 +214,14 @@ Gefechtszustand beginneGefechtsZielen(
       vorbereitung: v,
     ),
   );
-  return bezahleGefechtsVorbereitung(neu, snap);
+  return bezahleGefechtsVorbereitung(neu, snap, k);
 }
 
 /// Berechnet Rest = max(0, aktuelle Dauer minus tatsächlich bezahlte Aktionen).
 Gefechtsvorbereitungspruefung pruefeGefechtsVorbereitung(
   Gefechtszustand s,
   HeroComputedSnapshot snap,
+  RulesCatalog? k,
 ) {
   final h = s.handlung!;
   final v = h.vorbereitung!;
@@ -222,7 +229,7 @@ Gefechtsvorbereitungspruefung pruefeGefechtsVorbereitung(
   final laden = h.art == Gefechtshandlungsart.laden;
   final dauer = laden
       ? _ladezeit(snap, v.kampfmittel)
-      : gefechtsZieldauer(snap, v.schussauftrag!);
+      : gefechtsZieldauer(snap, v.schussauftrag!, k);
   final rest = dauer > v.bezahlteAktionen ? dauer - v.bezahlteAktionen : 0;
   final gruende = _profilgruende(snap, v.kampfmittel);
   if (w != null) {
@@ -242,7 +249,7 @@ Gefechtsvorbereitungspruefung pruefeGefechtsVorbereitung(
   }
   final p = pruefeManuelleGefechtsaktion(
     s,
-    gefechtswerteFuer(snap, kampfmittel: v.kampfmittel),
+    gefechtswerteFuer(snap, katalog: k, kampfmittel: v.kampfmittel),
     kosten: rest == 0 ? 0 : 1,
     handlungFortsetzen: true,
   );
@@ -263,8 +270,9 @@ Gefechtsvorbereitungspruefung pruefeGefechtsVorbereitung(
 Gefechtszustand bezahleGefechtsVorbereitung(
   Gefechtszustand s,
   HeroComputedSnapshot snap,
+  RulesCatalog? k,
 ) {
-  final p = pruefeGefechtsVorbereitung(s, snap);
+  final p = pruefeGefechtsVorbereitung(s, snap, k);
   if (!p.ausfuehrbar) throw StateError(p.gruende.join(' '));
   final h = s.handlung!;
   final v = h.vorbereitung!;
@@ -276,7 +284,7 @@ Gefechtszustand bezahleGefechtsVorbereitung(
       ? s
       : verbraucheGefechtsaktion(
           s,
-          gefechtswerteFuer(snap, kampfmittel: v.kampfmittel),
+          gefechtswerteFuer(snap, katalog: k, kampfmittel: v.kampfmittel),
           p.buchung,
         ).copyWith(kontext: s.kontext);
   if (h.art == Gefechtshandlungsart.laden && rest == 0) {
@@ -308,7 +316,7 @@ Gefechtspruefung pruefeGefechtsZielschuss(
   HeroComputedSnapshot snap,
   RulesCatalog k,
 ) {
-  final zeit = pruefeGefechtsVorbereitung(s, snap);
+  final zeit = pruefeGefechtsVorbereitung(s, snap, k);
   if (!zeit.ausfuehrbar || zeit.rest > 0) {
     final gruende = [
       ...zeit.gruende,

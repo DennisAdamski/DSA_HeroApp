@@ -26,6 +26,7 @@ void main() {
             zustand: const Gefechtszustand(iniWurf: 6),
             snapshot: snap,
             kampfmittel: fixture.mittel,
+            katalog: null,
           ),
         ),
       ),

@@ -113,7 +113,10 @@ Future<void> starteGefechtsWirken({
   if (s == null || snapshot == null || s.handlung != null || profil.dauer < 1) {
     return;
   }
-  final w = gefechtswerteFuer(snapshot);
+  final w = gefechtswerteFuer(
+    snapshot,
+    katalog: ref.read(heroRulesCatalogProvider(heroId)).asData?.value,
+  );
   final p = pruefeManuelleGefechtsaktion(s, w, kosten: 1);
   if (p.status == Gefechtsfreigabe.gesperrt ||
       snapshot.wundEffekte.kampfunfaehig) {
@@ -212,7 +215,10 @@ Future<void> setzeGefechtsWirkenFort({
     );
     return;
   }
-  final w = gefechtswerteFuer(snapshot);
+  final w = gefechtswerteFuer(
+    snapshot,
+    katalog: ref.read(heroRulesCatalogProvider(heroId)).asData?.value,
+  );
   final p = pruefeManuelleGefechtsaktion(
     s,
     w,

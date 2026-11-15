@@ -12,12 +12,18 @@ part of '../hero_begleiter_tab.dart';
 /// `vertrauten_bindung_rules.dart`, `vertrauten_ap_rules.dart` und
 /// `vertrauten_ausbildung_rules.dart`.
 extension _VertrautenBindungAktionen on _HeroBegleiterTabState {
-  // Die Hexe hat den Vorteil Machtvoller Vertrauter.
-  bool get _hexeHatMachtvollenVertrauten =>
-      _latestHero?.vorteilEintraege.any(
-        (m) => m.katalogId == 'adv_machtvoller_vertrauter',
-      ) ??
-      false;
+  // Die Hexe hat den Vorteil Machtvoller Vertrauter (Regel in
+  // `vertrauten_bindung_voraussetzung_rules.dart`).
+  bool get _hexeHatMachtvollenVertrauten {
+    final held = _latestHero;
+    return held != null &&
+        hatVorteilMachtvollerVertrauter(
+          held,
+          catalog: ref
+              .read(heroRulesCatalogProvider(widget.heroId))
+              .valueOrNull,
+        );
+  }
 
   /// Bindet einen neuen Vertrauten und bucht die Kosten bei der Hexe.
   Future<void> _bindeVertrauten(HeroCompanion angezeigt) async {

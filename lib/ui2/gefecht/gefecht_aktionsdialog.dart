@@ -202,7 +202,11 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
   Widget build(BuildContext context) {
     final auftrag = _auftrag();
     final mittel = gefechtsKampfmittelFuer(widget.werte, _mittel);
-    final werte = gefechtswerteFuer(widget.werte, kampfmittel: _mittel);
+    final werte = gefechtswerteFuer(
+      widget.werte,
+      katalog: widget.katalog,
+      kampfmittel: _mittel,
+    );
     final kontextAktion = _aktion == Gefechtsaktion.zusatzaktion
         ? _zusatzParade
               ? _mittel?.art == GefechtsKampfmittelArt.schild

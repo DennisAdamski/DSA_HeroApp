@@ -188,10 +188,11 @@ int gefechtsMeisterparadeBonusNachBuchung(
 String gefechtsMeisterparadeFehlschlag(
   GefechtAuftrag a,
   HeroComputedSnapshot snap,
+  RulesCatalog? k,
 ) {
   final gesamt = a.meisterparadeAnsage;
-  final halbiert = gefechtswerteFuer(snap).klingentaenzerAktiv;
-  final malus = gefechtsAnsageFehlmalus(snap, a);
+  final halbiert = gefechtswerteFuer(snap, katalog: k).klingentaenzerAktiv;
+  final malus = gefechtsAnsageFehlmalus(snap, a, k);
   final halbierung = halbiert
       ? ' (Klingentänzer: halbe Ansage, aufgerundet)'
       : '';

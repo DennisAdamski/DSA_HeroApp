@@ -100,7 +100,7 @@ void main() {
               testCatalog,
               a,
             );
-            s = bezahleGefechtsVorbereitung(s, snap);
+            s = bezahleGefechtsVorbereitung(s, snap, null);
             s = naechsteGefechtsrunde(s).copyWith(ohneHandlung: true);
             p = pruefeGefechtAuftrag(s, snap, testCatalog, a);
             expect(p.ausfuehrbar, true, reason: p.gruende.join('; '));
