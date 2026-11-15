@@ -27,6 +27,8 @@ stehen in [ui_oberflaeche.md](docs/hinweise/ui_oberflaeche.md).
 `KartoKlappinhalt` animiert nur explizites Einklappen, `KartoWertRueckmeldung`
 markiert Ressourcenänderungen. Die gerätelokale Effektwahl wird am Navigator
 über `KartoEffektEinstellungen` aus `ui2/foundation/karto_bewegung.dart` verteilt.
+`KartoSpieltischSiegel` ergänzt den Spieltisch-Titel um eine endliche,
+abschaltbare Kompassanimation und verwendet die vorhandene Kompassrose.
 
 ## Harte Regeln (Verstoss = Datenverlust oder Sync-Konflikte)
 

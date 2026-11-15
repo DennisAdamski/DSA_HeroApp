@@ -32,6 +32,7 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart'
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseroute.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielaktionen.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spieltisch_siegel.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielraster_bedienung.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielraster_ordnung.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_wuerfelprotokoll.dart';
@@ -153,6 +154,7 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
             children: [
               KartoSeitenkopf(
                 titel: 'Am Spieltisch',
+                titelVorsatz: const KartoSpieltischSiegel(),
                 kompakt: breite == KartoBreite.schmal,
                 // Fest zwischen Titel und „Anordnen“; keine Kachel, also
                 // weder verschiebbar noch ausblendbar.

@@ -14,6 +14,10 @@ Serifentitel und Kopflinien an äußeren Spielkacheln. Die Anordnung bleibt
 anpassbar; Unterabschnitte bleiben schlicht. Illustrationen und zusätzliche
 Texturen aus dem Mockup sind nicht Bestandteil dieses ersten Entwurfs.
 
+Die Aufnahmen enthalten inzwischen auch die Kompassrose vor „Am Spieltisch“
+im ruhenden Zustand. Ihr kurzer Auftritt und der Messinglichtbogen sind über
+die bestehenden Effektoptionen abschaltbar und laufen nicht dauerhaft.
+
 Reproduktion mit dem bestehenden Aufnahme-Workflow:
 
 ```powershell

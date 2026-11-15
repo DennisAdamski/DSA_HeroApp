@@ -179,6 +179,15 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `AnimatedSize`-Rückkopplungen mit mehrfach gemessenen Kacheln. Beim Schließen
   sind Inhalt, Tastaturfokus und Semantik sofort gesperrt; nach dem Übergang
   wird der Inhalt entfernt. Abschalten beendet laufende Effekte sofort.
+  **Bewegter Spieltisch-Kopf:** `KartoSeitenkopf.titelVorsatz` erlaubt ein
+  kompaktes Motiv vor dem weiterhin flexiblen Titeltext. Nur die Spielansicht
+  setzt dort `KartoSpieltischSiegel` (`spielen/karto_spieltisch_siegel.dart`):
+  die vorhandene 32-dp-Kompassrose dreht sich beim ersten Aufbau kurz ein,
+  während ein Messinglicht über ihren Außenring läuft (1.100 ms). Danach ruht
+  sie; Zeigerbetreten oder Antippen spielen den Effekt erneut. Themewechsel
+  und normale Datenänderungen starten ihn nicht neu. Die Dekoration hat keine
+  eigene Semantik und keinen Tastaturstopp. Beide Effektfreigaben und die
+  Systemeinstellung gelten; Abschalten beendet die Bewegung sofort.
   **Kopf-Bedienung bei Bedarf:**
   Vergrößern-Symbol und Einklapp-Pfeil des äußeren Abschnitts sind mit
   angeschlossener Maus nur sichtbar, solange Zeiger oder Fokus in der Kachel
