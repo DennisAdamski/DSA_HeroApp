@@ -332,6 +332,10 @@ Oberfläche und zusätzliche **dekorative Effekte** getrennt abschalten. Dazu
 gehören weiches Ein- und Ausklappen, Rückmeldungen bei Ressourcenänderungen
 und kurze Licht- bzw. Magieschimmer an Spielkacheln. Die Wahl bleibt auf dem
 Gerät gespeichert; „Bewegung reduzieren“ im Betriebssystem hat Vorrang.
+Persönliche Heldensiegel ergänzen Porträt und Spieltisch-Kopf: auch profane
+Helden erhalten ein eigenes Grundmotiv, je nach erfasster Rasse. Vorhandene
+Magie- und Karmabefähigungen ergänzen unabhängige Zeichen.
+Eine [Motivübersicht](docs/screenshots/heldensiegel/README.md) zeigt den Entwurf.
 
 Eine offene Entwicklungsplanung bleibt beim Wechsel zu **Held verwalten**
 erhalten. Die Verwaltung ist zum Ansehen zugänglich. Vor einer Bearbeitung

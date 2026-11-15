@@ -40,6 +40,7 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_zuletzt_gewuerfelt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/standort/karto_standort_kachel.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/wildnis/karto_wildnis_kachel.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_heldensiegel_profil.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_seitenkopf.dart';
@@ -154,7 +155,13 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
             children: [
               KartoSeitenkopf(
                 titel: 'Am Spieltisch',
-                titelVorsatz: const KartoSpieltischSiegel(),
+                titelVorsatz: KartoSpieltischSiegel(
+                  profil: KartoSiegelProfil.ausAngaben(
+                    rasse: werte.hero.background.rasse,
+                    magisch: werte.resourceActivation.magic.isEnabled,
+                    karmal: werte.resourceActivation.divine.isEnabled,
+                  ),
+                ),
                 kompakt: breite == KartoBreite.schmal,
                 // Fest zwischen Titel und „Anordnen“; keine Kachel, also
                 // weder verschiebbar noch ausblendbar.

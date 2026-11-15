@@ -4,12 +4,28 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_bewegung.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_heldensiegel_profil.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_heldensiegel.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 
 /// Endlicher Kompassauftritt am Spieltisch; danach bleibt das Siegel ruhig.
 class KartoSpieltischSiegel extends StatefulWidget {
   /// Zeigt die vorhandene Kompassrose mit optionalem Messinglicht.
-  const KartoSpieltischSiegel({super.key});
+  const KartoSpieltischSiegel({
+    super.key,
+    this.profil,
+    this.groesse = 40,
+    this.farbe,
+  });
+
+  /// Persönliches Grundmotiv; ohne Profil bleibt die bisherige Kompassrose.
+  final KartoSiegelProfil? profil;
+
+  /// Gesamtgröße einschließlich des Lichtbogens.
+  final double groesse;
+
+  /// Optionaler Messington für die dunkle Navigation.
+  final Color? farbe;
 
   @override
   State<KartoSpieltischSiegel> createState() => _SpieltischSiegelState();
@@ -50,7 +66,14 @@ class _SpieltischSiegelState extends State<KartoSpieltischSiegel>
 
   @override
   Widget build(BuildContext context) {
-    final farbe = context.karto.messing;
+    final farbe = widget.farbe ?? context.karto.messing;
+    final motiv = widget.profil == null
+        ? KartoKompassrose(groesse: widget.groesse - 8, farbe: farbe)
+        : KartoHeldensiegel(
+            profil: widget.profil!,
+            groesse: widget.groesse - 8,
+            farbe: farbe,
+          );
     return ExcludeSemantics(
       child: MouseRegion(
         onEnter: (_) => _anregen(),
@@ -60,10 +83,7 @@ class _SpieltischSiegelState extends State<KartoSpieltischSiegel>
           child: RepaintBoundary(
             child: AnimatedBuilder(
               animation: _licht,
-              child: const Padding(
-                padding: EdgeInsets.all(4),
-                child: KartoKompassrose(groesse: 32),
-              ),
+              child: Padding(padding: const EdgeInsets.all(4), child: motiv),
               builder: (context, child) {
                 final fortschritt = Curves.easeOutCubic.transform(_licht.value);
                 return CustomPaint(

@@ -32,6 +32,7 @@ class KartoAbschnitt extends StatelessWidget {
     this.aktion,
     this.stufe = KartoFlaechenstufe.feld,
     this.symbol,
+    this.titelMotiv,
     this.akzent,
     this.dicht = false,
   });
@@ -58,6 +59,9 @@ class KartoAbschnitt extends StatelessWidget {
   /// Kleines Symbol vor der Überschrift, in der Farbe des Akzents.
   final IconData? symbol;
 
+  /// Optionales persönliches Motiv anstelle des Standardsymbols.
+  final Widget? titelMotiv;
+
   /// Hervorhebung einer Begleitfläche; `null` lässt den Abschnitt schlicht.
   final KartoAkzent? akzent;
 
@@ -78,16 +82,21 @@ class KartoAbschnitt extends StatelessWidget {
     final titelStil = heldenbogen
         ? texte.abschnitt.copyWith(fontSize: 20, letterSpacing: 0)
         : texte.abschnitt;
-    final titelBlock = symbol == null
+    final motiv =
+        titelMotiv ??
+        (symbol == null
+            ? null
+            : Icon(
+                symbol,
+                size: heldenbogen ? 21 : 18,
+                color: akzentFarbe ?? karto.messing,
+              ));
+    final titelBlock = motiv == null
         ? Text(titel, style: titelStil)
         : Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                symbol,
-                size: heldenbogen ? 21 : 18,
-                color: akzentFarbe ?? karto.messing,
-              ),
+              motiv,
               const SizedBox(width: Abstand.normal),
               Flexible(child: Text(titel, style: titelStil)),
             ],

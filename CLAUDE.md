@@ -29,6 +29,9 @@ markiert Ressourcenänderungen. Die gerätelokale Effektwahl wird am Navigator
 über `KartoEffektEinstellungen` aus `ui2/foundation/karto_bewegung.dart` verteilt.
 `KartoSpieltischSiegel` ergänzt den Spieltisch-Titel um eine endliche,
 abschaltbare Kompassanimation und verwendet die vorhandene Kompassrose.
+Mit `KartoSiegelProfil` (`ui2/theme/`) und `KartoHeldensiegel` (`ui2/widgets/`)
+erhalten Porträt, Spieltisch und Magiebereich persönliche Motive. Die reine
+Darstellungszuordnung verändert weder Befähigungen noch Heldendaten.
 
 ## Harte Regeln (Verstoss = Datenverlust oder Sync-Konflikte)
 

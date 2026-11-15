@@ -188,6 +188,27 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   und normale Datenänderungen starten ihn nicht neu. Die Dekoration hat keine
   eigene Semantik und keinen Tastaturstopp. Beide Effektfreigaben und die
   Systemeinstellung gelten; Abschalten beendet die Bewegung sofort.
+  **Persönliche Heldensiegel:** `KartoSiegelProfil` in
+  `ui2/theme/karto_heldensiegel_profil.dart` ordnet bekannte Rassenbezeichnungen
+  ausschließlich kosmetischen Motiven zu. Menschen erhalten eine Schildform,
+  Elfen Blattlinien, Halbelfen deren Kombination, Zwerge eine kantige Gravur,
+  Echsenwesen Schuppenrauten, Orks gepaarte Spitzen und Goblins Wegmarken.
+  Auch profane Helden erhalten ein vollständiges Grundmotiv. Leere, unbekannte
+  oder mehrdeutige Angaben bleiben neutral; explizite Halbelfen dürfen die
+  menschliche und elfische Abstammung zusätzlich nennen. Aliasgruppen sind
+  bewusst explizit, keine Teilwortsuche und kein Regel- oder Katalogparser.
+  `KartoHeldensiegel` zeichnet die Motive ohne Bildassets. Ein astraler Stern
+  und eine neutrale karmale Strahlenmarke werden unabhängig ergänzt — nur aus
+  den vorhandenen `resourceActivation`-Werten des Compute-Snapshots, niemals
+  aus der Rasse, Profession oder einem eingetragenen Zauber. Beide Zeichen
+  dürfen gleichzeitig erscheinen. Es sind keine Gottheitssymbole.
+  `KartoHeldenmarke.siegel` ergänzt das unveränderte Avatarbild um eine kleine
+  Plakette am Ring; im schmalen Workspace zeigt der Spieltisch-Kopf dasselbe
+  Motiv. `KartoAbschnitt.titelMotiv` erlaubt das persönliche Motiv am Abschnitt
+  „Magie und Karma“. Alle bewegten Siegel verwenden weiterhin den vorhandenen
+  endlichen Auftritt und die beiden Effektfreigaben. Kein neuer Speicherweg,
+  keine neue Heldeneinstellung und keine Änderung am Helden-Hash oder Sync.
+  Motivübersicht: [Heldensiegel](../screenshots/heldensiegel/README.md).
   **Kopf-Bedienung bei Bedarf:**
   Vergrößern-Symbol und Einklapp-Pfeil des äußeren Abschnitts sind mit
   angeschlossener Maus nur sichtbar, solange Zeiger oder Fokus in der Kachel

@@ -4,6 +4,8 @@ import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_magie_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spieltisch_siegel.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_heldensiegel_profil.dart';
 
 /// Tatsächliche Katalogzauber und karmale Einträge mit klarer manueller Grenze.
 ///
@@ -92,6 +94,17 @@ class _GefechtMagieState extends State<GefechtMagie> {
           );
     final magie = KartoAbschnitt(
       titel: 'Magie und Karma',
+      titelMotiv: KartoSpieltischSiegel(
+        groesse: 32,
+        profil: KartoSiegelProfil.ausAngaben(
+          rasse: werte.hero.background.rasse,
+          magisch: werte.resourceActivation.magic.isEnabled,
+          karmal: werte.resourceActivation.divine.isEnabled,
+        ),
+      ),
+      akzent: werte.resourceActivation.magic.isEnabled
+          ? KartoAkzent.astral
+          : KartoAkzent.messing,
       child: Material(
         type: MaterialType.transparency,
         child: Column(

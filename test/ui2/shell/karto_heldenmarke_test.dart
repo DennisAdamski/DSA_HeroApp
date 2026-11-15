@@ -5,6 +5,8 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_heldenmarke.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_heldensiegel_profil.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spieltisch_siegel.dart';
 
 Future<void> pumpMarke(WidgetTester tester, KartoHeldenmarke marke) {
   return tester.pumpWidget(
@@ -22,6 +24,31 @@ Future<void> pumpMarke(WidgetTester tester, KartoHeldenmarke marke) {
 }
 
 void main() {
+  testWidgets(
+    'profanes Siegel ergänzt das Porträt ohne sein Bild zu ersetzen',
+    (tester) async {
+      const profil = KartoSiegelProfil(motiv: KartoSiegelMotiv.echse);
+      await pumpMarke(
+        tester,
+        KartoHeldenmarke(
+          name: 'Achaz',
+          siegel: profil,
+          bild: (_) => const Text('Porträt'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Porträt'), findsOneWidget);
+      expect(find.byType(KartoKompassring), findsOneWidget);
+      final siegel = tester.widget<KartoSpieltischSiegel>(
+        find.byKey(const ValueKey('karto-portraet-siegel')),
+      );
+      expect(siegel.profil, profil);
+      expect(siegel.profil!.magisch, isFalse);
+      expect(siegel.profil!.karmal, isFalse);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('ohne Bild steht das Monogramm in der Fassung', (tester) async {
     await pumpMarke(
       tester,
