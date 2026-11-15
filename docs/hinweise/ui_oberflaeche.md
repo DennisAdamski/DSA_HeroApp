@@ -151,7 +151,17 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   **Eine Flächenstufe:** alle Kacheln liegen auf `feld`; die frühere `senke`
   für Kampf, Effekte, Zustand und Begleiter wechselte im freien Raster
   scheinbar zufällig. Unterschieden wird über Symbol (jede Kachel trägt eines,
-  `spielkachelSymbol`) und `KartoAkzent`. **Kopf-Bedienung bei Bedarf:**
+  `spielkachelSymbol`) und `KartoAkzent`.
+  **Heldenbogen-Fassung (erster Entwurf, 15.11.2026):** Nur äußere Abschnitte
+  mit `KartoKachelSteuerung` erhalten über `KartoHeldenbogenRahmen`
+  (`lib/ui2/spielen/karto_heldenbogen_rahmen.dart`) eine feine Messingkontur
+  und kleine Kartuschenecken. Der Vordergrundzeichner braucht keinen Layoutplatz
+  und nimmt keine Eingaben entgegen. Serifentitel mit 20 dp, 16 dp Innenraum
+  und eine feine Linie unter dem geöffneten Kopf geben den Kacheln mehr Kontur.
+  Die bisherige kräftige Messingoberkante entfällt dort; astrale Tönungen
+  bleiben erhalten. Verschachtelte Abschnitte behalten ihre schlichte Fassung.
+  Die Farben folgen den bestehenden Hell-/Dunkel-Token; keine Bildassets.
+  **Kopf-Bedienung bei Bedarf:**
   Vergrößern-Symbol und Einklapp-Pfeil des äußeren Abschnitts sind mit
   angeschlossener Maus nur sichtbar, solange Zeiger oder Fokus in der Kachel
   liegen (`_Kachelzeiger`/`_BeiBedarf` in `karto_abschnitt.dart`,

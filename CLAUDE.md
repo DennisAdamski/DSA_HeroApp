@@ -21,6 +21,10 @@ einen Themenindex; Details stehen nach Thema in [docs/hinweise/](docs/hinweise/)
   (`lib/ui2/shell/karto_app_root.dart`); `lib/ui2` importiert sonst nichts aus
   `lib/ui`.
 
+Die äußeren Spielkacheln nutzen `KartoHeldenbogenRahmen` unter
+`lib/ui2/spielen/` für die dezente Messingfassung; Aufbau und Abgrenzung
+stehen in [ui_oberflaeche.md](docs/hinweise/ui_oberflaeche.md).
+
 ## Harte Regeln (Verstoss = Datenverlust oder Sync-Konflikte)
 
 1. **Krypto nie anpassen.** `lib/crypto/aes_primitives.dart` ist blattartig; die
