@@ -177,6 +177,36 @@ class _AppearanceSettingsPageState
             ],
           ),
         ),
+        const SizedBox(height: 16),
+        _SettingsSectionCard(
+          title: 'Bewegung und Atmosphäre',
+          child: Column(
+            children: [
+              SwitchListTile.adaptive(
+                key: const ValueKey<String>('settings-animationen'),
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Animationen'),
+                subtitle: const Text(
+                  'Weiche Übergänge und Rückmeldungen in der neuen Oberfläche. '
+                  '„Bewegung reduzieren“ im System hat Vorrang.',
+                ),
+                value: ref.watch(animationenProvider),
+                onChanged: actions.setAnimationen,
+              ),
+              SwitchListTile.adaptive(
+                key: const ValueKey<String>('settings-dekorative-effekte'),
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Dekorative Effekte'),
+                subtitle: const Text(
+                  'Kurze Lichtschimmer und magische Akzente bei Interaktionen. '
+                  'Wirkt nur mit eingeschalteten Animationen.',
+                ),
+                value: ref.watch(dekorativeEffekteProvider),
+                onChanged: actions.setDekorativeEffekte,
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

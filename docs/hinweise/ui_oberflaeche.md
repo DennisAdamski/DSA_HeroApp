@@ -161,6 +161,24 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Die bisherige kräftige Messingoberkante entfällt dort; astrale Tönungen
   bleiben erhalten. Verschachtelte Abschnitte behalten ihre schlichte Fassung.
   Die Farben folgen den bestehenden Hell-/Dunkel-Token; keine Bildassets.
+  **Optionale Bewegung und Atmosphäre:** Unter Einstellungen → Darstellung
+  stehen „Animationen“ und „Dekorative Effekte“. Beide sind standardmäßig
+  aktiv und getrennt gerätelokal in `AppSettings` gespeichert; keine Änderung
+  am Helden oder seinem Sync. `DsaAppShell.builder` legt die reaktive
+  `KartoEffektEinstellungen` um den Navigator, damit auch Dialoge und andere
+  Routen die Auswahl erhalten. `kartoDauer` berücksichtigt Appwahl und
+  `MediaQuery.disableAnimations`; die Systemeinstellung hat Vorrang.
+  Dekorative Lichtläufe benötigen zusätzlich `kartoDekorationAktiv`.
+  Die Messingkontur reagiert auf Zeiger und Tastaturfokus. Beim Betreten oder
+  Antippen läuft einmalig ein 850-ms-Lichtschimmer über die Kontur; bei
+  astralen Kacheln mit kurzem Funkeln in der Astralfarbe. Keine Dauerschleifen
+  und keine Überlagerung der Inhalte. `KartoWertRueckmeldung` hebt geänderte
+  Ressourcenwerte 500 ms hervor, zeigt aber sofort die echte Zahl.
+  `KartoKlappinhalt` animiert explizites Einklappen über einen Größenfaktor
+  (250 ms); er animiert keine beliebigen Inhaltsänderungen und vermeidet
+  `AnimatedSize`-Rückkopplungen mit mehrfach gemessenen Kacheln. Beim Schließen
+  sind Inhalt, Tastaturfokus und Semantik sofort gesperrt; nach dem Übergang
+  wird der Inhalt entfernt. Abschalten beendet laufende Effekte sofort.
   **Kopf-Bedienung bei Bedarf:**
   Vergrößern-Symbol und Einklapp-Pfeil des äußeren Abschnitts sind mit
   angeschlossener Maus nur sichtbar, solange Zeiger oder Fokus in der Kachel
@@ -519,8 +537,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (`lib/ui2/widgets/karto_papier.dart`) legt hell die vorhandene
   Pergamenttextur per Multiplikation auf `blatt`, dunkel bleibt der Grund
   glatt; Rasterbilder müssen `KartoPapier.textur` vorab laden. Jede Animation
-  nimmt ihre Dauer über `kartoDauer` (`lib/ui2/foundation/karto_bewegung.dart`)
-  und steht bei abgeschalteten Systemanimationen sofort am Ziel. Begleitflächen
+  berücksichtigt `kartoDauer` (`lib/ui2/foundation/karto_bewegung.dart`)
+  und steht bei abgeschalteten App- oder Systemanimationen sofort am Ziel;
+  dekorative Controller prüfen zusätzlich `kartoDekorationAktiv`. Begleitflächen
   heben sich nur über `KartoAkzent` (Messingkante, astrale Tönung) ab, nie
   über freie Farben.
 - Im Bestandsbaum (`buildKartoCompatTheme`) trägt `bodySmall` die aufrechte

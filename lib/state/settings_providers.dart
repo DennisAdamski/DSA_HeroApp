@@ -144,6 +144,16 @@ final oberflaecheProvider = Provider<Oberflaeche>((ref) {
       Oberflaeche.codex;
 });
 
+/// Geraetelokale Freigabe fuer Animationen.
+final animationenProvider = Provider<bool>((ref) {
+  return ref.watch(appSettingsProvider).valueOrNull?.animationen ?? true;
+});
+
+/// Geraetelokale Freigabe fuer dekorative Licht- und Magieeffekte.
+final dekorativeEffekteProvider = Provider<bool>((ref) {
+  return ref.watch(appSettingsProvider).valueOrNull?.dekorativeEffekte ?? true;
+});
+
 /// Gewuenschte Darstellung breiter Datenlisten (Tabelle oder Karten).
 final tabellenAnsichtProvider = Provider<TabellenAnsicht>((ref) {
   return ref.watch(appSettingsProvider).valueOrNull?.tabellenAnsicht ??
@@ -233,6 +243,16 @@ class SettingsActions {
   Future<void> clearHeroStoragePath() async {
     final current = _repo.load();
     await _repo.save(current.copyWith(heroStoragePath: null));
+  }
+
+  /// Speichert die Animationswahl ohne andere Einstellungen zu ersetzen.
+  Future<void> setAnimationen(bool aktiv) async {
+    await _repo.save(_repo.load().copyWith(animationen: aktiv));
+  }
+
+  /// Speichert die Dekorationswahl unabhaengig von der Animationswahl.
+  Future<void> setDekorativeEffekte(bool aktiv) async {
+    await _repo.save(_repo.load().copyWith(dekorativeEffekte: aktiv));
   }
 
   /// Setzt die aktive Oberflaeche.

@@ -700,6 +700,16 @@ class _BereichsBlendeState extends State<_BereichsBlende>
   ).animate(_verlauf);
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Eine während des Übergangs geänderte Effektwahl gilt sofort.
+    if (kartoDauer(context, Bewegung.mittel) == Duration.zero) {
+      _steuerung.stop();
+      _steuerung.value = 1;
+    }
+  }
+
+  @override
   void didUpdateWidget(_BereichsBlende alt) {
     super.didUpdateWidget(alt);
     if (alt.index != widget.index) {
