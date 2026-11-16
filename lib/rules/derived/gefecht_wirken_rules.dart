@@ -202,10 +202,13 @@ int gefechtsWirkkosten(
   if (erfolg) return kosten;
   if (art == Gefechtshandlungsart.mirakel) return 1;
   if (art == Gefechtshandlungsart.liturgie) {
+    // WdG S. 243: 1/5 der geplanten KaP, mindestens 1. Unter 5 KaP (etwa
+    // eine primäre Segnung zu 2 KaP) ist das eindeutig 1.
+    if (kosten < 5) return 1;
     if (kosten % 5 != 0) {
       throw StateError('Rundung der Liturgiekosten bestätigen.');
     }
-    return kosten < 5 ? 1 : kosten ~/ 5;
+    return kosten ~/ 5;
   }
   return halbiertAufgerundet(kosten);
 }

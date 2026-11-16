@@ -152,7 +152,10 @@ class _WirkdialogState extends State<GefechtWirkdialog> {
     final fehl = int.tryParse(_fehlkosten.text);
     final standardFehl = kosten == null || kosten < 0
         ? null
-        : karmal && _art == Gefechtshandlungsart.liturgie && kosten % 5 != 0
+        : karmal &&
+              _art == Gefechtshandlungsart.liturgie &&
+              kosten >= 5 &&
+              kosten % 5 != 0
         ? null
         : gefechtsWirkkosten(kosten, _art, erfolg: false);
     final gueltig =

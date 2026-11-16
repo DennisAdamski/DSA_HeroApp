@@ -148,6 +148,19 @@ void main() {
       gefechtsWirkkosten(5, Gefechtshandlungsart.mirakel, erfolg: false),
       1,
     );
+    // WdG S. 243: 1/5 der geplanten KaP, mindestens 1.
+    expect(
+      gefechtsWirkkosten(2, Gefechtshandlungsart.liturgie, erfolg: false),
+      1,
+    );
+    expect(
+      gefechtsWirkkosten(15, Gefechtshandlungsart.liturgie, erfolg: false),
+      3,
+    );
+    expect(
+      () => gefechtsWirkkosten(7, Gefechtshandlungsart.liturgie, erfolg: false),
+      throwsStateError,
+    );
     for (var g = 1; g <= 6; g++) {
       expect(gefechtsGradkosten(g), g * 5);
       expect(gefechtsGradzuschlag(g), (g - 1) * 2);
