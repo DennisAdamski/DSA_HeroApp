@@ -254,6 +254,18 @@ eigenen Kacheln lit. f).
 Standort (`HeroState`), Anreise zwischen Stationen (B2) und die grafische
 Darstellung (C2).
 
+### Automatische Station beim Standortwechsel (umgesetzt 16.11.2026)
+
+Ändert der Standort im Abenteuer-Bereich oder in der Standort-Kachel
+(`standortSetzen`), legt die Brücke eine Station an: Ort, Datum und Abenteuer
+aus `reiseStationFuerStandortwechsel` (`reiseroute_rules.dart`), Kartenverweis
+nur bei eindeutigem Ort im Ortsverzeichnis. Keine Station entsteht beim
+Entfernen des Standorts, ohne Ortswechsel und wenn die zeitlich letzte Station
+schon diesen Ort trägt. Es sind zwei eigenständige Schreibvorgänge mit je einem
+Dokument: erst `HeroState.standort`, dann `HeroSheet.reiseStationen`. Scheitert
+der zweite (etwa während einer Planung), bleibt der Standort gespeichert und
+eine Meldung nennt den Grund.
+
 ### Standort-Kachel und Ortsdetails (umgesetzt 13.11.2026)
 
 **Vorbild.** Die Ortsansicht von avesmaps.de, aus dem ausgelieferten Bundle

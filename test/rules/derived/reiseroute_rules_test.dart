@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
 
 HeroAdventureDateValue _d(String tag, String monat, String jahr) =>
@@ -170,6 +171,80 @@ void main() {
       expect(station.ort, isEmpty);
       expect(station.adventureId, isEmpty);
       expect(station.datum.year, '1040');
+    });
+  });
+
+  group('Station beim Standortwechsel', () {
+    final jetzt = DateTime.utc(2026, 11, 16, 20);
+
+    HeroSheet? wechsel(
+      HeroSheet held, {
+      String alt = 'Gareth',
+      String neu = 'Havena',
+      List<OrtEintrag> orte = const <OrtEintrag>[],
+    }) => reiseStationFuerStandortwechsel(
+      held: held,
+      alterStandort: alt,
+      neuerStandort: neu,
+      id: 'neu',
+      jetzt: jetzt,
+      orte: orte,
+    );
+
+    test('legt eine Station mit Datum und laufendem Abenteuer an', () {
+      final held = _held(
+        adventures: [
+          HeroAdventureEntry(
+            id: 'jetzt',
+            currentAventurianDate: _d('7', 'boron', '1043'),
+          ),
+        ],
+      );
+      final neu = wechsel(held)!;
+      final station = neu.reiseStationen.single;
+      expect(station.id, 'neu');
+      expect(station.ort, 'Havena');
+      expect(station.adventureId, 'jetzt');
+      expect(station.datum.year, '1043');
+      expect(station.lastModified, jetzt);
+      expect(station.ortId, isEmpty);
+    });
+
+    test('keine Station beim Entfernen oder ohne Ortswechsel', () {
+      expect(wechsel(_held(), neu: ''), isNull);
+      expect(wechsel(_held(), neu: '   '), isNull);
+      expect(wechsel(_held(), alt: 'Gareth', neu: '  gareth '), isNull);
+    });
+
+    test('keine zweite Station für den Ort der letzten Station', () {
+      final held = _held(
+        stationen: [const HeroReiseStation(id: 'a', ort: 'Havena')],
+      );
+      expect(wechsel(held), isNull);
+      // Ein anderer Ort legt dagegen an.
+      expect(wechsel(held, neu: 'Punin')!.reiseStationen, hasLength(2));
+    });
+
+    test('trägt den Kartenverweis nur bei eindeutigem Ort', () {
+      final havena = OrtEintrag(
+        name: 'Havena',
+        art: OrtArt.siedlung,
+        ortId: 'o1',
+        kartenX: 10,
+        kartenY: 20,
+      );
+      final mit = wechsel(_held(), orte: [havena])!.reiseStationen.single;
+      expect(mit.ortId, 'o1');
+      expect(mit.kartenX, 10);
+      expect(mit.kartenY, 20);
+
+      final ohne = wechsel(
+        _held(),
+        neu: 'Punin',
+        orte: [havena],
+      )!.reiseStationen.single;
+      expect(ohne.ortId, isEmpty);
+      expect(ohne.kartenX, isNull);
     });
   });
 

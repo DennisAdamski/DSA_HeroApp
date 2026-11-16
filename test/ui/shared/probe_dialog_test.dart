@@ -445,6 +445,91 @@ void main() {
     );
   });
 
+  testWidgets('Bestanden / Nicht bestanden erscheinen nur mit onExtern', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_wrap(const ProbeDialog(request: _kAttrRequest)));
+    await tester.pumpAndSettle();
+    expect(find.text('Bestanden'), findsNothing);
+    expect(find.text('Nicht bestanden'), findsNothing);
+
+    await tester.pumpWidget(
+      _wrap(ProbeDialog(request: _kAttrRequest, onExtern: (_) {})),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Bestanden'), findsOneWidget);
+    expect(find.text('Nicht bestanden'), findsOneWidget);
+  });
+
+  testWidgets('Summenwürfe bieten kein Bestanden / Nicht bestanden an', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(ProbeDialog(request: _kDamageRequest, onExtern: (_) {})),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Bestanden'), findsNothing);
+  });
+
+  testWidgets('Bestanden meldet genau einmal und sperrt den Dialog', (
+    tester,
+  ) async {
+    final gemeldet = <bool>[];
+    final fired = <ProbeResult>[];
+    await tester.pumpWidget(
+      _wrap(
+        ProbeDialog(
+          request: _kAttrRequest,
+          onResolved: fired.add,
+          onExtern: gemeldet.add,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Bestanden'));
+    await tester.pumpAndSettle();
+
+    expect(gemeldet, <bool>[true]);
+    expect(fired, isEmpty);
+    expect(
+      find.byKey(const ValueKey<String>('probe-dialog-extern-hinweis')),
+      findsOneWidget,
+    );
+    // Beide Knöpfe und Würfeln sind gesperrt: kein zweiter Eintrag möglich.
+    await tester.tap(find.text('Nicht bestanden'), warnIfMissed: false);
+    await tester.tap(find.text('Würfeln'), warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(gemeldet, <bool>[true]);
+    expect(fired, isEmpty);
+  });
+
+  testWidgets('Nicht bestanden meldet false', (tester) async {
+    final gemeldet = <bool>[];
+    await tester.pumpWidget(
+      _wrap(ProbeDialog(request: _kAttrRequest, onExtern: gemeldet.add)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Nicht bestanden'));
+    await tester.pumpAndSettle();
+
+    expect(gemeldet, <bool>[false]);
+  });
+
+  testWidgets('nach einem Wurf in der App entfallen die externen Knöpfe', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(ProbeDialog(request: _kAttrRequest, onExtern: (_) {})),
+    );
+    await tester.pumpAndSettle();
+
+    await _rollMainProbe(tester);
+
+    expect(find.text('Bestanden'), findsNothing);
+  });
+
   testWidgets('onResolved feuert nach digitalem Wurf genau einmal', (
     tester,
   ) async {

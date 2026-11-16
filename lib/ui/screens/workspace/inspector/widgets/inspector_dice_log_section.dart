@@ -433,6 +433,12 @@ class _Ergebnis {
   factory _Ergebnis.von(DiceLogEntry entry, CodexTheme codex) {
     if (entry.isNeutral) return _Ergebnis('WURF', codex.brass);
     final farbe = entry.success ? codex.success : codex.danger;
+    if (entry.extern) {
+      return _Ergebnis(
+        entry.success ? 'BESTANDEN (extern)' : 'NICHT BESTANDEN (extern)',
+        farbe,
+      );
+    }
     final text = entry.automaticOutcome == AutomaticOutcome.none
         ? (entry.success ? 'GELUNGEN' : 'MISSLUNGEN')
         : (entry.automaticOutcome == AutomaticOutcome.success

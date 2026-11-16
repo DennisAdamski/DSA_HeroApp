@@ -23,6 +23,10 @@ import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
+import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
+import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
+import 'package:uuid/uuid.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_begleiter_tab.dart'
     show zeigeVertrautenAktionen;
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
@@ -653,14 +657,74 @@ class KartoBestandsAdapterImpl
     required String heroId,
     required String standort,
   }) async {
-    await aendereZustandMitMeldung(
+    // Alles Kontextgebundene vor dem Warten greifen: Der Dialog ist danach zu.
+    final bote = ScaffoldMessenger.maybeOf(context);
+    final orte = ref.read(ortsverzeichnisProvider);
+    // Der alte Standort stammt aus dem frisch geladenen Zustand, nicht aus dem
+    // Stand beim Rendern.
+    String? alterStandort;
+    final gespeichert = await aendereZustandMitMeldung(
       context: context,
       ref: ref,
       heroId: heroId,
       was: 'Standort',
-      aenderung: (aktuell) =>
-          aktuell.copyWith(standort: bereinigeStandort(standort)),
+      aenderung: (aktuell) {
+        alterStandort = aktuell.standort;
+        return aktuell.copyWith(standort: bereinigeStandort(standort));
+      },
     );
+    if (gespeichert == null || alterStandort == null) return;
+    await _haltStandortwechselFest(
+      ref: ref,
+      bote: bote,
+      heroId: heroId,
+      alterStandort: alterStandort!,
+      neuerStandort: standort,
+      orte: orte,
+    );
+  }
+
+  /// Hält einen Ortswechsel als Station der Reiseroute fest.
+  ///
+  /// Zweiter, eigenständiger Schreibvorgang am Heldenbogen nach dem
+  /// Standort-Schreiben am Zustand (je Schritt ein Dokument). Er ist
+  /// wiederholbar: Die Regel legt für denselben Ort keine zweite Station an.
+  /// Scheitert er (etwa während einer Planung), bleibt der Standort gespeichert
+  /// und eine Meldung nennt den Grund.
+  Future<void> _haltStandortwechselFest({
+    required WidgetRef ref,
+    required ScaffoldMessengerState? bote,
+    required String heroId,
+    required String alterStandort,
+    required String neuerStandort,
+    required List<OrtEintrag> orte,
+  }) async {
+    if (bereinigeStandort(neuerStandort).isEmpty) return;
+    try {
+      await aendereHeldImEditor(
+        ref: ref,
+        heroId: heroId,
+        aenderung: (held) =>
+            reiseStationFuerStandortwechsel(
+              held: held,
+              alterStandort: alterStandort,
+              neuerStandort: neuerStandort,
+              id: const Uuid().v4(),
+              jetzt: DateTime.now(),
+              orte: orte,
+            ) ??
+            held,
+      );
+    } on Object catch (fehler) {
+      final grund = fehler is StateError ? fehler.message : '$fehler';
+      bote?.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Standort gespeichert, Reiseroute nicht ergänzt: $grund',
+          ),
+        ),
+      );
+    }
   }
 
   /// Öffnet die vorhandenen Vertrautenaktionen des Begleiter-Tabs.

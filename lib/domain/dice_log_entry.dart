@@ -22,6 +22,7 @@ class DiceLogEntry {
     this.zielwerte = const <int>[],
     this.restpunkte,
     this.probenVerweis,
+    this.extern = false,
     this.unbekannteFelder = const <String, Object?>{},
     this.unbekannteEnumWerte = const <String, Object?>{},
   });
@@ -79,6 +80,12 @@ class DiceLogEntry {
   /// eigene Probe. Nur belegt im JSON.
   final String? probenVerweis;
 
+  /// `true`, wenn die Probe außerhalb der App gewürfelt wurde und nur das
+  /// Ergebnis (bestanden / nicht bestanden) eingetragen ist; [diceValues] ist
+  /// dann leer. Nur belegt im JSON, damit sich der Inhalts-Hash alter Helden
+  /// nicht ändert.
+  final bool extern;
+
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
@@ -107,6 +114,7 @@ class DiceLogEntry {
     'zielwerte',
     'restpunkte',
     'probenVerweis',
+    'extern',
   };
 
   Map<String, dynamic> toJson() {
@@ -126,6 +134,7 @@ class DiceLogEntry {
         if (zielwerte.isNotEmpty) 'zielwerte': List<int>.from(zielwerte),
         'restpunkte': ?restpunkte,
         'probenVerweis': ?probenVerweis,
+        if (extern) 'extern': true,
       }, unbekannteFelder),
       unbekannteEnumWerte,
     );
@@ -165,6 +174,7 @@ class DiceLogEntry {
           .toList(growable: false),
       restpunkte: (json['restpunkte'] as num?)?.toInt(),
       probenVerweis: _leseVerweis(json['probenVerweis']),
+      extern: json['extern'] as bool? ?? false,
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
       unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
@@ -198,6 +208,25 @@ DiceLogEntry diceLogEntryFromResult(ProbeResult result, {DateTime? timestamp}) {
         ? result.remainingPool
         : null,
     probenVerweis: request.verweis,
+  );
+}
+
+/// Baut einen Protokolleintrag für eine außerhalb der App gewürfelte Probe:
+/// nur das Ergebnis, ohne Würfelwerte, Zielwerte oder Restpunkte.
+DiceLogEntry diceLogEntryFromExternal(
+  ResolvedProbeRequest request, {
+  required bool bestanden,
+  DateTime? timestamp,
+}) {
+  return DiceLogEntry(
+    timestamp: (timestamp ?? DateTime.now()).toUtc(),
+    type: request.type,
+    title: request.title,
+    subtitle: request.subtitle,
+    success: bestanden,
+    diceValues: const <int>[],
+    probenVerweis: request.verweis,
+    extern: true,
   );
 }
 

@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/aventurian_age_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 
@@ -234,6 +235,42 @@ HeroReiseStation reiseStationVorschlag({
     datum: datum,
     adventureId: abenteuer?.id ?? '',
   );
+}
+
+/// Ob [alterStandort] und [neuerStandort] denselben Ort meinen (bereinigt, ohne
+/// Rücksicht auf Groß- und Kleinschreibung).
+bool _gleicherOrt(String a, String b) =>
+    bereinigeStandort(a).toLowerCase() == bereinigeStandort(b).toLowerCase();
+
+/// Der Held mit der Station, die ein Wechsel des Standorts von [alterStandort]
+/// nach [neuerStandort] festhält, oder `null`, wenn keine entsteht.
+///
+/// Keine Station gibt es, wenn der neue Standort leer ist (Standort entfernt),
+/// wenn sich der Ort nicht ändert oder wenn die zeitlich letzte Station schon
+/// diesen Ort trägt (zweiter Schutz gegen doppelte Einträge). Datum und
+/// Abenteuer kommen aus [reiseStationVorschlag]; den Kartenverweis (`ortId`,
+/// Position) trägt die Station nur, wenn [orte] den Ort eindeutig kennt.
+HeroSheet? reiseStationFuerStandortwechsel({
+  required HeroSheet held,
+  required String alterStandort,
+  required String neuerStandort,
+  required String id,
+  required DateTime jetzt,
+  List<OrtEintrag> orte = const <OrtEintrag>[],
+}) {
+  final neu = bereinigeStandort(neuerStandort);
+  if (neu.isEmpty || _gleicherOrt(alterStandort, neu)) return null;
+  final sortiert = sortiereReiseStationen(held.reiseStationen);
+  if (sortiert.isNotEmpty && _gleicherOrt(sortiert.last.ort, neu)) return null;
+  final vorschlag = reiseStationVorschlag(held: held, standort: neu, id: id);
+  final verweis = ortsVerweisFuer(neu, orte);
+  final station = vorschlag.copyWith(
+    ortId: verweis?.ortId,
+    kartenX: verweis?.kartenX,
+    kartenY: verweis?.kartenY,
+    lastModified: jetzt.toUtc(),
+  );
+  return fuegeReiseStationHinzu(held, station);
 }
 
 /// Hängt [station] an die Stationsliste an.
