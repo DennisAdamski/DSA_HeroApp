@@ -300,6 +300,21 @@ void main() {
       expect(mit(51999).stufe, TragkraftStufe.verschnaufen);
     });
 
+    test('ohne Tragkraft gilt jede Last als zu schwer, ohne absurde BE', () {
+      final e = _rechne(
+        _held(eintraege: [_stueck(1500)]),
+        werte: const Attributes.zero(),
+      );
+      expect(e.tragkraftGramm, 0);
+      expect(e.ohneTragkraft, isTrue);
+      expect(e.stufe, TragkraftStufe.absetzen);
+      expect(e.zusatzBe, 0);
+      expect(e.hinweis, contains('Keine Tragkraft'));
+      expect(e.hinweis, isNot(contains('BE +')));
+      final leer = _rechne(_held(), werte: const Attributes.zero());
+      expect(leer.stufe, TragkraftStufe.frei);
+    });
+
     test('eine höhere Tragkraft verschiebt die Stufen', () {
       final rune = baerenruneBonus(id: 'r', rkp: 7);
       final e = _rechne(_held(eintraege: [_stueck(40000)], boni: [rune]));
@@ -347,6 +362,40 @@ void main() {
       );
       expect(ohneTragkraftBonus(held, 'a').tragkraftBoni, isEmpty);
       expect(identical(ohneTragkraftBonus(held, 'x'), held), isTrue);
+    });
+  });
+
+  group('Lesen und Schreiben einer Quelle', () {
+    test('unlesbare Rohwerte bleiben beim Zurückschreiben unverändert', () {
+      final json = <String, dynamic>{
+        'id': 'a',
+        'name': 7,
+        'stein': '70',
+        'kk': <Object?>[1],
+      };
+      final quelle = HeroTragkraftBonus.fromJson(json)!;
+      expect(quelle.stein, 0);
+      expect(quelle.name, '');
+      expect(quelle.toJson(), json);
+    });
+
+    test('ein negativer Wert bleibt gespeichert, zählt aber als 0', () {
+      final json = <String, dynamic>{'id': 'a', 'name': 'Fluch', 'stein': -4};
+      final quelle = HeroTragkraftBonus.fromJson(json)!;
+      expect(quelle.stein, -4);
+      expect(quelle.wirksamerStein, 0);
+      expect(quelle.toJson(), json);
+      final e = _rechne(_held(boni: [quelle]));
+      expect(e.tragkraftStein, 13);
+    });
+
+    test('ein neu gesetzter Wert ersetzt den unlesbaren Rohwert', () {
+      final quelle = HeroTragkraftBonus.fromJson(<String, dynamic>{
+        'id': 'a',
+        'stein': '70',
+      })!;
+      final neu = quelle.copyWith(stein: 5);
+      expect(neu.toJson()['stein'], 5);
     });
   });
 

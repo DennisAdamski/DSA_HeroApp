@@ -103,6 +103,10 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
   /// Entwurf des Anordnen-Modus; `null` außerhalb des Modus.
   List<KartoSpielkachel>? _entwurf;
 
+  // Ob die Kachel „Dabei“ Erschöpfung und Überanstrengung trägt; wird bei
+  // jedem Bauen aus der Anordnung abgeleitet.
+  bool _belastungInDabei = true;
+
   @override
   String get heroId => widget.heroId;
 
@@ -144,6 +148,14 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
       for (var i = 0; i < kacheln.length; i++)
         if (!kacheln[i].ausgeblendet) i,
     ];
+    // „Dabei“ ist ausblend- und einklappbar; nur eine sichtbare, aufgeklappte
+    // Kachel nimmt Erschöpfung und Überanstrengung auf.
+    _belastungInDabei = kacheln.any(
+      (k) =>
+          k.art == KartoSpielkachelArt.dabei &&
+          !k.ausgeblendet &&
+          !k.eingeklappt,
+    );
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -325,11 +337,12 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
     KartoSpielkachelArt.zustand => KartoAbschnitt(
       titel: 'Zustand',
       symbol: Icons.monitor_heart_outlined,
-      // Erschöpfung und Überanstrengung stehen in „Dabei“ bei der Last.
+      // Erschöpfung und Überanstrengung stehen in „Dabei“ bei der Last, solange
+      // diese Kachel zu sehen ist; sonst bleiben sie hier bedienbar.
       child: bestand.spielZustand(
         heroId: heroId,
         werte: werte,
-        mitBelastung: false,
+        mitBelastung: !_belastungInDabei,
       ),
     ),
     KartoSpielkachelArt.begleiter => _begleiter(context, werte),

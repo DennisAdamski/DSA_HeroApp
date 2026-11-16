@@ -128,7 +128,7 @@ class TragkraftQuellenAbschnitt extends ConsumerWidget {
 
   static String _quellenText(HeroTragkraftBonus quelle) => [
     quelle.anzeigeName,
-    if (quelle.stein != 0) '+${quelle.stein} Stein',
+    if (quelle.wirksamerStein != 0) '+${quelle.wirksamerStein} Stein',
     if (quelle.kk != 0) 'KK ${quelle.kk > 0 ? '+' : ''}${quelle.kk}',
   ].join(' · ');
 }

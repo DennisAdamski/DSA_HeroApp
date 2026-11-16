@@ -87,6 +87,20 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
   bool? _ortskenntnis;
   int _asp = 0;
   int _situativ = 0;
+
+  /// Höchstzahl einsetzbarer AsP: so viele, wie der Held jetzt hat, höchstens
+  /// so viele, wie die Erleichterung nutzt.
+  static const int _aspGrenze = 99;
+
+  /// Aktuelle AsP des Helden, soweit einsetzbar (nie negativ).
+  int get _aspVorrat {
+    final aktuell = widget.werte.state.currentAsp;
+    return aktuell < 0 ? 0 : (aktuell > _aspGrenze ? _aspGrenze : aktuell);
+  }
+
+  /// Gewählte AsP, begrenzt auf den Vorrat; sinkt dieser, sinkt auch der
+  /// Einsatz.
+  int get _wirksameAsp => _asp > _aspVorrat ? _aspVorrat : _asp;
   final Map<String, String> _optionen = <String, String>{};
   WildnisErgebnis? _ergebnis;
   bool _wuerfelt = false;
@@ -294,14 +308,19 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
           _felder(
             weit: weit,
             kinder: [
-              _Schritt(
-                schluessel: 'asp',
-                bezeichnung: 'Eingesetzte AsP (je 3 senken um 1)',
-                wert: _asp,
-                min: 0,
-                max: 99,
-                onChanged: (w) => _aendere(() => _asp = w),
-              ),
+              // Ohne AsP gibt es nichts einzusetzen (auch kein Nichtzauberer).
+              if (_aspVorrat > 0)
+                _Schritt(
+                  schluessel: 'asp',
+                  bezeichnung:
+                      'Eingesetzte AsP (je 3 senken um 1; '
+                      'von ${widget.werte.state.currentAsp} AsP, werden '
+                      'abgebucht)',
+                  wert: _wirksameAsp,
+                  min: 0,
+                  max: _aspVorrat,
+                  onChanged: (w) => _aendere(() => _asp = w),
+                ),
               _Schritt(
                 schluessel: 'situativ',
                 bezeichnung: 'Weitere Erschwernis (negativ = leichter)',
@@ -393,7 +412,7 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
           eigenschaften: _eigenschaften(taetigkeit),
           gelaendekunde: gelaendekunde,
           ortskenntnis: ortskenntnis,
-          eingesetzteAsp: _asp,
+          eingesetzteAsp: _wirksameAsp,
           situativeErschwernis: _situativ,
           optionen: Map<String, String>.unmodifiable(optionen),
           daten: daten,
@@ -418,21 +437,10 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
       for (final code in taetigkeit.eigenschaften)
         ProbeTargetValue(
           label: attributeCodeKey(code),
-          value: _eigenschaftswert(probe, code),
+          value: readAttributeValue(probe, code),
         ),
     ];
   }
-
-  int _eigenschaftswert(Attributes werte, AttributeCode code) => switch (code) {
-    AttributeCode.mu => werte.mu,
-    AttributeCode.kl => werte.kl,
-    AttributeCode.inn => werte.inn,
-    AttributeCode.ch => werte.ch,
-    AttributeCode.ff => werte.ff,
-    AttributeCode.ge => werte.ge,
-    AttributeCode.ko => werte.ko,
-    AttributeCode.kk => werte.kk,
-  };
 
   Future<void> _wuerfeln(
     KartoWildnisTaetigkeit taetigkeit,
@@ -451,13 +459,31 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
           request: taetigkeit.baueProbe(kontext),
         );
         if (probe == null || !mounted) return;
-        setState(
-          () => _ergebnis = taetigkeit.auswerten(
+        // Die eingesetzten AsP sind verbraucht, sobald gewürfelt wurde. Der
+        // Schreibweg lädt den Zustand frisch und kürzt nur die AsP.
+        final asp = kontext.eingesetzteAsp;
+        if (asp > 0) {
+          await bruecke.gefechtsZustand(
+            context: context,
+            ref: ref,
+            heroId: widget.heroId,
+            was: 'Astralenergie (${taetigkeit.titel})',
+            aenderung: (aktuell) => aktuell.copyWith(
+              currentAsp: aktuell.currentAsp > asp
+                  ? aktuell.currentAsp - asp
+                  : 0,
+            ),
+          );
+          if (!mounted) return;
+        }
+        setState(() {
+          if (asp > 0) _asp = 0;
+          _ergebnis = taetigkeit.auswerten(
             kontext,
             probe,
             roller: RandomDiceRoller(),
-          ),
-        );
+          );
+        });
       });
     } finally {
       if (mounted) setState(() => _wuerfelt = false);

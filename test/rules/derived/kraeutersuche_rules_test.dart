@@ -433,7 +433,7 @@ void main() {
 
     group('beliebig', () {
       test('zieht die Suchschwierigkeit ab, bis nichts mehr passt', () {
-        // TaP* 10: A (3) passt (2*3 <= 10) -> Rest 7; wieder -> Rest 4; Ende.
+        // TaP* 10: A (3) passt (ab 5 TaP*) -> Rest 7; wieder -> Rest 4; Ende.
         final ergebnis = fuehreKraeutersucheDurch(
           _eingabe(),
           _katalog,
@@ -447,18 +447,25 @@ void main() {
       });
 
       test('wählt gewichtet nach Häufigkeit über den Würfler', () {
-        // TaP* 20: A (Gewicht 8) und B (Gewicht 2, 2*9 <= 20) stehen zur Wahl.
-        // Wurf 9 von 10 fällt auf B (Rest 11). Dann passt nur noch A (B: 18).
-        final roller = _Folge(<int>[5, 5, 5, 9, 1, 1]);
+        // TaP* 20: A (Gewicht 8) und B (Gewicht 2, ab 17 TaP*) stehen zur Wahl.
+        // Wurf 9 von 10 fällt auf B (Rest 11). Dann passt nur noch A (B: 17):
+        // Rest 8, 5, und bei 5 TaP* passt A ein drittes Mal (Rest 2).
+        final roller = _Folge(<int>[5, 5, 5, 9, 1, 1, 1]);
         final ergebnis = fuehreKraeutersucheDurch(
           _eingabe(taw: 20),
           _katalog,
           roller: roller,
         );
-        expect(roller.seiten, <int>[20, 20, 20, 10, 8, 8]);
+        expect(roller.seiten, <int>[20, 20, 20, 10, 8, 8, 8]);
         expect(ergebnis.funde.map((f) => f.bezeichnung), <String>['B', 'A']);
-        expect(ergebnis.funde.map((f) => f.grundmengen), <int>[1, 2]);
-        expect(ergebnis.restpunkte, 5);
+        expect(ergebnis.funde.map((f) => f.grundmengen), <int>[1, 3]);
+        expect(ergebnis.restpunkte, 2);
+      });
+
+      test('Beispiel Zoo Botanica: 17 TaP* finden Suchschwierigkeit 9', () {
+        expect(kraeuterMindestTapFuerFund(9), 17);
+        expect(kraeuterMindestTapFuerFund(3), 5);
+        expect(kraeuterMindestTapFuerFund(0), 1);
       });
 
       test('ohne passendes Kraut bleiben alle Punkte übrig', () {
@@ -606,7 +613,7 @@ void main() {
     test('Zeilen enthalten nötige TaP*, Fundchance und erwartete Mengen', () {
       final zeilen = kraeuterVorschau(_eingabe(taw: 30), _katalog);
       expect(zeilen.map((z) => z.kandidat.kraut.name), <String>['A', 'B']);
-      expect(zeilen.map((z) => z.benoetigteTapFuerFund), <int>[6, 18]);
+      expect(zeilen.map((z) => z.benoetigteTapFuerFund), <int>[5, 17]);
       for (final zeile in zeilen) {
         expect(zeile.wahrscheinlichkeitFund, inInclusiveRange(0, 1));
         expect(zeile.erwarteteGrundmengenGezielt, greaterThan(0));

@@ -304,9 +304,7 @@ class _Infotafel extends ConsumerWidget {
           id: ort.id,
           name: ort.name,
         );
-        final wiki = (details?.wikiUrl ?? '').isEmpty
-            ? null
-            : Uri.tryParse(details!.wikiUrl);
+        final wiki = sichererWikiLink(details?.wikiUrl ?? '');
         if (karte != null) {
           knoepfe.add(
             _TafelKnopf(

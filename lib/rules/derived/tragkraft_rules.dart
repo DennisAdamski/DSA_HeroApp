@@ -105,11 +105,20 @@ class TragkraftErgebnis {
     return ueber > 0 ? ueber : 0;
   }
 
+  /// Ob der Held keine Tragkraft hat (etwa KK 0 oder eine negative Quelle).
+  ///
+  /// Dann gibt es keine Bezugsgröße für „50 % der Tragkraft“; jede Last gilt
+  /// als zu schwer ([TragkraftStufe.absetzen]) und [zusatzBe] bleibt 0.
+  bool get ohneTragkraft => tragkraftGramm <= 0;
+
   /// Zusätzliche BE: ein Punkt je angefangene 50 % Last über der Tragkraft.
+  ///
+  /// 0 ohne Tragkraft ([ohneTragkraft]), weil sich dort keine BE herleiten
+  /// lässt.
   int get zusatzBe {
     final ueber = ueberschussGramm;
-    if (ueber == 0) return 0;
-    final halbe = tragkraftGramm <= 0 ? 1 : tragkraftGramm;
+    if (ueber == 0 || ohneTragkraft) return 0;
+    final halbe = tragkraftGramm;
     // Aufrunden von ueber / (halbe / 2) ohne Gleitkomma.
     return (ueber * 2 + halbe - 1) ~/ halbe;
   }
@@ -117,8 +126,11 @@ class TragkraftErgebnis {
   /// Einordnung der Last.
   TragkraftStufe get stufe {
     final tk = tragkraftGramm;
-    if (tk > 0 && lastGramm >= tk * 4) return TragkraftStufe.absetzen;
-    if (tk > 0 && lastGramm > tk * 2) return TragkraftStufe.verschnaufen;
+    if (tk <= 0) {
+      return lastGramm > 0 ? TragkraftStufe.absetzen : TragkraftStufe.frei;
+    }
+    if (lastGramm >= tk * 4) return TragkraftStufe.absetzen;
+    if (lastGramm > tk * 2) return TragkraftStufe.verschnaufen;
     if (lastGramm > tk) return TragkraftStufe.belastet;
     return TragkraftStufe.frei;
   }
@@ -133,6 +145,8 @@ class TragkraftErgebnis {
     TragkraftStufe.verschnaufen =>
       'BE +$zusatzBe; alle $konstitution Spielrunden eine Spielrunde '
           'rasten, kein Sprint.',
+    TragkraftStufe.absetzen when ohneTragkraft =>
+      'Keine Tragkraft: Last absetzen; weder Sprint noch Dauerlauf.',
     TragkraftStufe.absetzen =>
       'BE +$zusatzBe; Last alle ${konstitution * 5} Schritt absetzen und '
           'eine Minute verschnaufen, weder Sprint noch Dauerlauf.',
@@ -215,13 +229,13 @@ Herleitung herleiteTragkraft({
     );
   }
   for (final quelle in quellen) {
-    if (quelle.stein == 0) continue;
+    if (quelle.wirksamerStein == 0) continue;
     schritte.add(
       HerleitungsSchritt(
         bezeichnung: quelle.anzeigeName,
-        betrag: quelle.stein,
+        betrag: quelle.wirksamerStein,
         art: HerleitungsArt.modifikator,
-        quelle: '+${quelle.stein} Stein',
+        quelle: '+${quelle.wirksamerStein} Stein',
       ),
     );
   }
