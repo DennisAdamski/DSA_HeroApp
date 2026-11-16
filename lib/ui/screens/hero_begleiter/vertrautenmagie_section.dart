@@ -241,6 +241,7 @@ class _VertrautenmagieDetailDialog extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final visible = ref.watch(catalogContentVisibleProvider);
+    final schluessel = ref.watch(catalogKeyV3Provider).valueOrNull;
     final password = ref
         .watch(appSettingsProvider)
         .valueOrNull
@@ -250,11 +251,13 @@ class _VertrautenmagieDetailDialog extends ConsumerWidget {
       raw: ritual.wirkung,
       unlocked: visible,
       password: password,
+      schluessel: schluessel,
     );
     final resolvedTechnik = resolveProtectedValue(
       raw: ritual.technik,
       unlocked: visible,
       password: password,
+      schluessel: schluessel,
     );
 
     final probe = _ritualProbeText(ritual);

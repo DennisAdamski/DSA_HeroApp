@@ -38,6 +38,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_zauber_probe_rules
 import 'package:dsa_heldenverwaltung/catalog/reittier_ausbildung_katalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrauten_katalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrautenmagie_preset.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/ablauf_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';

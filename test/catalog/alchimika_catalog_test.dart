@@ -64,12 +64,19 @@ void main() {
     });
 
     test('Wirkungstexte bleiben kurze eigene Zusammenfassungen', () {
-      // Schutz gegen versehentlich kopierte Buchabsätze.
+      // Schutz gegen versehentlich kopierte Buchabsätze. Verschlüsselte
+      // Texte (Harte Regel 13) prüft `geschuetzte_langtexte_test.dart`;
+      // ihre Länge sagt über den Klartext nichts Genaues.
+      int laenge(Object? wert) {
+        final text = '${wert ?? ''}';
+        return text.startsWith('enc:') ? 0 : text.length;
+      }
+
       for (final mittel in roh) {
-        expect('${mittel['wirkung'] ?? ''}'.length, lessThan(260));
+        expect(laenge(mittel['wirkung']), lessThan(260));
         for (final q in (mittel['qualitaeten'] as List).cast<Map>()) {
           expect(
-            '${q['wirkung'] ?? ''}'.length,
+            laenge(q['wirkung']),
             lessThan(260),
             reason: '${mittel['id']} ${q['stufe']}',
           );

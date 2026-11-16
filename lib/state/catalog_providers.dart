@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/catalog/catalog_decrypt_runner.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_loader.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_catalog_resolver.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
+import 'package:dsa_heldenverwaltung/catalog/house_rule_pack_decrypt.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
@@ -122,7 +123,12 @@ final houseRulePackCatalogProvider = FutureProvider<HouseRulePackCatalog>((
     catalogVersion: baseData.version,
   );
   final imported = await repository.load(catalogVersion: baseData.version);
-  return HouseRulePackCatalog.merge(builtIn: builtIn, imported: imported);
+  // Eingebaute Pakete tragen geschützte Regeltexte (KAT-01).
+  final schluessel = await ref.watch(catalogKeyV3Provider.future);
+  return HouseRulePackCatalog.merge(
+    builtIn: entschluesseleHausregelPakete(builtIn, schluessel: schluessel),
+    imported: imported,
+  );
 });
 
 /// Aufgeloeste Laufzeitdaten aus Basis-Assets und konfliktfreien Customs.

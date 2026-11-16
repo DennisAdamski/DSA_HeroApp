@@ -65,9 +65,10 @@ int? wundenAusLep(Vitalwirkung? vorgabe, int lep) {
 String alchimikumBeschreibung(AlchimikumDef mittel, String? stufe) {
   final wirkung = alchimikumStufe(mittel, stufe);
   final zeilen = <String>[
-    if (mittel.wirkung.isNotEmpty) mittel.wirkung,
-    if (wirkung != null && wirkung.wirkung.isNotEmpty)
-      'Qualität ${wirkung.stufe}: ${wirkung.wirkung}',
+    // Geschützte Texte (Harte Regel 13) landen nie als Chiffre im Inventar.
+    if (mittel.wirkungText.isNotEmpty) mittel.wirkungText,
+    if (wirkung != null && wirkung.wirkungText.isNotEmpty)
+      'Qualität ${wirkung.stufe}: ${wirkung.wirkungText}',
     if (wirkung != null) ..._wurfZeilen(wirkung),
     if (mittel.haltbarkeit.isNotEmpty) 'Haltbarkeit: ${mittel.haltbarkeit}',
     if (mittel.preisText.isNotEmpty) 'Preis: ${mittel.preisText}',

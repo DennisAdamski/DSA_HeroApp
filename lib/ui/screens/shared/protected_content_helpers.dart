@@ -101,13 +101,21 @@ class _CachedProtectedValue<T> {
 /// - Nicht verschluesselt → Klartext zurueck.
 /// - Verschluesselt + [unlocked] + gueltiges [password] → entschluesselt.
 /// - Verschluesselt + gesperrt → `null`.
+///
+/// v3-Werte (`enc:3:`) brauchen den abgeleiteten Katalogschluessel
+/// [schluessel] (`catalogKeyV3Provider`); ohne ihn bleiben sie gesperrt.
 String? resolveProtectedValue({
   required String raw,
   required bool unlocked,
   required String? password,
+  CatalogKey? schluessel,
 }) {
   if (!isEncryptedValue(raw)) return raw;
   if (!unlocked || password == null || password.isEmpty) return null;
+  if (raw.startsWith('${encryptedPrefix}3:')) {
+    if (schluessel == null) return null;
+    return decryptCatalogValueV3(encryptedValue: raw, derivedKey: schluessel);
+  }
   return decryptCatalogValue(raw, password);
 }
 

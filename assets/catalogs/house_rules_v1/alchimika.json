@@ -4,7 +4,11 @@
     "name": "Heiltrank",
     "art": "trank",
     "gruppe": "Spagyrik",
-    "beleg": { "buch": "Wege der Alchimie (2. Auflage 2012)", "seite": "56", "chunkId": 2861 },
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "56",
+      "chunkId": 2861
+    },
     "brauProbe": 2,
     "analyseProbe": 1,
     "labor": "archaisches Labor",
@@ -12,14 +16,40 @@
     "verbreitung": "7",
     "preisSilber": 100,
     "preisText": "ab 10 D; bestätigte Qualitäten bis 2 D je LeP",
-    "wirkung": "Gibt dem Anwender sofort LeP zurück. Pro 7 zurückgewonnene LeP schließt sich eine Wunde (WdA S. 56; Basisregelwerk S. 197).",
+    "wirkung": "enc:3:lg4ZF0FRN5JIeUJT4+OZiDTUDskoGKr0BzaqL9p10fk6T0mPSQcZ3Jttx6WEM2oVUh/Jvs4tjjy+L8TIBEsTn8/d1vZyQBjBm3zUbT8Ra+GzIDve6Zss7plAlovpsDZgF98+Dd/oN0ucVbEn/c5Nsd6WYolHZCfQ3hgjLGVIys7kDRktjNLYH9zHgYQOSnzuhy7ALqfAur2uRg==",
     "qualitaeten": [
-      { "stufe": "A", "lepWurf": "1W6", "lepProWunde": 7, "wirkung": "Leichte Sinnestrübung: KL und GE −1 für 1 Stunde." },
-      { "stufe": "B", "lepWurf": "1W6+2", "lepProWunde": 7 },
-      { "stufe": "C", "lepWurf": "2W6+4", "lepProWunde": 7 },
-      { "stufe": "D", "lepWurf": "3W6+6", "lepProWunde": 7 },
-      { "stufe": "E", "lepWurf": "alle fehlenden LeP", "lepProWunde": 7 },
-      { "stufe": "F", "lepWurf": "3W6+25", "lepProWunde": 7, "wirkung": "LeP auch über das Maximum hinaus. Hebt eine Woche lang die Wirkung aller anderen alchimistisch-magischen Tränke, Gifte und Elixiere auf, auch weiterer Heiltränke." }
+      {
+        "stufe": "A",
+        "lepWurf": "1W6",
+        "lepProWunde": 7,
+        "wirkung": "enc:3:vmex4KwNR9WQyZxtdqsbD0hQL2pKogILt5sTXvmQpM+NQrC8z6gxGbL2/FT7n/NO8mgWcw4xfxh367J0CF5wCDpcYb+mVawVhkBoyduNCITZ"
+      },
+      {
+        "stufe": "B",
+        "lepWurf": "1W6+2",
+        "lepProWunde": 7
+      },
+      {
+        "stufe": "C",
+        "lepWurf": "2W6+4",
+        "lepProWunde": 7
+      },
+      {
+        "stufe": "D",
+        "lepWurf": "3W6+6",
+        "lepProWunde": 7
+      },
+      {
+        "stufe": "E",
+        "lepWurf": "alle fehlenden LeP",
+        "lepProWunde": 7
+      },
+      {
+        "stufe": "F",
+        "lepWurf": "3W6+25",
+        "lepProWunde": 7,
+        "wirkung": "enc:3:AgH30ym2rI2YANi+cz3wLfEMh1HafOxd0Z5g9PoTSqbFogO9fmORIJTXhlwYXS+LkNFEzmy0VZWx+SH6yUlcQQzCVMUiPdGst94iNZLLqDfmIBXBZkPxqf+MT27m8hSbVteGqCKR2lq9AI3Hf+FlTnG3Ta9xyyrS/GLurxpccagw5RmiLbZQ0ucUF1yph4vbkUWh6rIRVfGqxqakrhABctBsUyMjrBYxrVbon+z9Lcx8rtTtnWiWYlzeQWWlGRCcvQ=="
+      }
     ]
   },
   {
@@ -27,21 +57,48 @@
     "name": "Pastillen gegen Erschöpfung",
     "art": "pastille",
     "gruppe": "Spagyrik",
-    "beleg": { "buch": "Wege der Alchimie (2. Auflage 2012)", "seite": "56 f.", "chunkId": 2863 },
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "56 f.",
+      "chunkId": 2863
+    },
     "brauProbe": 4,
     "analyseProbe": 4,
     "labor": "Hexenküche",
     "haltbarkeit": "W3+7 Monate",
     "verbreitung": "6",
     "preisText": "etwa 10 D für drei Pastillen",
-    "wirkung": "Zusätzliche AuP-Regeneration und Abbau von Erschöpfung, bei höheren Qualitäten über mehrere Spielrunden (SR). Der Wurf gilt je Spielrunde.",
+    "wirkung": "enc:3:/Qrs+yE4O7KIUFFrbs5XrvsqVUxha4KVc5akqO0Y406b2Cf4Hc30ZkHvRP4cMVvqt01s/7s6DUeeroFG2VWSVR5dS+6eDuwT6nGwNu/r76iDmUY6B7f/XmnHX05Xa6Fss+Y3wic1IAUJjCZ0o3wkQZzmZMUIpQKp8IcI3YtaPXd5kmA9TDS43MCUGovMcmdI/mJcBfD+zq7bOe2VaehOrcbYn+MSnb+08VCf",
     "qualitaeten": [
-      { "stufe": "A", "wirkung": "Nur ein gewisses Wohlbefinden, keine Zusatzwirkung." },
-      { "stufe": "B", "aupWurf": "1W6", "wirkung": "Zusätzliche AuP in der nächsten Spielrunde." },
-      { "stufe": "C", "aupWurf": "1W6", "wirkung": "1W6 SR lang je SR zusätzliche AuP und 1 Punkt Erschöpfung weniger." },
-      { "stufe": "D", "aupWurf": "1W6", "wirkung": "1W6+2 SR lang je SR zusätzliche AuP und 1 Punkt Erschöpfung weniger." },
-      { "stufe": "E", "aupWurf": "alle fehlenden AuP", "wirkung": "Innerhalb von 7 SR sind alle AuP zurück und die Erschöpfung ist abgebaut." },
-      { "stufe": "F", "aupWurf": "1W6+2", "wirkung": "1W6+6 SR lang je SR zusätzliche AuP (auch über das Maximum) und 3 Punkte Erschöpfung weniger. Am nächsten Tag kosten alle Aktionen doppelte AuP, die Erschöpfung steigt doppelt so schnell." }
+      {
+        "stufe": "A",
+        "wirkung": "enc:3:pRX2iRzx9OeS4AcDsvNVOTEWLr9zfXYflxwsJIwAylsFsylnpXE5aX1qRbv3+p5h4xPicQ5vKI6U/MNsbLkV03w6sGRvnMY/SVItxep53Q=="
+      },
+      {
+        "stufe": "B",
+        "aupWurf": "1W6",
+        "wirkung": "enc:3:ns6gyoL3kwo+zACAwWeY4HswSo3Q6rrHYEqx5oXOj7ag7MomoTRm0yj7qqbsfl+kIr68ifyqhhl2zCnyMQmmBxQa39xjpJQAzQ=="
+      },
+      {
+        "stufe": "C",
+        "aupWurf": "1W6",
+        "wirkung": "enc:3:BzMXsMyp1U/lZP56iWVOgw2OdrmyCZdlRt6H4EyW605wclt0Qtu0Sct6U+fqPRIE0wkhHkMr7cAJsCtCFlYsDP83fGQB/IZZDlP3oNODFhgtHEaKJ+VMy99jeI6q55Nn"
+      },
+      {
+        "stufe": "D",
+        "aupWurf": "1W6",
+        "wirkung": "enc:3:suRa3vXbDxxnI7XcwQa6CZRUdSNZR+N+wRptKg6f/hmIVuL20Xb8lKG1UJCCtEL9yutZ0DEv88gLMsQE1RWpniz+SOqii68qpfSMRBJS9u9vrdoW+r+vYoz+ADJ4oCZ8/PY="
+      },
+      {
+        "stufe": "E",
+        "aupWurf": "alle fehlenden AuP",
+        "wirkung": "enc:3:gMnXN3o1gfR9idf5/Bhx5rebjnhgYXOskqXTd13ugTvgikUy7N8PTuh+3XSd+l/upmpo8pSQg/R4CWcUSWLSYqUDdjizgyPThK3JrKtGQt3f2VRD00hvajJxKjNEV55mRwol8SuyCw=="
+      },
+      {
+        "stufe": "F",
+        "aupWurf": "1W6+2",
+        "wirkung": "enc:3:biJGyvDgWV+tvf0epdsYl4MmFl1vL9IKesPxnejoWdZ3FU7JeF79yp8eZnBylwzQSjYt6Kya0ZnV5ta1BMDw1/SnS2NPI6TVGd9hIiKLnVw4UTrdb79P05ZM7wRvMb494HNR4xsaT8QvPYN2dbIBSgv/NEJssNLja5xKnlQEh4xFGljM83lm66QkALpVw1lZhJiA52phkW6Kuk1vcK8f2yEk/q46jv3PBifhMmMMQVmVUMH4glIxuqqHyY6d+UNmPc0WaVbcLfQxp3kcjc0FOYzFoSSuSpiiC0arNQ=="
+      }
     ]
   },
   {
@@ -49,7 +106,11 @@
     "name": "Restorarium",
     "art": "salbe",
     "gruppe": "Spagyrik",
-    "beleg": { "buch": "Wege der Alchimie (2. Auflage 2012)", "seite": "58", "chunkId": 2866 },
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "58",
+      "chunkId": 2866
+    },
     "brauProbe": 6,
     "analyseProbe": 3,
     "labor": "Alchimistenlabor",
@@ -57,14 +118,37 @@
     "verbreitung": "3",
     "preisSilber": 1200,
     "preisText": "etwa 120 D",
-    "wirkung": "Hochwirksame Heilsalbe: heilt Wunden körperteilweise; die LeP sind nur eine Nebenwirkung und schließen keine weiteren Wunden.",
+    "wirkung": "enc:3:R4domGM1j0aSxCI8Mlx3M85GmVfSWXyNuRtGXa5UNjCua/zBlRk1seFnICnhZmAh5A6EN3XQMmpEGcd9VCcv4P4GtrohB320r0BFxlnXIwTypFBhHlpu1gpD+ZbWJhut6d9ewkiNhrUkbHBNPsMW39tfbFheM4DftNOCbu0wOXPLK+zMU/8fIxJeCI7Y1ELqgdO2ha3eAo8aJbI=",
     "qualitaeten": [
-      { "stufe": "A", "wirkung": "Die nächste KO-Probe zur Wundheilung ist um 3 erleichtert. 1W6 Sikaryan kehren in der nächsten Ruhephase zurück." },
-      { "stufe": "B", "lepWurf": "2W6+3", "wirkung": "Körperteile mit einfachen Wunden heilen. 1W6 Sikaryan in den nächsten 2 Ruhephasen." },
-      { "stufe": "C", "lepWurf": "3W6+6", "wirkung": "Körperteile mit zweifachen Wunden heilen. 1W6 Sikaryan in den nächsten 3 Ruhephasen." },
-      { "stufe": "D", "lepWurf": "4W6+9", "wirkung": "Körperteile mit dreifachen Wunden heilen, frisch abgetrennte Gliedmaßen wachsen nach. 1W6 Sikaryan in den nächsten 4 Ruhephasen." },
-      { "stufe": "E", "lepWurf": "5W6+12", "wirkung": "Alle Wunden heilen, frisch abgetrennte Gliedmaßen wachsen nach. Übersteigen die LeP das Maximum, gibt es 1 permanenten LeP. Sikaryan wird vollständig regeneriert." },
-      { "stufe": "F", "lepWurf": "5W6+12", "wirkung": "Wie E, zusätzlich wachsen ältere Amputationen nach." }
+      {
+        "stufe": "A",
+        "wirkung": "enc:3:+W809263/3nM0CZFvALyYp15uf4mNA7J9ZSWuCafDtswv8IxrasXkt7CK+MMq6aZ7eq5AK1eC13wh5J6MBatKUUpwfR7opfIx+/2h1+/E6FoIGPt0ALQKs9kRCAOTrVLeBRwYm5I2QaclqYtOgrsHTsxrzplOFaA72poq+I0mnQV24wIaF9Oq6+DI4lF8Gc="
+      },
+      {
+        "stufe": "B",
+        "lepWurf": "2W6+3",
+        "wirkung": "enc:3:iG8XLUWpbRRXucaFr7i+0wvzMiQezU/j1uOK6oRpD38aaijeof6Jtl7fNw3AyvXujZnC7cdvpnGHE1Mf6jbS61Jie+fdwXKsV29R4N9ChuZZ5L+kDJx4sgyvSo+xzb3s5xb1kGJWoe2ThyuYgREubkA="
+      },
+      {
+        "stufe": "C",
+        "lepWurf": "3W6+6",
+        "wirkung": "enc:3:OsUadbJme15uyk8lurhSTfefji/Q+vxs0iWsfHSrqWb58hS+RGZJKaZ0wmpsdNqWAJitIfJ6bWGUI0YOgmj07HL6c5BXBJeMI23RaZYU4tElXg8YHA78QEMMbHR9OaVdgMvtS3FMPTKbSpPOTesFsFbE"
+      },
+      {
+        "stufe": "D",
+        "lepWurf": "4W6+9",
+        "wirkung": "enc:3:ovHQD1sAH789mxWMFvlCHj2P4sMLUBUepO/BY6qlDvDqSvz6WLwExRGVEjFiyEwASIAGMccixzo6fqFu3L6gC4ADUkk1WjnVUP/VpW1IsLtQJoQkt8KZyxQu3UGJRmHxzzZ5MQEc1oEQl3FGtfWIattyJ7AGLlqJGtVuUSCxP6CLaWkj85DWXYFiCpN86zLju9B1NI0GpQxkUjmP3DvM"
+      },
+      {
+        "stufe": "E",
+        "lepWurf": "5W6+12",
+        "wirkung": "enc:3:cuWcSGWdYU+ymtBDycVlVtBelTwBfSh2Lnc4hYHQTmIPieOXIXzqWmHXp4KwObuIpsi3PhN9jc3MWd2IIuDpxyDOKq0w85BM0tb3MHo8Glycm9dEL9Sa5IPjIl1BnoC/Lt/peJMRctkhvMMtRd/PgU3Hg+NleAYzabi1vabQuyG4Vulig++XGJJHroNTGiZRhykwcjqkDY4rUIDb1UK73Z+QDsdgucmCK8/MAmt48zV5l7ZqQb8btLR/9zY/w+kAow=="
+      },
+      {
+        "stufe": "F",
+        "lepWurf": "5W6+12",
+        "wirkung": "enc:3:D/fLIfdwmwXQzUoIvD7oEgUIFyucegFTQHtKLJwgkVnX9Qj0jFa9gOaaJnfqZ56P8Zr0JKZ8+UDkU0+RA03GEULdmSpDg92VR2jF6s4EtTHV"
+      }
     ]
   },
   {
@@ -72,7 +156,11 @@
     "name": "Schlaftrunk",
     "art": "trank",
     "gruppe": "Spagyrik",
-    "beleg": { "buch": "Wege der Alchimie (2. Auflage 2012)", "seite": "59", "chunkId": 2867 },
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "59",
+      "chunkId": 2867
+    },
     "brauProbe": 3,
     "analyseProbe": 1,
     "labor": "archaisches Labor",
@@ -80,14 +168,32 @@
     "verbreitung": "5",
     "preisSilber": 200,
     "preisText": "um 20 D",
-    "wirkung": "Verbessert die Regeneration in der Schlafphase. Wirkt nur über die Nacht, nicht sofort.",
+    "wirkung": "enc:3:2HW49KOYb59joEgSPPniO4Av62isBv0omCArIjefHA7DOM4/yMOkLnOK8OtT5ChdTyL9zqpzjJRsfTul6CUI9cJrI9uFjtPbb7+cwz6mwekiPbYvK4x3RfeTaWmp5uYXdGJ717sd/zYDohdPS8K3J3rgp/c=",
     "qualitaeten": [
-      { "stufe": "A", "wirkung": "Erholsamer Tiefschlaf: Proben +3 gegen Störungen, aber auch gegen Aufweckversuche." },
-      { "stufe": "B", "wirkung": "1 zusätzlicher LeP und AsP in der Schlafphase." },
-      { "stufe": "C", "wirkung": "2 zusätzliche LeP und AsP in der Schlafphase." },
-      { "stufe": "D", "wirkung": "Verdoppelt die Regeneration von LeP und AsP und den Abbau von Erschöpfung." },
-      { "stufe": "E", "wirkung": "Verdreifacht die Regeneration von LeP und AsP und den Abbau von Erschöpfung." },
-      { "stufe": "F", "wirkung": "Alle verlorenen LeP kehren über Nacht zurück, die Erschöpfung ist abgebaut, 4W6 AsP kehren zurück. In den nächsten 1W6 Nächten ist keine erholsame Rast möglich (keine Regeneration)." }
+      {
+        "stufe": "A",
+        "wirkung": "enc:3:bfSjHN1GWZE6sYW4ALctbsu96S7hp0KDXu2kAyLY/PvcZu3x+3az0vzgUWf71YwhJgo0qvRD+xEUNcLZytbzmxKnRPYksUYmr3c8H2omplKzm85i+bahGC3mcbSZbIGCSUyJRwdwYNEFlKaGZGIq"
+      },
+      {
+        "stufe": "B",
+        "wirkung": "enc:3:pgUfK8u3Rv4tIT0/T8V2P80TihdK6L59TswZjEJh2jEvtMBSQuiR+vcA3XgMp+tov2Q0xorosnUUNdZz+dyoAq8bYQKa+35UZCFB"
+      },
+      {
+        "stufe": "C",
+        "wirkung": "enc:3:C2cgrnOCbUVWNG6TEQoDRniXh9EFkMPKqvvHBGg5aIZuwLoa8u1Hmly90vrZF3bVPGSJTdyjT8XImmhBjjq55Ud0N5Ir5ko5Kv0="
+      },
+      {
+        "stufe": "D",
+        "wirkung": "enc:3:dXByh4ElxZvRrc1yX/LwuJ67KCniHNjtojuGb2IVLXYZa0r/1sGDAUE+RYu4AqlqR0DWBiex458PSXmWJZCD38bhLrnl0JWQQuT2uDHN6ZseJyz92yHESbuteAoyat6P2h2fCIHy6A=="
+      },
+      {
+        "stufe": "E",
+        "wirkung": "enc:3:q72dTZbAHwq0eTgYHxsg2+N9MwnnUizs6vhJwnlxjPGiBNZrIPY8anwqi4nIWq1Pj+19fENyCjO4LgIJtsYRq8X9fycbBr6B3xnv5UUBtVb/KTGxCftctIyN93rLqjZnFCdGARfkeUsK"
+      },
+      {
+        "stufe": "F",
+        "wirkung": "enc:3:Q0ExJINXsKSwhWVF+FrKYOeb4faXMslKjqFeZTEvJSNK1SHPHFw2iQ7hYjBiQpwSZpiyICJ9fY8AWEa5s05VXHnvHDovGG2mabY0O0H1NyV3TPQRpivSe+iEXZi2Xp3xTGCqq4qyuG2ehuyHB6AaLXqwsSEZCdHLgqM4Fa3MHbBaOw76nSZGZpOI6uZcSje8PNrAixU+0Nqf2ev1JTEbEzvyK3uG4IXBCW+S+leRFR35rTDdy2Df3DKRP1z+eOHE0Zns+u5S6K+v7yNlCSgziwclbekqlRsi"
+      }
     ]
   },
   {
@@ -95,7 +201,11 @@
     "name": "Antidot",
     "art": "trank",
     "gruppe": "Spagyrik",
-    "beleg": { "buch": "Wege der Alchimie (2. Auflage 2012)", "seite": "55", "chunkId": 2859 },
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "55",
+      "chunkId": 2859
+    },
     "brauProbe": 5,
     "analyseProbe": 4,
     "labor": "Hexenküche",
@@ -103,14 +213,32 @@
     "verbreitung": "5",
     "preisSilber": 500,
     "preisText": "etwa 50 D; bestätigte Qualität 10 bis 200 D",
-    "wirkung": "Gegengift: stoppt die Wirkung von Giften bis zu einer Stufe, die von der Qualität abhängt. Wirkt nicht gegen Bannstaub.",
+    "wirkung": "enc:3:sRGc4nsga2m6aJyH3yCCox3C34AvR7WmPu1LJ8Y9cDNGM8FbThAJEWYlWr7IQdEd/wqs4g7f1NFuw0a0BdlKnbz5p/yQplQc54IKR02ZCdcmdk1BB8PyIIs9+zXuRljR2pPVwFsW+e01qXGulhly0/xSsHAFKO+TwT/LuiGhQ+HykUOsmk75V0Oke5rhZDaRZSvsWCw=",
     "qualitaeten": [
-      { "stufe": "A", "wirkung": "Keine direkte Wirkung, bildet aber Abwehrkräfte gegen Schwarzen Lotos." },
-      { "stufe": "B", "wirkung": "Stoppt Gifte bis zur 2. Stufe." },
-      { "stufe": "C", "wirkung": "Stoppt Gifte bis zur 4. Stufe." },
-      { "stufe": "D", "wirkung": "Stoppt Gifte bis zur 9. Stufe." },
-      { "stufe": "E", "wirkung": "Stoppt Gifte bis zur 15. Stufe." },
-      { "stufe": "F", "wirkung": "Stoppt die Wirkung aller Gifte innerhalb von 1W6 KR." }
+      {
+        "stufe": "A",
+        "wirkung": "enc:3:LkywtZPG1RW2RXJNa5JdJ+hwhp/hPQSQHWKwjd8llijecJL58iK7pR1TQqnbsZzGbKU8jkssVGkmB0j353m5d+jw3jQQmZDfgPM0CYTQfUImaIrDF0+zpvpny9Lxhr1BW/iw"
+      },
+      {
+        "stufe": "B",
+        "wirkung": "enc:3:u2BnaZ0cKanxkRkhosbZ+wS9q4ZJB1huoiFOk2fmdvV5aLTCmmIhXa5mHryz5lG6te+PhdwRT0xyIQ=="
+      },
+      {
+        "stufe": "C",
+        "wirkung": "enc:3:djO0JwDkc8mv6wpns2o8V5taXmH2s2UeGtZE5mU3qThl30HFFhHZ5FcInnNCgY6VImUTRHQmKzRZwg=="
+      },
+      {
+        "stufe": "D",
+        "wirkung": "enc:3:ufTGmBsmHZA8MZ8lhmGccUC8uBEXc0QgLHbH2ruP5GgiArE0E+lPBUZtB3I7I1Yu3hGrn+NiK9Hh9g=="
+      },
+      {
+        "stufe": "E",
+        "wirkung": "enc:3:LgC8HyLKtoMTXHxnCgJtrbRVGWin7YkJfc4cg7K4HQ7XNB09GxYnC5JgbpzDCB26Fw+8guti9B05CTA="
+      },
+      {
+        "stufe": "F",
+        "wirkung": "enc:3:1Ei/pMZ8s8eRMVZJdaylMpypaMyxCAsPrzG66VDObV+ROnY9/FS3BsaeFNYUzb+v868CYfnKwyAMn8pXFZQyhrMSVPzxG0weAtve0cFt6yo="
+      }
     ]
   },
   {
@@ -118,13 +246,17 @@
     "name": "Wundpulver",
     "art": "pulver",
     "gruppe": "Spagyrik",
-    "beleg": { "buch": "Stäbe, Ringe, Dschinnenlampen (2011)", "seite": "107", "chunkId": 2729 },
+    "beleg": {
+      "buch": "Stäbe, Ringe, Dschinnenlampen (2011)",
+      "seite": "107",
+      "chunkId": 2729
+    },
     "brauProbe": 0,
     "analyseProbe": 2,
     "haltbarkeit": "trocken mehrere Tage bis wenige Monate",
     "verbreitung": "verbreitet",
     "preisText": "etwa 1 bis 5 S je Portion",
-    "wirkung": "Stoppt die Blutung. Verletzungen bis 3 SP verheilen binnen einer Nacht, bei größeren wird nur der Blutfluss eingedämmt. Keine Qualitätsstufen und kein Sofortgewinn an LeP.",
+    "wirkung": "enc:3:5R+Bu682N73rRBH2Mv7Zb3VVpva0QZJ+ZwSd3UsbNouSMb24EzPvL/gEFuSVm3rj3wlPiUbr25L/20TZ7F7+g8nP93N9Gi8coB+S6Wi0Hnlb0+z/r3avDDo4tgC1c85gCH5C+Hlmr662qIKT3uXiPxQen6TLyZmjqPQavpPHWT2zdN8+hQNEoSUyPWdcuNiEd4qG+9FqO5mPkATS4HwfarRQBaBJ5vqze70WUdDhKIKfrgjL3x+o6+jIA8PbW8gB5t+FcAoWAPd92Vk=",
     "qualitaeten": []
   },
   {
@@ -132,7 +264,11 @@
     "name": "Charismaelixier",
     "art": "elixier",
     "gruppe": "Virtutica",
-    "beleg": { "buch": "Wege der Alchimie (2. Auflage 2012)", "seite": "39", "chunkId": 2827 },
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "39",
+      "chunkId": 2827
+    },
     "brauProbe": 5,
     "analyseProbe": 4,
     "labor": "Hexenküche",
@@ -140,14 +276,82 @@
     "verbreitung": "5",
     "preisSilber": 450,
     "preisText": "um 45 D",
-    "wirkung": "Steigert das Charisma; Nebenwirkung bei Qualität A. Ab D verändert sich das Aussehen (Meisterhinweis).",
+    "wirkung": "enc:3:JFxUeAnvbjYDciTdwtYpmaTmn+fEfw6ygd0+eXFpCW19BYebWO0VTiLVRDnHGlUX3P12OUh/+s5sJTSwXMgjHmxxGpvgjB/RHyN4AakEXSTw8bUSWIzU9Ka36rNGOLQrHKSG0EHkqk9izCcbXuBNn4QDMrjEGxCXTB6P7esQutthN3n7",
     "qualitaeten": [
-      { "stufe": "A", "eigenschaften": [{ "eigenschaft": "CH", "wert": 1, "dauer": 1, "einheit": "spielrunden" }, { "eigenschaft": "KL", "wert": -1, "dauer": 1, "einheit": "stunden" }], "wirkung": "Leicht triebhaftes Verhalten: KL −1 für 1 Stunde." },
-      { "stufe": "B", "eigenschaften": [{ "eigenschaft": "CH", "wert": 2, "dauer": 2, "einheit": "spielrunden" }] },
-      { "stufe": "C", "eigenschaften": [{ "eigenschaft": "CH", "wert": 3, "dauer": 3, "einheit": "spielrunden" }] },
-      { "stufe": "D", "eigenschaften": [{ "eigenschaft": "CH", "wert": 7, "dauer": 7, "einheit": "spielrunden" }] },
-      { "stufe": "E", "eigenschaften": [{ "eigenschaft": "CH", "wert": 2, "dauer": 1, "einheit": "tage" }] },
-      { "stufe": "F", "eigenschaften": [{ "eigenschaft": "CH", "wert": 5, "dauer": 1, "einheit": "tage" }], "wirkung": "Alle anderen geistigen Eigenschaften −2 für die Wirkungsdauer (nicht berechnet)." }
+      {
+        "stufe": "A",
+        "eigenschaften": [
+          {
+            "eigenschaft": "CH",
+            "wert": 1,
+            "dauer": 1,
+            "einheit": "spielrunden"
+          },
+          {
+            "eigenschaft": "KL",
+            "wert": -1,
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ],
+        "wirkung": "enc:3:2CGwWj1QpiVsakumL1K65zUzsZPLL7igCtw6xFebV2ZZHAeUMoXHtSAWgvkSecBEH2vfTfgUrjBf6Zp5gF1uXxMhXQuSl3rX9BBc57id1Ns="
+      },
+      {
+        "stufe": "B",
+        "eigenschaften": [
+          {
+            "eigenschaft": "CH",
+            "wert": 2,
+            "dauer": 2,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "C",
+        "eigenschaften": [
+          {
+            "eigenschaft": "CH",
+            "wert": 3,
+            "dauer": 3,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "D",
+        "eigenschaften": [
+          {
+            "eigenschaft": "CH",
+            "wert": 7,
+            "dauer": 7,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "E",
+        "eigenschaften": [
+          {
+            "eigenschaft": "CH",
+            "wert": 2,
+            "dauer": 1,
+            "einheit": "tage"
+          }
+        ]
+      },
+      {
+        "stufe": "F",
+        "eigenschaften": [
+          {
+            "eigenschaft": "CH",
+            "wert": 5,
+            "dauer": 1,
+            "einheit": "tage"
+          }
+        ],
+        "wirkung": "enc:3:O03nu8/nLf23zYPwjqZC1bwOGM6GidAqEs8wzzG6q+Mtl2wg98OqLw6B/fsGBRZAyA3a6rF4R38oBUB9/PZh186FeS4u/bIkq/17JXUMZpynb+koDkj/gGiu+snx5J1/VTIqizfi1X+OMf3kc4/0"
+      }
     ]
   },
   {
@@ -155,7 +359,11 @@
     "name": "Fingerfertigkeitselixier",
     "art": "elixier",
     "gruppe": "Virtutica",
-    "beleg": { "buch": "Wege der Alchimie (2. Auflage 2012)", "seite": "40", "chunkId": 2828 },
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "40",
+      "chunkId": 2828
+    },
     "brauProbe": 6,
     "analyseProbe": 5,
     "labor": "archaisches Labor",
@@ -163,14 +371,89 @@
     "verbreitung": "4",
     "preisSilber": 300,
     "preisText": "um 30 D",
-    "wirkung": "Steigert die Fingerfertigkeit; Nebenwirkung bei A. Zweite Einnahme binnen zweier Tage: bis auf FF −1 für 1 Stunde wirkungslos.",
+    "wirkung": "enc:3:PPsJCGfUCVl8rdxlgRUWPuuQssnStg1EDm0pahdtf3Hi19X970GxLzvxc+1rPxEeUCefD5dHdfJmu/CiTYinvf9eCBfN2NuDJ9do8wZ3K6UJaLU8HbJ+cmcWx3WDDzBiLLLkW/abEAnhuPKLTCqtm/y0oQfjnKtYtVxtlDnpBjGcQca7t8IFSArm1BAw54VAUjFbFSWwpUpVd3bi8A==",
     "qualitaeten": [
-      { "stufe": "A", "eigenschaften": [{ "eigenschaft": "FF", "wert": 1, "dauer": 1, "einheit": "spielrunden" }, { "eigenschaft": "MU", "wert": -1, "dauer": 1, "einheit": "stunden" }], "wirkung": "Erhöhte Schreckhaftigkeit: MU −1 für 1 Stunde." },
-      { "stufe": "B", "eigenschaften": [{ "eigenschaft": "FF", "wert": 2, "dauer": 2, "einheit": "spielrunden" }] },
-      { "stufe": "C", "eigenschaften": [{ "eigenschaft": "FF", "wert": 3, "dauer": 3, "einheit": "spielrunden" }] },
-      { "stufe": "D", "eigenschaften": [{ "eigenschaft": "FF", "wert": 7, "dauer": 7, "einheit": "spielrunden" }] },
-      { "stufe": "E", "eigenschaften": [{ "eigenschaft": "FF", "wert": 15, "dauer": 1, "einheit": "spielrunden" }, { "eigenschaft": "KK", "wert": -7, "dauer": 3, "einheit": "spielrunden" }], "wirkung": "Wundermittel für Schlösser, aber die Dietriche sind zu schwer: KK −7 für 3 SR." },
-      { "stufe": "F", "eigenschaften": [{ "eigenschaft": "FF", "wert": 7, "dauer": 7, "einheit": "stunden" }], "wirkung": "Kleptomanicum: Für die Wirkungsdauer gilt der Nachteil Kleptomanie 7 (nicht berechnet)." }
+      {
+        "stufe": "A",
+        "eigenschaften": [
+          {
+            "eigenschaft": "FF",
+            "wert": 1,
+            "dauer": 1,
+            "einheit": "spielrunden"
+          },
+          {
+            "eigenschaft": "MU",
+            "wert": -1,
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ],
+        "wirkung": "enc:3:4gKZq5n62opzm6WFJdTGcyWNszSjPSrMhO0bHldkRz6zHFo4CzNjcKACywpR90Y00HbKi/dlwKp6Lleq4lq3YhH9FN5B9ZadgVx7luaF"
+      },
+      {
+        "stufe": "B",
+        "eigenschaften": [
+          {
+            "eigenschaft": "FF",
+            "wert": 2,
+            "dauer": 2,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "C",
+        "eigenschaften": [
+          {
+            "eigenschaft": "FF",
+            "wert": 3,
+            "dauer": 3,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "D",
+        "eigenschaften": [
+          {
+            "eigenschaft": "FF",
+            "wert": 7,
+            "dauer": 7,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "E",
+        "eigenschaften": [
+          {
+            "eigenschaft": "FF",
+            "wert": 15,
+            "dauer": 1,
+            "einheit": "spielrunden"
+          },
+          {
+            "eigenschaft": "KK",
+            "wert": -7,
+            "dauer": 3,
+            "einheit": "spielrunden"
+          }
+        ],
+        "wirkung": "enc:3:2kRWz0PEQ2U/53vcgknq3/uN0Gsw5e3uNNypUtlQCKG7wsyPs7piB4Gp4OkU5Q9KN2yMZGfmWRKv3/Bj+QuzwSrcEQf350OzsJmj4sAy/kGzCNlPxs0HJsluyHsWud6aHfDfn6LtAuiyq7SJDKAH"
+      },
+      {
+        "stufe": "F",
+        "eigenschaften": [
+          {
+            "eigenschaft": "FF",
+            "wert": 7,
+            "dauer": 7,
+            "einheit": "stunden"
+          }
+        ],
+        "wirkung": "enc:3:lFaiZAVeXlSpyx+s1TYkWc5mJuXzFF+n4tvM7QPX2xb51TxjB+uEL8aKRYPUihUN5SBbvBLJV0X9bpALdU1zxptUs43PPpsOxzZN2o+MJ9LJdVorZ/EBJnvnAp1pULXJm6Mwcvbl54OWz2fRihIFBB5oIn4="
+      }
     ]
   },
   {
@@ -178,7 +461,11 @@
     "name": "Gewandtheitselixier",
     "art": "elixier",
     "gruppe": "Virtutica",
-    "beleg": { "buch": "Wege der Alchimie (2. Auflage 2012)", "seite": "40", "chunkId": 2829 },
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "40",
+      "chunkId": 2829
+    },
     "brauProbe": 6,
     "analyseProbe": 7,
     "labor": "Hexenküche",
@@ -186,14 +473,82 @@
     "verbreitung": "5",
     "preisSilber": 500,
     "preisText": "um 50 D",
-    "wirkung": "Steigert die Gewandtheit; Nebenwirkung bei A. Häufige Anwendung kann zur Mibelsucht führen (Meisterhinweis).",
+    "wirkung": "enc:3:hGIazea9tz6Br0nET/Bmyg33hYdhDDtkZhp/5Rr4A49KHaoYA7FU3ZeEOM0glSlZctk60GqcJ7k3D8ej26KoOneyM4E78LgXOnZWCVgAB6+wq3MFU9HEcYUmU1/Xt94tMBIIoRpcjxeEZv0MeNNiWo+uSpRp0vx6Af7EjGvdmNf/ofVyDrhqQUkz",
     "qualitaeten": [
-      { "stufe": "A", "eigenschaften": [{ "eigenschaft": "GE", "wert": 1, "dauer": 1, "einheit": "spielrunden" }, { "eigenschaft": "FF", "wert": -1, "dauer": 1, "einheit": "stunden" }], "wirkung": "Leichte feinmotorische Störungen: FF −1 für 1 Stunde." },
-      { "stufe": "B", "eigenschaften": [{ "eigenschaft": "GE", "wert": 2, "dauer": 2, "einheit": "spielrunden" }] },
-      { "stufe": "C", "eigenschaften": [{ "eigenschaft": "GE", "wert": 3, "dauer": 3, "einheit": "spielrunden" }] },
-      { "stufe": "D", "eigenschaften": [{ "eigenschaft": "GE", "wert": 7, "dauer": 7, "einheit": "spielrunden" }] },
-      { "stufe": "E", "eigenschaften": [{ "eigenschaft": "GE", "wert": 3, "dauer": 12, "einheit": "stunden" }] },
-      { "stufe": "F", "eigenschaften": [{ "eigenschaft": "GE", "wert": 12, "dauer": 3, "einheit": "spielrunden" }], "wirkung": "Danach ein halber Tag zitternder Glieder: GE −7, FF −2, KK −2 (nicht berechnet)." }
+      {
+        "stufe": "A",
+        "eigenschaften": [
+          {
+            "eigenschaft": "GE",
+            "wert": 1,
+            "dauer": 1,
+            "einheit": "spielrunden"
+          },
+          {
+            "eigenschaft": "FF",
+            "wert": -1,
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ],
+        "wirkung": "enc:3:h6hL7Rnx9EPPHmfviTmfyxO/YyJuLnB5vyn7SF5/zub3cF19DMHoa8jwYbhobOmrRXC2oPbGeMSS1rYoxBBEmZtT86cxIuuwKN54aBLnjHmaM3kFqw=="
+      },
+      {
+        "stufe": "B",
+        "eigenschaften": [
+          {
+            "eigenschaft": "GE",
+            "wert": 2,
+            "dauer": 2,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "C",
+        "eigenschaften": [
+          {
+            "eigenschaft": "GE",
+            "wert": 3,
+            "dauer": 3,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "D",
+        "eigenschaften": [
+          {
+            "eigenschaft": "GE",
+            "wert": 7,
+            "dauer": 7,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "E",
+        "eigenschaften": [
+          {
+            "eigenschaft": "GE",
+            "wert": 3,
+            "dauer": 12,
+            "einheit": "stunden"
+          }
+        ]
+      },
+      {
+        "stufe": "F",
+        "eigenschaften": [
+          {
+            "eigenschaft": "GE",
+            "wert": 12,
+            "dauer": 3,
+            "einheit": "spielrunden"
+          }
+        ],
+        "wirkung": "enc:3:QmAdS6LNKSjdMybUHJ3d7X21YxmfEs8dA+ZAQltQPsH06RE+fawDyZ1iJhrno1O+Xl+952CIWlhk57xgna2Lpem1BrebTtWWPLjn7jpoMf/W4UTydSAyFDBguyfx1cVZ2GKI56I3m5pZY/guSlXds9uL"
+      }
     ]
   },
   {
@@ -201,7 +556,11 @@
     "name": "Intuitionselixier",
     "art": "elixier",
     "gruppe": "Virtutica",
-    "beleg": { "buch": "Wege der Alchimie (2. Auflage 2012)", "seite": "41", "chunkId": 2830 },
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "41",
+      "chunkId": 2830
+    },
     "brauProbe": 2,
     "analyseProbe": 5,
     "labor": "Hexenküche",
@@ -209,14 +568,82 @@
     "verbreitung": "4",
     "preisSilber": 350,
     "preisText": "um 35 D",
-    "wirkung": "Steigert die Intuition; Nebenwirkung bei Qualität A.",
+    "wirkung": "enc:3:hZQ/ecF14Mf7Nzkfmdexm6S9T6m5jeuB+Fm9xK3yn2yPKBp/gnKVVp5sbjt06R4ngYnEpocNQEgTqIWnEVyAO51aw+MttVfuieoYzfy6Ph0t",
     "qualitaeten": [
-      { "stufe": "A", "eigenschaften": [{ "eigenschaft": "IN", "wert": 1, "dauer": 1, "einheit": "spielrunden" }, { "eigenschaft": "KL", "wert": -1, "dauer": 1, "einheit": "stunden" }], "wirkung": "Leichte Trübung des Geistes: KL −1 für 1 Stunde." },
-      { "stufe": "B", "eigenschaften": [{ "eigenschaft": "IN", "wert": 2, "dauer": 2, "einheit": "spielrunden" }] },
-      { "stufe": "C", "eigenschaften": [{ "eigenschaft": "IN", "wert": 3, "dauer": 3, "einheit": "spielrunden" }] },
-      { "stufe": "D", "eigenschaften": [{ "eigenschaft": "IN", "wert": 7, "dauer": 7, "einheit": "spielrunden" }] },
-      { "stufe": "E", "eigenschaften": [{ "eigenschaft": "IN", "wert": 3, "dauer": 1, "einheit": "tage" }] },
-      { "stufe": "F", "eigenschaften": [{ "eigenschaft": "IN", "wert": 9, "dauer": 2, "einheit": "stunden" }], "wirkung": "Danach 12 Stunden Lethargie: alle Eigenschaften −4 (nicht berechnet)." }
+      {
+        "stufe": "A",
+        "eigenschaften": [
+          {
+            "eigenschaft": "IN",
+            "wert": 1,
+            "dauer": 1,
+            "einheit": "spielrunden"
+          },
+          {
+            "eigenschaft": "KL",
+            "wert": -1,
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ],
+        "wirkung": "enc:3:qj8ellUIfS9kNp2wb96vW1qZoIn6FdsYWvZuaoEORGkAweH2WN8N6IV85o/RukN84//eZiW7H0aPDd3J1n8rwJjD9wVE3CznDYRI+zGqzdY="
+      },
+      {
+        "stufe": "B",
+        "eigenschaften": [
+          {
+            "eigenschaft": "IN",
+            "wert": 2,
+            "dauer": 2,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "C",
+        "eigenschaften": [
+          {
+            "eigenschaft": "IN",
+            "wert": 3,
+            "dauer": 3,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "D",
+        "eigenschaften": [
+          {
+            "eigenschaft": "IN",
+            "wert": 7,
+            "dauer": 7,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "E",
+        "eigenschaften": [
+          {
+            "eigenschaft": "IN",
+            "wert": 3,
+            "dauer": 1,
+            "einheit": "tage"
+          }
+        ]
+      },
+      {
+        "stufe": "F",
+        "eigenschaften": [
+          {
+            "eigenschaft": "IN",
+            "wert": 9,
+            "dauer": 2,
+            "einheit": "stunden"
+          }
+        ],
+        "wirkung": "enc:3:zRayBZR/48Z28d7+RGBu2e2nxgKX/kbZUjLLzeLu09nGoin6AJRA7ZwNY+NXhRxhAKoTljqudgIUx4BVKnnQlc//Oc7UcehREZM03hHz83a7hn2z8fqoYBptUcWEv/BOGOSM"
+      }
     ]
   },
   {
@@ -224,7 +651,11 @@
     "name": "Klugheitselixier",
     "art": "elixier",
     "gruppe": "Virtutica",
-    "beleg": { "buch": "Wege der Alchimie (2. Auflage 2012)", "seite": "41", "chunkId": 2831 },
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "41",
+      "chunkId": 2831
+    },
     "brauProbe": 3,
     "analyseProbe": 5,
     "labor": "Hexenküche",
@@ -232,14 +663,82 @@
     "verbreitung": "4",
     "preisSilber": 450,
     "preisText": "um 45 D",
-    "wirkung": "Steigert die Klugheit; Nebenwirkung bei Qualität A.",
+    "wirkung": "enc:3:rC9Zs5cBmiifbW1NX2v0Wg/BQmJvX6p1KEcI0xMIvs42I1pXtRmi7zQ+Q2DyvV4WUpSKQGnirRJig3stQcEq3lEQrWtt1AwdjemDhfhz70w=",
     "qualitaeten": [
-      { "stufe": "A", "eigenschaften": [{ "eigenschaft": "KL", "wert": 1, "dauer": 1, "einheit": "spielrunden" }, { "eigenschaft": "MU", "wert": -1, "dauer": 1, "einheit": "stunden" }], "wirkung": "Wenig entschlussfreudig, zaudernd: MU −1 für 1 Stunde." },
-      { "stufe": "B", "eigenschaften": [{ "eigenschaft": "KL", "wert": 2, "dauer": 2, "einheit": "spielrunden" }] },
-      { "stufe": "C", "eigenschaften": [{ "eigenschaft": "KL", "wert": 3, "dauer": 3, "einheit": "spielrunden" }] },
-      { "stufe": "D", "eigenschaften": [{ "eigenschaft": "KL", "wert": 7, "dauer": 7, "einheit": "spielrunden" }] },
-      { "stufe": "E", "eigenschaften": [{ "eigenschaft": "KL", "wert": 2, "dauer": 1, "einheit": "tage" }] },
-      { "stufe": "F", "eigenschaften": [{ "eigenschaft": "KL", "wert": 5, "dauer": 1, "einheit": "tage" }], "wirkung": "Alle Talente und Zauber ohne Klugheitsprobe sinken vorübergehend um 3 Punkte (nicht berechnet)." }
+      {
+        "stufe": "A",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KL",
+            "wert": 1,
+            "dauer": 1,
+            "einheit": "spielrunden"
+          },
+          {
+            "eigenschaft": "MU",
+            "wert": -1,
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ],
+        "wirkung": "enc:3:Nrt2QWn3BpucWEvMcapcJLAjut5nZyF7ApCMKru/zRtNN9QLjtxHhasdo+eRf03OPtyZO5l8voKEpZ/8IQykihZNU8UMawLMeOC1ATchCl6S1LWTuA=="
+      },
+      {
+        "stufe": "B",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KL",
+            "wert": 2,
+            "dauer": 2,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "C",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KL",
+            "wert": 3,
+            "dauer": 3,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "D",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KL",
+            "wert": 7,
+            "dauer": 7,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "E",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KL",
+            "wert": 2,
+            "dauer": 1,
+            "einheit": "tage"
+          }
+        ]
+      },
+      {
+        "stufe": "F",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KL",
+            "wert": 5,
+            "dauer": 1,
+            "einheit": "tage"
+          }
+        ],
+        "wirkung": "enc:3:GC5lCwGLVfLz3se1KrljdO2qmM7VokNBTZ4nsGY56ZOZ3aF2J8sv3Ek1hMzH7D7ZudgcS+OyFI9OTuAOXKuMmUIRlLRMuUMr7vuP3DNOJzc6BOvEeWQM8rxbLasrY0r7fcq6JB4DacLGWMGQuJ+lJlR1gpBIoUR2P4kQzA=="
+      }
     ]
   },
   {
@@ -247,7 +746,11 @@
     "name": "Konstitutionselixier",
     "art": "elixier",
     "gruppe": "Virtutica",
-    "beleg": { "buch": "Wege der Alchimie (2. Auflage 2012)", "seite": "42", "chunkId": 2832 },
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "42",
+      "chunkId": 2832
+    },
     "brauProbe": 6,
     "analyseProbe": 3,
     "labor": "Hexenküche",
@@ -255,14 +758,80 @@
     "verbreitung": "5",
     "preisSilber": 400,
     "preisText": "um 40 D",
-    "wirkung": "Steigert die Konstitution und gibt Ausdauer; Nachwirkung bei A. Die AuP-Wirkungen rechnet die App nicht mit.",
+    "wirkung": "enc:3:9GCHZMj23cVqD4yAnGxAL0+ezRiRsH9dRXpJZxCwiMGF5FFfW8WprPpHzg+mDPfT9CKABTu4LTu8ncuFqRDGbEc++j/QlB6UUrQkMy93BiPcxaAx08fe8wXTXrB2fBuF1BhDOvLhepaCOXPAJVmi/QcQNnLCVZKvlhA+YvsqV1zheWwkVNAnKQ==",
     "qualitaeten": [
-      { "stufe": "A", "eigenschaften": [{ "eigenschaft": "KO", "wert": 1, "dauer": 1, "einheit": "spielrunden" }], "wirkung": "1W6 AuP regenerieren; danach Schwäche: KO −1 für 1 Stunde (Nachwirkung, nicht berechnet)." },
-      { "stufe": "B", "eigenschaften": [{ "eigenschaft": "KO", "wert": 2, "dauer": 2, "einheit": "spielrunden" }], "wirkung": "AuP +5 für die Wirkungsdauer (nicht berechnet)." },
-      { "stufe": "C", "eigenschaften": [{ "eigenschaft": "KO", "wert": 3, "dauer": 3, "einheit": "spielrunden" }], "wirkung": "AuP +10 für die Wirkungsdauer (nicht berechnet)." },
-      { "stufe": "D", "eigenschaften": [{ "eigenschaft": "KO", "wert": 7, "dauer": 7, "einheit": "spielrunden" }], "wirkung": "AuP +20 für die Wirkungsdauer (nicht berechnet)." },
-      { "stufe": "E", "eigenschaften": [{ "eigenschaft": "KO", "wert": 4, "dauer": 12, "einheit": "stunden" }], "wirkung": "AuP für einen halben Tag verdoppelt (nicht berechnet)." },
-      { "stufe": "F", "eigenschaften": [{ "eigenschaft": "KO", "wert": 9, "dauer": 3, "einheit": "stunden" }], "wirkung": "AuP verdreifacht, Erschöpfung wird nicht gespürt und fällt danach zurück: je Punkt Überanstrengung 2 SP (nicht berechnet)." }
+      {
+        "stufe": "A",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KO",
+            "wert": 1,
+            "dauer": 1,
+            "einheit": "spielrunden"
+          }
+        ],
+        "wirkung": "enc:3:muFgKtqfbvtH4OcFJp1hYqTe75su+9dpsqff63AG/bf9SM5Th3UD6JQkd0xFp1R65gR1GtVObH77naKibTfhUh/gVbxKR0r5FIPxy3tpLissI9OZFxlkUMMUdHOC8gorl9BcTaI/6P83xg/mzVljiEnwmx8N/GOQNA=="
+      },
+      {
+        "stufe": "B",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KO",
+            "wert": 2,
+            "dauer": 2,
+            "einheit": "spielrunden"
+          }
+        ],
+        "wirkung": "enc:3:I7ei43gMxZsEN6VT1onvhCRKAlGitFl6b+C/SOEKc+zNJAtimw/vDTn2PAL9ZQtMFFFSs4nON5rPfm3LJ5MdEIuDWUArpl8idEU6Jg=="
+      },
+      {
+        "stufe": "C",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KO",
+            "wert": 3,
+            "dauer": 3,
+            "einheit": "spielrunden"
+          }
+        ],
+        "wirkung": "enc:3:xe7gobiLejlAEj3kSur7ocbl78yEId2TIabYx993Bhj7K5rlQEnuE6whT9O2yeMy6MK70QaQTtll3+tr3cg3FkVfenx8dVvu3ft7QNc="
+      },
+      {
+        "stufe": "D",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KO",
+            "wert": 7,
+            "dauer": 7,
+            "einheit": "spielrunden"
+          }
+        ],
+        "wirkung": "enc:3:+A+efVrSHJClSXsNutx++03bDvQEoymtPCirAsmhLAFLNlAw92As5K18ZaAJMmu/yZKpHb31PqxEQ1RjHVi2vJIf8j4mlPQHpbHbo6c="
+      },
+      {
+        "stufe": "E",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KO",
+            "wert": 4,
+            "dauer": 12,
+            "einheit": "stunden"
+          }
+        ],
+        "wirkung": "enc:3:LkJJu07Q36I8jlXG2SA9wx4oPrsEsQh36jzl8LxDwRl0bvcq9xPnniWXwQfFPqm3Xqp1313EXjB8OP/ojoHGWD+FAQfDlXkG66Z+JulT54wPU/c="
+      },
+      {
+        "stufe": "F",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KO",
+            "wert": 9,
+            "dauer": 3,
+            "einheit": "stunden"
+          }
+        ],
+        "wirkung": "enc:3:iNhXr5UVxbkrfTWzdU+iualYvnnm/I0sieikZngCH+l7PQH5dWDT2Ytuy2JXK3Dkgm1D0TcWK3Kv6ycUyLwoqzcQfqnGBo+3pMh1nIQ15kF4wi6dVInGoI1e2C2GlzR0kOWECnrb1q26lHqikQXgVT5V1ZOs6CncO8G5zJbmBm4O5SpOwUiHT4MT50Mk3337xDwaYPcEvLsOYaU="
+      }
     ]
   },
   {
@@ -270,7 +839,11 @@
     "name": "Kraftelixier",
     "art": "elixier",
     "gruppe": "Virtutica",
-    "beleg": { "buch": "Wege der Alchimie (2. Auflage 2012)", "seite": "42", "chunkId": 2833 },
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "42",
+      "chunkId": 2833
+    },
     "brauProbe": 7,
     "analyseProbe": 3,
     "labor": "archaisches Labor",
@@ -278,14 +851,89 @@
     "verbreitung": "6",
     "preisSilber": 500,
     "preisText": "um 50 D",
-    "wirkung": "Steigert die Körperkraft; Nebenwirkung bei Qualität A.",
+    "wirkung": "enc:3:gBctMDteL9MGL2azsi6b2toDkk+ngvpyVWzFbdI0pXQopHB9GR9+vAVxfOkc2pTSDX5+1bZFDCygO3vPm9EeB21K1k7bKlWd1Qa06BV61xvNIgAM",
     "qualitaeten": [
-      { "stufe": "A", "eigenschaften": [{ "eigenschaft": "KK", "wert": 1, "dauer": 1, "einheit": "spielrunden" }, { "eigenschaft": "CH", "wert": -1, "dauer": 1, "einheit": "stunden" }], "wirkung": "Peinliches Imponiergehabe: CH −1 für 1 Stunde." },
-      { "stufe": "B", "eigenschaften": [{ "eigenschaft": "KK", "wert": 2, "dauer": 2, "einheit": "spielrunden" }] },
-      { "stufe": "C", "eigenschaften": [{ "eigenschaft": "KK", "wert": 3, "dauer": 3, "einheit": "spielrunden" }] },
-      { "stufe": "D", "eigenschaften": [{ "eigenschaft": "KK", "wert": 7, "dauer": 7, "einheit": "spielrunden" }] },
-      { "stufe": "E", "eigenschaften": [{ "eigenschaft": "KK", "wert": 3, "dauer": 1, "einheit": "tage" }], "wirkung": "In jedem Kampf 20 % Chance (17–20 auf W20) auf Blutrausch, hier nur 2 statt 5 Punkte." },
-      { "stufe": "F", "eigenschaften": [{ "eigenschaft": "KK", "wert": 5, "dauer": 1, "einheit": "tage" }, { "eigenschaft": "KO", "wert": 2, "dauer": 1, "einheit": "tage" }], "wirkung": "Wie E (Blutrausch). Am Folgetag Schwäche: KK −5 (nicht berechnet)." }
+      {
+        "stufe": "A",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KK",
+            "wert": 1,
+            "dauer": 1,
+            "einheit": "spielrunden"
+          },
+          {
+            "eigenschaft": "CH",
+            "wert": -1,
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ],
+        "wirkung": "enc:3:MxfLWTDl/PuLXJTbdXQ6Voq6nSXpwfg765IEMoOtKFmauOXTZU/w0HVEc3x5fsHBv7AuxJFyqGte1v9igUqF1gMBZU6DHRxYn1dbHOw="
+      },
+      {
+        "stufe": "B",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KK",
+            "wert": 2,
+            "dauer": 2,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "C",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KK",
+            "wert": 3,
+            "dauer": 3,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "D",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KK",
+            "wert": 7,
+            "dauer": 7,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "E",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KK",
+            "wert": 3,
+            "dauer": 1,
+            "einheit": "tage"
+          }
+        ],
+        "wirkung": "enc:3:k8yILb6p58QVWNxIip6h1YR6+WN22nz+9GiEZxu0kcrQxlqx8oSLnQk0T+jEgY+AS40w/JDqGP1S1dVZDlJ7rB4jCoeRIp24Qa78qmP4i/+0z9zDBNLOQHFi/sa6qzPnas5VASQ0KvdPymzbDHOWCl2ffQ=="
+      },
+      {
+        "stufe": "F",
+        "eigenschaften": [
+          {
+            "eigenschaft": "KK",
+            "wert": 5,
+            "dauer": 1,
+            "einheit": "tage"
+          },
+          {
+            "eigenschaft": "KO",
+            "wert": 2,
+            "dauer": 1,
+            "einheit": "tage"
+          }
+        ],
+        "wirkung": "enc:3:R23ArMwIMPQUNpW0fNvNn3ASTkP3hzF9WIKsIH1euGJvg/mhg6OVnYhuthkh+NpOoXbFR6eTGVu2XvAAdHbY3UnXJJHFeqiTO8wjjNRqMpSXc0ULCmH/5ezWQpNM3Z00RA=="
+      }
     ]
   },
   {
@@ -293,7 +941,11 @@
     "name": "Mutelixier",
     "art": "elixier",
     "gruppe": "Virtutica",
-    "beleg": { "buch": "Wege der Alchimie (2. Auflage 2012)", "seite": "43", "chunkId": 2834 },
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "43",
+      "chunkId": 2834
+    },
     "brauProbe": 1,
     "analyseProbe": 1,
     "labor": "archaisches Labor",
@@ -301,14 +953,83 @@
     "verbreitung": "6",
     "preisSilber": 400,
     "preisText": "um 40 D",
-    "wirkung": "Steigert den Mut für kurze Zeit; Nebenwirkung bei Qualität A.",
+    "wirkung": "enc:3:uKUFWdFGQJMpKofHRqIobQlJeJ7m0ZKWe4SbEtBIH9aRwyjXhYpdQddK2Q7OvpKiyJJFeJx/TNFz6rXUbCrsWkpe5GWPm7ZYmtwl3NhuMsJJYNERMxu1WeGblQ==",
     "qualitaeten": [
-      { "stufe": "A", "eigenschaften": [{ "eigenschaft": "MU", "wert": 1, "dauer": 1, "einheit": "spielrunden" }, { "eigenschaft": "IN", "wert": -1, "dauer": 1, "einheit": "stunden" }], "wirkung": "Unbedachtes Verhalten: IN −1 für 1 Stunde." },
-      { "stufe": "B", "eigenschaften": [{ "eigenschaft": "MU", "wert": 2, "dauer": 2, "einheit": "spielrunden" }] },
-      { "stufe": "C", "eigenschaften": [{ "eigenschaft": "MU", "wert": 3, "dauer": 3, "einheit": "spielrunden" }] },
-      { "stufe": "D", "eigenschaften": [{ "eigenschaft": "MU", "wert": 7, "dauer": 7, "einheit": "spielrunden" }] },
-      { "stufe": "E", "eigenschaften": [{ "eigenschaft": "MU", "wert": 3, "dauer": 1, "einheit": "tage" }], "wirkung": "Euphorie: Alle vorhandenen Ängste aus Nachteilen sind halbiert." },
-      { "stufe": "F", "eigenschaften": [{ "eigenschaft": "MU", "wert": 5, "dauer": 1, "einheit": "tage" }], "wirkung": "Ängste aus Nachteilen halbiert. Am Folgetag Depression: MU −7 für einen Tag (nicht berechnet)." }
+      {
+        "stufe": "A",
+        "eigenschaften": [
+          {
+            "eigenschaft": "MU",
+            "wert": 1,
+            "dauer": 1,
+            "einheit": "spielrunden"
+          },
+          {
+            "eigenschaft": "IN",
+            "wert": -1,
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ],
+        "wirkung": "enc:3:ESkP0hC35w7agfopg+TVqTe/09n64+hwOawT+x86rRCdeagGdayyadOVCCJVGRULLvkIMp6d4nkEtoY/zbWXIQERmAhQErVbuA=="
+      },
+      {
+        "stufe": "B",
+        "eigenschaften": [
+          {
+            "eigenschaft": "MU",
+            "wert": 2,
+            "dauer": 2,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "C",
+        "eigenschaften": [
+          {
+            "eigenschaft": "MU",
+            "wert": 3,
+            "dauer": 3,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "D",
+        "eigenschaften": [
+          {
+            "eigenschaft": "MU",
+            "wert": 7,
+            "dauer": 7,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "E",
+        "eigenschaften": [
+          {
+            "eigenschaft": "MU",
+            "wert": 3,
+            "dauer": 1,
+            "einheit": "tage"
+          }
+        ],
+        "wirkung": "enc:3:kdiU9Ks4/zd8SdRwIavPeSyRLKs4mpl+nGZE5nBGS66piYaLm4zJ3v8VfDU+BWa67vh6a9tAAkTp8pUxRc0HHHvKxm6MG17w+ysd/s++LwmAnn5HJJw24CRC8rg="
+      },
+      {
+        "stufe": "F",
+        "eigenschaften": [
+          {
+            "eigenschaft": "MU",
+            "wert": 5,
+            "dauer": 1,
+            "einheit": "tage"
+          }
+        ],
+        "wirkung": "enc:3:ldqSCwk3N6jpEE1uxETNsHo0SjJIM0tqiVI79DSYRt+O07q+zcETF2m7kYzMA6OXTRd1GATOJXRQR4xU3dBxPJH+zPWhJCFR362HFQeYyUCnibSQkBIjgF0ErXIrPutxYjDB02+B3Ex3Sv5K5gRiH9C0WWuaPGV8ecLTCMx7"
+      }
     ]
   }
 ]

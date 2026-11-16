@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 
 /// Öffnet den Dialog „Elixier einnehmen“ (TRANK).
@@ -194,7 +195,7 @@ class _ElixierPanelState extends ConsumerState<ElixierPanel> {
         if (stufe.wirkung.isNotEmpty) ...[
           const SizedBox(height: 8),
           Text(
-            stufe.wirkung,
+            stufe.wirkungGesperrt ? lockedContentHint : stufe.wirkungText,
             key: const ValueKey<String>('elixier-hinweis'),
             style: theme.textTheme.bodySmall,
           ),

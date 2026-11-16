@@ -424,6 +424,7 @@ class _RitualEntryDialogState extends State<_RitualEntryDialog> {
     return Consumer(
       builder: (context, ref, _) {
         final visible = ref.watch(catalogContentVisibleProvider);
+        final schluessel = ref.watch(catalogKeyV3Provider).valueOrNull;
         final password = ref
             .watch(appSettingsProvider)
             .valueOrNull
@@ -432,11 +433,13 @@ class _RitualEntryDialogState extends State<_RitualEntryDialog> {
           raw: entry.wirkung,
           unlocked: visible,
           password: password,
+          schluessel: schluessel,
         );
         final resolvedTechnik = resolveProtectedValue(
           raw: entry.technik,
           unlocked: visible,
           password: password,
+          schluessel: schluessel,
         );
         return Column(
           mainAxisSize: MainAxisSize.min,

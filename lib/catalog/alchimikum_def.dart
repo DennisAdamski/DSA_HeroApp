@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
 
 /// Quellenangabe eines alchimistischen Mittels (TRANK).
@@ -127,7 +128,16 @@ class AlchimikumQualitaet {
   final int lepProWunde;
 
   /// Kurzbeschreibung von Wirkung und Nebenwirkung dieser Stufe.
+  ///
+  /// Geschützter Text (Harte Regel 13): ohne Inhalts-Passwort ein
+  /// `enc:3:`-Wert. Anzeigen lesen [wirkungText] und [wirkungGesperrt].
   final String wirkung;
+
+  /// [wirkung] als Klartext; leer, solange der Text verschlüsselt ist.
+  String get wirkungText => isEncryptedValue(wirkung) ? '' : wirkung;
+
+  /// Ob [wirkung] mangels Inhalts-Passwort verschlüsselt geblieben ist.
+  bool get wirkungGesperrt => isEncryptedValue(wirkung);
 
   /// Ob die Stufe Vitalwerte oder Wunden unmittelbar beeinflusst.
   bool get hatVitalwirkung =>
@@ -233,6 +243,12 @@ class AlchimikumDef {
 
   /// Kurzbeschreibung der Wirkung ohne Qualitätsstufe.
   final String wirkung;
+
+  /// [wirkung] als Klartext; leer, solange der Text verschlüsselt ist.
+  String get wirkungText => isEncryptedValue(wirkung) ? '' : wirkung;
+
+  /// Ob [wirkung] mangels Inhalts-Passwort verschlüsselt geblieben ist.
+  bool get wirkungGesperrt => isEncryptedValue(wirkung);
 
   /// Qualitätsstufen `A` bis `F`; leer bei Mitteln ohne Stufen.
   final List<AlchimikumQualitaet> qualitaeten;
