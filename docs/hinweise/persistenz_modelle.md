@@ -64,7 +64,12 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
 - `HiveHeroRepository` überspringt Einträge, die `HeroSheet.fromJson` nicht
   lesen kann (`unlesbareHelden`), statt das Öffnen des Profils scheitern zu
   lassen. Der Roheintrag bleibt unverändert in der Box. Test:
-  `test/data/hive_hero_repository_unlesbar_test.dart`.
+  `test/data/hive_hero_repository_unlesbar_test.dart`. Beide Heldenlisten
+  (`HeroesHomeScreen`, `KartoHeldenwahl`) weisen über
+  `UnlesbareHeldenHinweis` (`lib/ui_shared/`) darauf hin; die Einträge kommen
+  aus `unlesbareHeldenProvider`, der jedes Repository mit
+  `UnlesbareHeldenQuelle` liest (`SyncingHeroRepository` reicht an das lokale
+  durch).
 - Geteilte Gruppeneinträge (`shared_heroes`) werden per `update` geschrieben,
   damit unbekannte Felder und der Ersteller online stehen bleiben. Felder, die
   `HeldVisitenkarte` nur bei Belegung schreibt (`notizen`,

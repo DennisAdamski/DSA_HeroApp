@@ -25,6 +25,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/codex_page_scaffold.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_split_view.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui_shared/feedback/open_feedback.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/unlesbare_helden_hinweis.dart';
 import 'package:dsa_heldenverwaltung/state/warte_auf_wert.dart';
 
 /// Startscreen fuer die Heldenauswahl mit iPad-tauglicher Vorschau.
@@ -271,119 +272,154 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
               label: const Text('Neuer Held'),
             )
           : null,
-      body: heroesAsync.when(
-        data: (heroes) {
-          _scheduleCatalogPrewarmAfterFrame();
-          if (heroes.isEmpty) {
-            final authService = ref.watch(authServiceProvider);
-            final authUser = ref.watch(authUserProvider).asData?.value;
-            final showAccountPrompt = authService != null && authUser == null;
-            return CodexPageScaffold(
-              padding: EdgeInsets.all(layout.contentPadding),
-              child: Center(
-                child: SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 560),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (showAccountPrompt) ...[
-                          HeroHomeAccountPrompt(
-                            onSignIn: () =>
-                                openSignInScreen(context, authService),
-                            onRegister: () => openSignInScreen(
-                              context,
-                              authService,
-                              register: true,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                        CodexEmptyState(
-                          title: 'Dein Heldenarchiv ist noch leer',
-                          message: 'Lege deinen ersten Helden an oder importiere einen bestehenden Bogen, um auf dem iPad mit einem digitalen Heldenbogen zu arbeiten.',
-                          assetPath: 'assets/ui/codex/empty_ledger.png',
-                          // Mit Konto-Karte bleibt Anmelden die Primaeraktion.
-                          action: showAccountPrompt
-                              ? FilledButton.tonalIcon(
-                                  onPressed: createHero,
-                                  icon: const Icon(Icons.add),
-                                  label: const Text('Ersten Helden anlegen'),
-                                )
-                              : FilledButton.icon(
-                                  onPressed: createHero,
-                                  icon: const Icon(Icons.add),
-                                  label: const Text('Ersten Helden anlegen'),
+      body: Column(
+        children: [
+          // Ohne übersprungene Einträge nimmt der Hinweis keinen Platz ein.
+          UnlesbareHeldenHinweis(
+            rahmen: (inhalt) => Padding(
+              padding: EdgeInsets.fromLTRB(
+                layout.contentPadding,
+                layout.contentPadding,
+                layout.contentPadding,
+                0,
+              ),
+              child: Card(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: inhalt,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: heroesAsync.when(
+              data: (heroes) {
+                _scheduleCatalogPrewarmAfterFrame();
+                if (heroes.isEmpty) {
+                  final authService = ref.watch(authServiceProvider);
+                  final authUser = ref.watch(authUserProvider).asData?.value;
+                  final showAccountPrompt =
+                      authService != null && authUser == null;
+                  return CodexPageScaffold(
+                    padding: EdgeInsets.all(layout.contentPadding),
+                    child: Center(
+                      child: SingleChildScrollView(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 560),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (showAccountPrompt) ...[
+                                HeroHomeAccountPrompt(
+                                  onSignIn: () =>
+                                      openSignInScreen(context, authService),
+                                  onRegister: () => openSignInScreen(
+                                    context,
+                                    authService,
+                                    register: true,
+                                  ),
                                 ),
+                                const SizedBox(height: 16),
+                              ],
+                              CodexEmptyState(
+                                title: 'Dein Heldenarchiv ist noch leer',
+                                message: 'Lege deinen ersten Helden an oder importiere einen bestehenden Bogen, um auf dem iPad mit einem digitalen Heldenbogen zu arbeiten.',
+                                assetPath: 'assets/ui/codex/empty_ledger.png',
+                                // Mit Konto-Karte bleibt Anmelden die Primaeraktion.
+                                action: showAccountPrompt
+                                    ? FilledButton.tonalIcon(
+                                        onPressed: createHero,
+                                        icon: const Icon(Icons.add),
+                                        label: const Text(
+                                          'Ersten Helden anlegen',
+                                        ),
+                                      )
+                                    : FilledButton.icon(
+                                        onPressed: createHero,
+                                        icon: const Icon(Icons.add),
+                                        label: const Text(
+                                          'Ersten Helden anlegen',
+                                        ),
+                                      ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
+                      ),
+                    ),
+                  );
+                }
+
+                final selectedHero = _resolveSelectedHero(
+                  heroes: heroes,
+                  selectedHeroId: selectedHeroId,
+                );
+                final archivePane = HeroHomeArchivePane(
+                  heroes: heroes,
+                  selectedHeroId: selectedHero?.id,
+                  layout: layout,
+                  onSelectHero: (hero) {
+                    if (layout.hasPersistentDetailPane) {
+                      ref
+                          .read(selectedHeroSelectionActionsProvider)
+                          .selectHero(hero.id);
+                      return;
+                    }
+                    if (layout == AppLayoutClass.tabletPortrait) {
+                      showHeroPreviewSheet(hero);
+                      return;
+                    }
+                    openHeroWorkspace(hero.id);
+                  },
+                  onExportHero: (hero) => _exportSelectedHero(
+                    context: context,
+                    ref: ref,
+                    hero: hero,
+                    importExportActions: importExportActions,
+                  ),
+                  onDeleteHero: (hero) => _deleteSelectedHero(
+                    context: context,
+                    ref: ref,
+                    hero: hero,
+                  ),
+                );
+
+                if (!layout.hasPersistentDetailPane) {
+                  return archivePane;
+                }
+
+                return CodexSplitView(
+                  primaryWidth: layout == AppLayoutClass.desktopWide
+                      ? 420
+                      : 360,
+                  primary: archivePane,
+                  secondary: CodexPageScaffold(
+                    padding: EdgeInsets.all(layout.contentPadding),
+                    child: HeroHomePreviewPanel(
+                      hero: selectedHero!,
+                      onOpenWorkspace: () => openHeroWorkspace(selectedHero.id),
+                      onExportHero: () => _exportSelectedHero(
+                        context: context,
+                        ref: ref,
+                        hero: selectedHero,
+                        importExportActions: importExportActions,
+                      ),
+                      onDeleteHero: () => _deleteSelectedHero(
+                        context: context,
+                        ref: ref,
+                        hero: selectedHero,
+                      ),
                     ),
                   ),
-                ),
-              ),
-            );
-          }
-
-          final selectedHero = _resolveSelectedHero(
-            heroes: heroes,
-            selectedHeroId: selectedHeroId,
-          );
-          final archivePane = HeroHomeArchivePane(
-            heroes: heroes,
-            selectedHeroId: selectedHero?.id,
-            layout: layout,
-            onSelectHero: (hero) {
-              if (layout.hasPersistentDetailPane) {
-                ref
-                    .read(selectedHeroSelectionActionsProvider)
-                    .selectHero(hero.id);
-                return;
-              }
-              if (layout == AppLayoutClass.tabletPortrait) {
-                showHeroPreviewSheet(hero);
-                return;
-              }
-              openHeroWorkspace(hero.id);
-            },
-            onExportHero: (hero) => _exportSelectedHero(
-              context: context,
-              ref: ref,
-              hero: hero,
-              importExportActions: importExportActions,
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stackTrace) =>
+                  Center(child: Text('Fehler: $error')),
             ),
-            onDeleteHero: (hero) =>
-                _deleteSelectedHero(context: context, ref: ref, hero: hero),
-          );
-
-          if (!layout.hasPersistentDetailPane) {
-            return archivePane;
-          }
-
-          return CodexSplitView(
-            primaryWidth: layout == AppLayoutClass.desktopWide ? 420 : 360,
-            primary: archivePane,
-            secondary: CodexPageScaffold(
-              padding: EdgeInsets.all(layout.contentPadding),
-              child: HeroHomePreviewPanel(
-                hero: selectedHero!,
-                onOpenWorkspace: () => openHeroWorkspace(selectedHero.id),
-                onExportHero: () => _exportSelectedHero(
-                  context: context,
-                  ref: ref,
-                  hero: selectedHero,
-                  importExportActions: importExportActions,
-                ),
-                onDeleteHero: () => _deleteSelectedHero(
-                  context: context,
-                  ref: ref,
-                  hero: selectedHero,
-                ),
-              ),
-            ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(child: Text('Fehler: $error')),
+          ),
+        ],
       ),
     );
   }

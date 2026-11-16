@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/sync/sync_basis_store.dart';
 import 'package:dsa_heldenverwaltung/data/sync/sync_konflikt_vorgang.dart';
 import 'package:dsa_heldenverwaltung/data/sync/sync_metadata_store.dart';
+import 'package:dsa_heldenverwaltung/data/unlesbare_helden_quelle.dart';
 import 'package:dsa_heldenverwaltung/data/vorgangsjournal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -33,7 +34,8 @@ part 'syncing_hero_repository_zusammenfuehrung.dart';
 /// geaendert wurden. Liegt der Inhalt dieser Basis vor ([basisStore]),
 /// fuehrt es beide Staende vorher zusammen; ein Konflikt entsteht nur noch
 /// fuer Werte, die beide Seiten verschieden geaendert haben (ARCH-06).
-class SyncingHeroRepository implements HeroRepository, AppSyncController {
+class SyncingHeroRepository
+    implements HeroRepository, AppSyncController, UnlesbareHeldenQuelle {
   /// Erstellt ein synchronisierendes Repository.
   SyncingHeroRepository({
     required this.local,
@@ -1995,6 +1997,14 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
   @override
   Stream<Map<String, HeroSheet>> watchHeroIndex() {
     return local.watchHeroIndex();
+  }
+
+  @override
+  List<UnlesbarerHeld> get unlesbareHeldenEintraege {
+    if (local case final UnlesbareHeldenQuelle quelle) {
+      return quelle.unlesbareHeldenEintraege;
+    }
+    return const <UnlesbarerHeld>[];
   }
 
   @override

@@ -16,6 +16,7 @@ import 'package:dsa_heldenverwaltung/ui2/widgets/karto_kartenraster.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_seitenkopf.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/unlesbare_helden_hinweis.dart';
 
 /// Baut das Bild eines Helden um den uebergebenen Ersatz herum.
 ///
@@ -134,6 +135,9 @@ class KartoHeldenwahl extends ConsumerWidget {
             label: const Text('Helden verwalten'),
           );
     final texte = Theme.of(context).textTheme;
+    // Übersprungene Einträge sind sonst unsichtbar: kein Held fehlt still.
+    final unlesbareHinweis =
+        fehler == null && ref.watch(unlesbareHeldenProvider).isNotEmpty;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -172,6 +176,15 @@ class KartoHeldenwahl extends ConsumerWidget {
                         style: texte.fliess,
                       ),
                       const SizedBox(height: Abstand.weit),
+                    ],
+                    if (unlesbareHinweis) ...[
+                      UnlesbareHeldenHinweis(
+                        rahmen: (inhalt) => KartoFlaeche(
+                          innen: Abstand.blockInnen,
+                          child: inhalt,
+                        ),
+                      ),
+                      const SizedBox(height: Abstand.bahn),
                     ],
                     if (fehler != null) ...[
                       Text(

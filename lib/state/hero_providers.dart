@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/regelprofil_aufloesung.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/data/unlesbare_helden_quelle.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -59,6 +60,20 @@ final heroListProvider = StreamProvider<List<HeroSheet>>((ref) {
   return repo.watchHeroIndex().map(
     (index) => HeroIndexSnapshot.fromMap(index).heroes,
   );
+});
+
+/// Gespeicherte Heldeneintraege, die diese App-Version nicht lesen kann.
+///
+/// Das Repository meldet jede Aenderung seiner Box ueber den Heldenindex; mit
+/// ihm wird auch diese Liste neu gelesen. Repositories ohne Rohdatenzugriff
+/// liefern eine leere Liste.
+final unlesbareHeldenProvider = Provider<List<UnlesbarerHeld>>((ref) {
+  final repo = ref.watch(heroRepositoryProvider);
+  if (repo case final UnlesbareHeldenQuelle quelle) {
+    ref.watch(heroIndexProvider);
+    return quelle.unlesbareHeldenEintraege;
+  }
+  return const <UnlesbarerHeld>[];
 });
 
 /// Sucht einen Helden in einer bereits geladenen Liste ueber seine ID.
