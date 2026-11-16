@@ -281,7 +281,9 @@ Future<HeroAdvancementEntry?> _planAbility(
   final result = await showErwerbDialog(
     context: context,
     bezeichnung: option.label,
-    kostenHinweis: option.ability?.kosten ?? option.complexityHint,
+    kostenHinweis: option.erwerbsHinweis(
+      option.ability?.kosten ?? option.complexityHint,
+    ),
     vorgeschlageneApKosten: option.apCost,
     verfuegbareAp: session.preview.apAvailable,
     voraussetzungen: option.requirements,

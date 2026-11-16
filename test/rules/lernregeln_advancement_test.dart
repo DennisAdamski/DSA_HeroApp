@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
@@ -195,6 +198,86 @@ void main() {
         lernkostenFaktoren(held(), LernzielArt.wissenstalent, catalog: null),
         isEmpty,
       );
+    });
+
+    // WdH S. 251 und 253: beide Vorteile verbilligen dieselbe SF-Liste.
+    test('Gedächtnis-SF: Signaturkenntnis kostet ¾ bzw. ½ der 200 AP', () {
+      int kosten(String vorteile) => option(
+        held(vorteile: vorteile),
+        AdvancementKind.magicAbility,
+        'magsf_signaturkenntnis',
+      ).apCost!;
+      expect(kosten(''), 200);
+      expect(kosten('Gutes Gedächtnis I'), 150);
+      expect(kosten('Eidetisches Gedächtnis'), 100);
+    });
+
+    test('nicht gelistete SF bleibt beim Listenpreis', () {
+      final o = option(
+        held(vorteile: 'Eidetisches Gedächtnis'),
+        AdvancementKind.magicAbility,
+        'magsf_blutmagie',
+      );
+      expect(o.apCost, 200);
+      expect(o.lernregeln.faktoren, isEmpty);
+    });
+
+    test('Objektrituale zählen über das Kennzeichen (OR)', () {
+      expect(
+        istGedaechtnisSonderfertigkeit(
+          id: 'magsf_stabzauber',
+          name: 'Stabzauber (OR)*',
+        ),
+        isTrue,
+      );
+      expect(
+        istGedaechtnisSonderfertigkeit(
+          id: 'magsf_blutmagie',
+          name: 'Blutmagie',
+        ),
+        isFalse,
+      );
+    });
+
+    test('Gutes Gedächtnis verbilligt die Spezialisierung eines '
+        'Wissenstalents, nicht die von Klettern', () {
+      final talente = {
+        'tal_geographie': const HeroTalentEntry(talentValue: 10),
+        'tal_klettern': const HeroTalentEntry(talentValue: 10),
+      };
+      AdvancementOption spezialisierung(String vorteile, String id) =>
+          resolveAdvancementOption(
+            hero: held(vorteile: vorteile, talents: talente),
+            catalog: catalog,
+            kind: AdvancementKind.talent,
+            targetId: id,
+            options: const {'action': 'specialization', 'specialization': 'X'},
+          )!;
+      final ohne = spezialisierung('', 'tal_geographie').apCost!;
+      final mit = spezialisierung('Gutes Gedächtnis I', 'tal_geographie');
+      expect(mit.apCost, (ohne * 3 / 4).round());
+      expect(mit.erwerbsHinweis(null), contains('Gutes Gedächtnis'));
+      expect(
+        spezialisierung('Gutes Gedächtnis I', 'tal_klettern').apCost,
+        spezialisierung('', 'tal_klettern').apCost,
+      );
+    });
+
+    test('alle gelisteten Katalog-IDs existieren', () {
+      final ids = <String>{};
+      for (final datei in [
+        'allgemeine_sonderfertigkeiten.json',
+        'magische_sonderfertigkeiten.json',
+        'karmale_sonderfertigkeiten.json',
+      ]) {
+        var text = File('assets/catalogs/house_rules_v1/$datei')
+            .readAsStringSync();
+        if (text.startsWith('﻿')) text = text.substring(1);
+        for (final eintrag in jsonDecode(text) as List) {
+          ids.add((eintrag as Map)['id'] as String);
+        }
+      }
+      expect(kGedaechtnisSonderfertigkeitIds.difference(ids), isEmpty);
     });
   });
 

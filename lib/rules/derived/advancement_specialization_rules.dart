@@ -3,6 +3,8 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 
 import 'advancement_options.dart';
 import 'learning_rules.dart';
+import 'lernkosten_faktor_rules.dart';
+import 'steigerung_herleitung_rules.dart';
 import 'talent_specialization_hints.dart';
 
 /// Liest auch Spezialisierungen aus älteren Freitext-Einträgen verlustfrei.
@@ -77,6 +79,16 @@ AdvancementOption? resolveTalentSpecialization(
     unfaehigkeitsSchritte: befund.erhoehung,
     specializationOrdinal: specs.length + 1,
   );
+  // Talentspezialisierungen bei Wissensfertigkeiten stehen auf der Liste der
+  // Gedächtnis-Sonderfertigkeiten (WdH S. 251 und 253).
+  final faktoren = def.group == 'Wissenstalente'
+      ? lernkostenFaktoren(
+          context.hero,
+          LernzielArt.sonderfertigkeit,
+          catalog: context.catalog,
+        )
+      : const <LernkostenFaktor>[];
+  final kosten = wendeLernkostenFaktorenAn(cost, faktoren);
   String? reason;
   if (entry.talentValue! < required) {
     reason = 'Für die nächste Spezialisierung wird TaW $required benötigt.';
@@ -94,7 +106,8 @@ AdvancementOption? resolveTalentSpecialization(
     label: '${def.name}: $name',
     options: {...options, 'action': 'specialization', 'specialization': name},
     isOwned: true,
-    apCost: cost,
+    apCost: kosten,
+    lernregeln: Lernregeln(faktoren: faktoren),
     currentValue: entry.talentValue!,
     complexityHint:
         'TaW ≥ $required nötig; ohne Lehrmeister doppelte Kosten '

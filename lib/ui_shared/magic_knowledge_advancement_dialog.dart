@@ -256,8 +256,9 @@ class _MagicKnowledgeDialogState extends State<_MagicKnowledgeDialog> {
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Text('${check.sollText}: ${check.istText}'),
                 ),
-              if (resolved?.complexityHint != null)
-                Text(resolved!.complexityHint!),
+              if (resolved?.erwerbsHinweis(resolved.complexityHint)
+                  case final hinweis?)
+                Text(hinweis),
               Text(cost == null ? 'AP-Kosten noch offen' : 'Kosten: $cost AP'),
               Text('${widget.session.preview.apAvailable} AP verfügbar'),
               if (reason != null) Text(reason),

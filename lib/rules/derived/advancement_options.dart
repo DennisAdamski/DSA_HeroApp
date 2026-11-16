@@ -101,6 +101,16 @@ class AdvancementOption {
   /// Hexalogie-Erleichterung, Kostenfaktoren und Spaltenherleitung des Ziels.
   final Lernregeln lernregeln;
 
+  /// Kostenhinweis für Erwerbsdialoge: [basis] samt der in [apCost] schon
+  /// eingerechneten Gedächtnis-Faktoren.
+  String? erwerbsHinweis(String? basis) {
+    final teile = <String>[
+      if (basis != null && basis.trim().isNotEmpty) basis.trim(),
+      ?lernkostenFaktorHinweis(lernregeln.faktoren),
+    ];
+    return teile.isEmpty ? null : teile.join(' · ');
+  }
+
   /// Ob ein Lehrmeister die Kosten senken darf: nur bei Talenten (auch
   /// Sprachen und Schriften) und Zauberfertigkeiten (Hausregel „Lehrmeister“,
   /// Erweiterung und Überarbeitung S. 19).
