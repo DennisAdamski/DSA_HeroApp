@@ -79,7 +79,7 @@ Gelaendeart? gelaendeartAusVariante(String variante) {
 /// **Ortskenntnis:** Sie ist an einen Ort gebunden und gilt deshalb nur für
 /// den [standort] des Helden, nicht für jede Landschaft gleicher Art. Die
 /// Variante (Freitext, etwa `Gareth` oder `Gareth (Südquartier)`) passt, wenn
-/// sie nach [suchFaltung] dem Standort entspricht (auch ohne Klammerzusatz,
+/// sie nach [vergleichsSchluessel] dem Standort entspricht (auch ohne Klammerzusatz,
 /// etwa `Havena (Siedlung)` oder `Gareth (Südquartier)`).
 WildnisSonderfertigkeiten werteWildnisSonderfertigkeitenAus({
   required HeroSheet hero,
@@ -132,10 +132,10 @@ WildnisSonderfertigkeiten werteWildnisSonderfertigkeitenAus({
 }
 
 bool _ortskenntnisPasst(String variante, String standort) {
-  final ziel = suchFaltung(bereinigeStandort(standort));
+  final ziel = vergleichsSchluessel(bereinigeStandort(standort));
   if (ziel.isEmpty) return false;
-  final voll = suchFaltung(bereinigeStandort(variante));
-  final ohneZusatz = suchFaltung(
+  final voll = vergleichsSchluessel(bereinigeStandort(variante));
+  final ohneZusatz = vergleichsSchluessel(
     bereinigeStandort(variante.replaceFirst(RegExp(r'\s*\(.*$'), '')),
   );
   return voll == ziel || (ohneZusatz.isNotEmpty && ohneZusatz == ziel);

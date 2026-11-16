@@ -985,6 +985,22 @@ void main() {
       expect(danach.kachel('kampf')!.eingeklappt, isFalse);
     });
 
+    testWidgets(
+      'Belastung wandert in die Zustandskachel, wenn „Dabei“ zu ist',
+      (tester) async {
+        final bestand = TestBestand();
+        await zeige(tester, held: weltlich(), bestand: bestand, breite: 1280);
+        // „Dabei“ offen: Erschöpfung und Überanstrengung stehen dort.
+        expect(bestand.zustandMitBelastung.last, isFalse);
+
+        await tester.ensureVisible(k('karto-kachel-dabei-einklappen'));
+        await tester.tap(k('karto-kachel-dabei-einklappen'));
+        await tester.pumpAndSettle();
+        // „Dabei“ eingeklappt: die Zustandskachel zeigt sie wieder.
+        expect(bestand.zustandMitBelastung.last, isTrue);
+      },
+    );
+
     testWidgets('eine offene Planung sperrt Anordnen und Einklappen', (
       tester,
     ) async {

@@ -179,7 +179,7 @@ class KartoKraeutersucheTaetigkeit extends KartoWildnisTaetigkeit {
             detail:
                 '${kandidat.vorkommen.haeufigkeit.bezeichnung} · '
                 'Suchschwierigkeit ${kandidat.suchschwierigkeit} · '
-                'ab ${2 * (kandidat.suchschwierigkeit < 1 ? 1 : kandidat.suchschwierigkeit)} TaP*'
+                'ab ${kraeuterMindestTapFuerFund(kandidat.suchschwierigkeit)} TaP*'
                 '${kandidat.inErntezeit ? '' : ' · außerhalb der Erntezeit'}',
             erlaeuterung: _erlaeuterung(kandidat),
             quelle: kandidat.kraut.quelle,

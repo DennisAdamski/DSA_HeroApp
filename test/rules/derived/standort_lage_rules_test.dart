@@ -198,8 +198,16 @@ void main() {
       );
       expect(
         '${avesmapsOrtLink(wikiUrl: 'https://de.wiki-aventurica.de/wiki/Havena_(Siedlung)#Lage')}',
-        'https://avesmaps.de/?siedlung=Havena_(Siedlung)',
+        'https://avesmaps.de/?siedlung=Havena_%28Siedlung%29',
       );
+    });
+
+    test('ein & im Seitennamen öffnet keinen zweiten Parameter', () {
+      final link = avesmapsOrtLink(
+        wikiUrl: 'https://de.wiki-aventurica.de/wiki/A_%26_B',
+      )!;
+      expect(link.queryParameters, <String, String>{'siedlung': 'A_&_B'});
+      expect(link.queryParameters.length, 1);
     });
 
     test('ohne Artikel über die Kennung, sonst über den Namen', () {
@@ -212,6 +220,27 @@ void main() {
         'https://avesmaps.de/?siedlung=Gareth',
       );
       expect(avesmapsOrtLink(), isNull);
+    });
+  });
+
+  group('sichererWikiLink', () {
+    test('lässt nur https auf der Wiki Aventurica durch', () {
+      expect(
+        '${sichererWikiLink('https://de.wiki-aventurica.de/wiki/Gareth')}',
+        'https://de.wiki-aventurica.de/wiki/Gareth',
+      );
+      for (final unsicher in <String>[
+        '',
+        'tel:+4912345',
+        'file:///C:/Windows/win.ini',
+        'intent://x#Intent;scheme=a;end',
+        'http://de.wiki-aventurica.de/wiki/Gareth',
+        'https://example.org/wiki/Gareth',
+        'https://de.wiki-aventurica.de.example.org/wiki/Gareth',
+        'https://nutzer@de.wiki-aventurica.de/wiki/Gareth',
+      ]) {
+        expect(sichererWikiLink(unsicher), isNull, reason: unsicher);
+      }
     });
   });
 

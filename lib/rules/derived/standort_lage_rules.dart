@@ -222,12 +222,40 @@ Uri? avesmapsOrtLink({String wikiUrl = '', String id = '', String name = ''}) {
     caseSensitive: false,
   ).firstMatch(wikiUrl)?.group(1);
   if (seite != null && seite.isNotEmpty) {
-    return Uri.parse('https://$kAvesmapsHost/?siedlung=$seite');
+    // Der Seitenname steht prozentkodiert im Pfad; als Parameter wird er neu
+    // kodiert, damit ein `&` im Namen keinen zweiten Parameter öffnet.
+    final name = _dekodiere(seite);
+    if (name != null) {
+      return Uri.https(kAvesmapsHost, '/', <String, String>{'siedlung': name});
+    }
   }
   if (id.isNotEmpty) {
     return Uri.https(kAvesmapsHost, '/', <String, String>{'place': id});
   }
   return avesmapsLink(name);
+}
+
+String? _dekodiere(String teil) {
+  try {
+    return Uri.decodeComponent(teil);
+  } on ArgumentError {
+    return null;
+  }
+}
+
+/// Wiki-Link aus den Ortsdetails der Avesmaps-API, aber nur bei `https` und
+/// dem Host der Wiki Aventurica.
+///
+/// Die API ist eine externe Quelle: `tel:`, `file:`, App-Schemata oder ein
+/// fremder Host dürfen nie an den Link-Öffner gehen. `null` heißt: nicht
+/// öffnen.
+Uri? sichererWikiLink(String wikiUrl) {
+  final uri = Uri.tryParse(wikiUrl.trim());
+  if (uri == null) return null;
+  if (uri.scheme.toLowerCase() != 'https') return null;
+  if (uri.host.toLowerCase() != kWikiAventuricaHost) return null;
+  if (uri.userInfo.isNotEmpty) return null;
+  return uri;
 }
 
 /// Kartenposition für die Anzeige, etwa „x 551,6 · y 533,0“.

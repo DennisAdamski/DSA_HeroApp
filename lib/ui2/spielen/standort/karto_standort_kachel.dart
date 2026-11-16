@@ -245,9 +245,8 @@ class _Ortsansicht extends StatelessWidget {
           )
         : (kartenlinkSinnvoll(name, verzeichnis) ? avesmapsLink(name) : null);
     final wikiUrl = details?.wikiUrl ?? '';
-    final wikiLink = wikiUrl.isNotEmpty
-        ? Uri.tryParse(wikiUrl)
-        : wikiAventuricaLink(name, verzeichnis);
+    final wikiLink =
+        sichererWikiLink(wikiUrl) ?? wikiAventuricaLink(name, verzeichnis);
 
     final nahe = ort == null
         ? const <NaherOrt>[]
