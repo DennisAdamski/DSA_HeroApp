@@ -53,6 +53,19 @@ harten Regeln und den Themenindex.
   `RestFirestoreHeroSyncGateway`), `HiveSyncMetadataStore` und die Modelle in
   `lib/domain/sync_models.dart`. Konflikte dürfen nicht still überschrieben
   werden; die UI muss lokal, online oder beide behalten anbieten.
+- **Windows-Beobachtung und Tombstones (SYNC-11, 16.11.2026):**
+  `RestFirestoreHeroSyncGateway` beobachtet per `runQuery`: zuerst alles,
+  danach nur Dokumente mit `lastModified` ab der Serverzeit der letzten
+  Abfrage minus `ueberlappung` (5 min, Rand gegen Uhrabweichungen anderer
+  REST-Schreiber), alle `vollabgleichAlle` (15 min) wieder alles. Die
+  Beobachtung wendet Datensätze einzeln an; ein fehlendes Dokument bedeutet
+  dort nie „gelöscht“. Solange das Fenster verborgen ist (`aktiv`, aus dem
+  `AppLifecycleListener` des Startup-Gates), ruht die Abfrage. Tombstones
+  entfernt `syncNow` nach `kTombstoneAufbewahrung` (180 Tage), wenn hier kein
+  Held mit der ID liegt und nichts offen ist; die Gateways
+  (`RemoteTombstoneBereinigung`) löschen nur den unveränderten Tombstone.
+  Ein Gerät, das länger offline war, lädt einen dort noch vorhandenen Helden
+  danach wieder hoch.
 - **Konflikte entstehen nur noch für echte Widersprüche** (ARCH-06): Nach
   jedem Abgleich legt `_saveMetadata` den Inhalt des Stands mit seiner
   Revision in `SyncBasisStore` ab (Box `sync_basis_v1`, je Konto; ohne

@@ -216,3 +216,37 @@ Map<String, dynamic> _jsonKopie(Map<String, dynamic> json) {
 String _schreiberHash(Map<String, dynamic> json) {
   return stableContentHash(_jsonKopie(json)..remove('lastModified'));
 }
+
+/// Cloud, die alte Tombstones endgültig entfernen kann (SYNC-11).
+///
+/// Entfernt wie die echten Gateways nur den unveränderten Tombstone und
+/// protokolliert jeden Aufruf in [entfernt].
+class FakeTombstoneCloud extends FakeRemoteHeroAndStateSyncGateway
+    implements RemoteTombstoneBereinigung {
+  /// Aufgerufene Entfernungen als `held:<id>` bzw. `zustand:<id>`.
+  final List<String> entfernt = <String>[];
+
+  @override
+  Future<void> entferneHeldenTombstone(
+    String heroId, {
+    required String revision,
+  }) async {
+    entfernt.add('held:$heroId');
+    final record = _heroes[heroId];
+    if (record != null && record.isDeleted && record.revision == revision) {
+      _heroes.remove(heroId);
+    }
+  }
+
+  @override
+  Future<void> entferneZustandsTombstone(
+    String heroId, {
+    required String revision,
+  }) async {
+    entfernt.add('zustand:$heroId');
+    final record = _states[heroId];
+    if (record != null && record.isDeleted && record.revision == revision) {
+      _states.remove(heroId);
+    }
+  }
+}

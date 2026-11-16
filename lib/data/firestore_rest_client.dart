@@ -134,6 +134,107 @@ class FirestoreRestClient {
     return _decodeFields(_decodeSuccess(response));
   }
 
+  /// Fragt die Collection [collectionId] unter [parentPath] ab (SYNC-11).
+  ///
+  /// Mit [geaendertSeit] liefert Firestore nur Dokumente, deren Feld
+  /// [zeitFeld] mindestens diesen Zeitpunkt trägt; der Einzelfeld-Index
+  /// dafür legt Firestore selbst an. Abgerechnet werden nur die gelieferten
+  /// Dokumente (mindestens ein Lesezugriff je Abfrage). [FirestoreRestAbfrage.
+  /// lesezeit] ist die Serverzeit der Abfrage und taugt als nächster Cursor,
+  /// unabhängig von der Uhr dieses Geräts.
+  Future<FirestoreRestAbfrage> runQuery(
+    String parentPath,
+    String collectionId, {
+    DateTime? geaendertSeit,
+    String zeitFeld = 'lastModified',
+  }) async {
+    final structuredQuery = <String, dynamic>{
+      'from': <Map<String, dynamic>>[
+        <String, dynamic>{'collectionId': collectionId},
+      ],
+      if (geaendertSeit != null)
+        'where': <String, dynamic>{
+          'fieldFilter': <String, dynamic>{
+            'field': <String, dynamic>{'fieldPath': zeitFeld},
+            'op': 'GREATER_THAN_OR_EQUAL',
+            'value': _encodeValue(geaendertSeit),
+          },
+        },
+    };
+    final headers = await _authHeaders(contentTypeJson: true);
+    final encodedParent = parentPath
+        .split('/')
+        .map(Uri.encodeComponent)
+        .join('/');
+    final uri = Uri.https(
+      'firestore.googleapis.com',
+      '/v1/projects/$projectId/databases/$databaseId/documents/'
+          '$encodedParent:runQuery',
+    );
+    final response = await _send(
+      () => _http.post(
+        uri,
+        headers: headers,
+        body: jsonEncode(<String, dynamic>{'structuredQuery': structuredQuery}),
+      ),
+    );
+    if (response.statusCode == 404) {
+      return const FirestoreRestAbfrage(dokumente: <FirestoreRestDocument>[]);
+    }
+    // Erfolg und Fehler über denselben Weg; die Antwort ist eine Liste.
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      _decodeSuccess(response);
+    }
+    final decoded = response.body.trim().isEmpty
+        ? const <dynamic>[]
+        : jsonDecode(response.body);
+    final dokumente = <FirestoreRestDocument>[];
+    DateTime? lesezeit;
+    if (decoded is List) {
+      for (final element in decoded.whereType<Map>()) {
+        final eintrag = _castMap(element);
+        final rohZeit = eintrag['readTime'];
+        final zeit = rohZeit is String ? DateTime.tryParse(rohZeit) : null;
+        if (zeit != null && (lesezeit == null || zeit.isAfter(lesezeit))) {
+          lesezeit = zeit;
+        }
+        final dokument = eintrag['document'];
+        if (dokument is Map) {
+          dokumente.add(FirestoreRestDocument.fromJson(_castMap(dokument)));
+        }
+      }
+    }
+    return FirestoreRestAbfrage(
+      dokumente: List<FirestoreRestDocument>.unmodifiable(dokumente),
+      lesezeit: lesezeit,
+    );
+  }
+
+  /// Löscht ein Dokument endgültig, nur wenn es seit [updateTimePrecondition]
+  /// unverändert ist (verletzte Vorbedingung: [SyncPreconditionException]).
+  Future<void> deleteDocument(
+    String documentPath, {
+    required DateTime updateTimePrecondition,
+  }) async {
+    final headers = await _authHeaders();
+    final response = await _send(
+      () => _http.delete(
+        _documentUri(
+          documentPath,
+          queryParameters: <String, String>{
+            'currentDocument.updateTime': updateTimePrecondition
+                .toUtc()
+                .toIso8601String(),
+          },
+        ),
+        headers: headers,
+      ),
+      zeitlimit: schreibZeitlimit,
+    );
+    if (response.statusCode == 404) return;
+    _decodeSuccess(response);
+  }
+
   Future<Map<String, String>> _authHeaders({
     bool contentTypeJson = false,
   }) async {
@@ -206,6 +307,18 @@ class FirestoreRestClient {
     }
     return const <String, dynamic>{};
   }
+}
+
+/// Ergebnis von [FirestoreRestClient.runQuery].
+class FirestoreRestAbfrage {
+  /// Hält die gelieferten Dokumente und die Serverzeit der Abfrage.
+  const FirestoreRestAbfrage({required this.dokumente, this.lesezeit});
+
+  /// Gelieferte Dokumente.
+  final List<FirestoreRestDocument> dokumente;
+
+  /// Serverzeit, zu der die Abfrage gelesen hat; `null`, wenn sie fehlt.
+  final DateTime? lesezeit;
 }
 
 /// Dekodiertes Firestore-REST-Dokument aus einer Collection-Abfrage.

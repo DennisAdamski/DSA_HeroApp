@@ -11,7 +11,10 @@ import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 
 /// Firestore-Gateway fuer privaten Konto-Sync von Helden und Zustaenden.
 class FirestoreHeroSyncGateway
-    implements RemoteHeroSyncGateway, RemoteHeroStateSyncGateway {
+    implements
+        RemoteHeroSyncGateway,
+        RemoteHeroStateSyncGateway,
+        RemoteTombstoneBereinigung {
   /// Erstellt das Gateway fuer den privaten User-Subtree.
   FirestoreHeroSyncGateway({
     required this.userId,
@@ -296,6 +299,49 @@ class FirestoreHeroSyncGateway
     if (fehler != null) {
       throw fehler;
     }
+  }
+
+  @override
+  Future<void> entferneHeldenTombstone(
+    String heroId, {
+    required String revision,
+  }) => _entferneTombstone(
+    _heroesCollection.doc(heroId),
+    revision,
+    SyncDokumentArt.held,
+  );
+
+  @override
+  Future<void> entferneZustandsTombstone(
+    String heroId, {
+    required String revision,
+  }) => _entferneTombstone(
+    _statesCollection.doc(heroId),
+    revision,
+    SyncDokumentArt.zustand,
+  );
+
+  // Löscht in einer Transaktion nur den unveränderten Tombstone (SYNC-11).
+  Future<void> _entferneTombstone(
+    DocumentReference<Map<String, dynamic>> docRef,
+    String revision,
+    SyncDokumentArt art,
+  ) async {
+    await _mapFirestoreErrors(
+      () => _firestore.runTransaction((transaction) async {
+        final snapshot = await transaction.get(docRef);
+        final data = snapshot.data();
+        if (!snapshot.exists || data == null) return;
+        final geloescht = data[HeroSyncRecordFields.deleted] as bool? ?? false;
+        final aktuelleRevision = revisionAusDokument(
+          data,
+          _readTimestamp(data[HeroSyncRecordFields.lastModified]),
+          art: art,
+        );
+        if (!geloescht || aktuelleRevision != revision) return;
+        transaction.delete(docRef);
+      }),
+    );
   }
 
   /// Führt eine Firestore-Operation aus und übersetzt [FirebaseException]s
