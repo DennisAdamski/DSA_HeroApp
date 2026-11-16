@@ -80,11 +80,7 @@ AdvancementOption? _talentOption(AdvancementContext context, String id) {
   final entry = hero.talents[id] ?? const HeroTalentEntry();
   final befund = context.begabungen.talent(def);
   final begabt = befund.istBegabt(gifted: entry.gifted);
-  final combat =
-      def.group == 'Kampftalent' ||
-      def.type == 'nahkampf' ||
-      def.type == 'fernkampf' ||
-      def.weaponCategory.isNotEmpty;
+  final combat = def.istKampftalent;
   final attrs = context.permanentAttributes;
   var maximum = combat
       ? computeCombatTalentMaxValue(
@@ -99,7 +95,7 @@ AdvancementOption? _talentOption(AdvancementContext context, String id) {
         );
   if (hero.isEpisch && hero.epicUnactivatedTalentIds.contains(id)) {
     final names = combat
-        ? (def.type == 'fernkampf' ? ['FF', 'GE', 'KK'] : ['GE', 'KK'])
+        ? (def.istFernkampf ? ['FF', 'GE', 'KK'] : ['GE', 'KK'])
         : def.attributes;
     for (final name in names) {
       final code = parseAttributeCode(name);
@@ -122,6 +118,7 @@ AdvancementOption? _talentOption(AdvancementContext context, String id) {
       def.group == 'Wissenstalente'
           ? LernzielArt.wissenstalent
           : LernzielArt.sonstiges,
+      catalog: context.catalog,
     ),
     spaltenHerleitung: herleiteTalentLernspalte(
       basisSpalte: def.steigerung,
@@ -208,7 +205,11 @@ AdvancementOption? _spellOption(
   return AdvancementOption(
     lernregeln: Lernregeln(
       erleichterungBisWert: lernspalte.hexalogieBisWert,
-      faktoren: lernkostenFaktoren(hero, LernzielArt.zauber),
+      faktoren: lernkostenFaktoren(
+        hero,
+        LernzielArt.zauber,
+        catalog: context.catalog,
+      ),
       spaltenHerleitung: lernspalte.herleitung,
       hinweise: <String>[
         ?lernspalte.hexalogieHinweis,
@@ -256,7 +257,11 @@ AdvancementOption? _languageOption(AdvancementContext context, String id) {
     maxValue: def.maxWert,
     learnCost: learnCostFromKomplexitaet(complexity),
     lernregeln: Lernregeln(
-      faktoren: lernkostenFaktoren(hero, LernzielArt.sprachschrift),
+      faktoren: lernkostenFaktoren(
+        hero,
+        LernzielArt.sprachschrift,
+        catalog: context.catalog,
+      ),
       spaltenHerleitung: herleiteTalentLernspalte(
         basisSpalte: basisSpalte,
         befund: befund,
@@ -284,7 +289,11 @@ AdvancementOption? _scriptOption(AdvancementContext context, String id) {
     maxValue: def.maxWert,
     learnCost: learnCostFromKomplexitaet(_mitBefund(def.steigerung, befund)),
     lernregeln: Lernregeln(
-      faktoren: lernkostenFaktoren(hero, LernzielArt.sprachschrift),
+      faktoren: lernkostenFaktoren(
+        hero,
+        LernzielArt.sprachschrift,
+        catalog: context.catalog,
+      ),
       spaltenHerleitung: herleiteTalentLernspalte(
         basisSpalte: def.steigerung,
         befund: befund,

@@ -34,6 +34,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_hand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_zusatz_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_orientieren_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_auftrag_rules.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_breakpoints.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
@@ -151,7 +152,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
             bottomNavigationBar:
                 s != null &&
                     snapshot != null &&
-                    MediaQuery.sizeOf(context).width < kGefechtZweispaltig
+                    kartoBreiteVon(context) == KartoBreite.schmal
                 ? _schnellleiste(s, snapshot, katalog)
                 : null,
             body: s == null
@@ -594,8 +595,8 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
 
   Widget _handlung(Gefechtszustand s, HeroComputedSnapshot snapshot) {
     final vorbereitet = s.handlung!.vorbereitung != null;
-    final p = vorbereitet ? pruefeGefechtsVorbereitung(s, snapshot) : null;
     final k = ref.watch(heroRulesCatalogProvider(widget.heroId)).asData?.value;
+    final p = vorbereitet ? pruefeGefechtsVorbereitung(s, snapshot, k) : null;
     final schuss =
         s.handlung!.art == Gefechtshandlungsart.zielen && p?.rest == 0;
     final schusspruefung = schuss && k != null

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 
 /// Kompakte editierbare Zeile fuer Inspector-Werte.
@@ -40,7 +41,6 @@ class InspectorValueRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final buttonSize = adaptiveMinTouchTarget(context);
-    final sign = modifier > 0 ? '+' : '';
     final modColor = modifier > 0
         ? theme.colorScheme.primary
         : modifier < 0
@@ -72,7 +72,7 @@ class InspectorValueRow extends StatelessWidget {
             child: FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
-                '$sign$modifier',
+                mitVorzeichen(modifier, nullText: '0'),
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.bold,

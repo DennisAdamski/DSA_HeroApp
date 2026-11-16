@@ -237,7 +237,7 @@ class _MagicRitualsSection extends StatelessWidget {
                               key: ValueKey<String>(
                                 'magic-ritual-category-remove-$categoryIndex',
                               ),
-                              icon: const Icon(Icons.delete, size: 18),
+                              icon: const Icon(Icons.delete_outline, size: 18),
                               onPressed: () => _removeCategory(categoryIndex),
                               tooltip: 'Kategorie entfernen',
                             ),
@@ -359,7 +359,10 @@ class _MagicRitualsSection extends StatelessWidget {
                                       key: ValueKey<String>(
                                         'magic-ritual-remove-$categoryIndex-$ritualIndex',
                                       ),
-                                      icon: const Icon(Icons.delete, size: 18),
+                                      icon: const Icon(
+                                        Icons.delete_outline,
+                                        size: 18,
+                                      ),
                                       onPressed: () {
                                         _removeRitual(
                                           categoryIndex,

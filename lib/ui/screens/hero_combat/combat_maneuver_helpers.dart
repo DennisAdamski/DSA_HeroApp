@@ -96,7 +96,7 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
   }
 
   bool _isUnarmedTalentName(String raw) {
-    final normalized = _normalizeToken(raw);
+    final normalized = normalizeCombatToken(raw);
     return normalized == 'raufen' || normalized == 'ringen';
   }
 
@@ -105,7 +105,7 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
     RulesCatalog catalog,
     MainWeaponSlot slot,
   ) {
-    final weaponTypeToken = _normalizeToken(
+    final weaponTypeToken = normalizeCombatToken(
       slot.weaponType.trim().isEmpty ? slot.name : slot.weaponType,
     );
     final talentId = slot.talentId.trim();
@@ -122,10 +122,12 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
     if (talent == null) {
       return null;
     }
-    final talentToken = _normalizeToken(talent.name);
+    final talentToken = normalizeCombatToken(talent.name);
     final candidates = catalog.weapons
-        .where((weapon) => _normalizeToken(weapon.combatSkill) == talentToken)
-        .where((weapon) => _normalizeToken(weapon.name) == weaponTypeToken)
+        .where(
+          (weapon) => normalizeCombatToken(weapon.combatSkill) == talentToken,
+        )
+        .where((weapon) => normalizeCombatToken(weapon.name) == weaponTypeToken)
         .toList(growable: false);
     if (candidates.length != 1) {
       return null;

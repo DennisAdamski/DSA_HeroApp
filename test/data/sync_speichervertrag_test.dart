@@ -184,7 +184,7 @@ void main() {
           await a.repo.saveHero(held);
           return held;
         },
-        uebernimmKatalog: (_) async {},
+        uebernimmKatalog: (_) async => 0,
         speichereGaleriebild: ({
           required heroId,
           required entryId,

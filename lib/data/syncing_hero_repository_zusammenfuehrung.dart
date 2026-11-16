@@ -9,6 +9,7 @@ class _ZusammenfuehrungsPlan {
     required this.felder,
     required this.vonLokal,
     required this.vonOnline,
+    this.zustandLokal,
   });
 
   /// Zusammengeführter Held oder `null` bei einem reinen Zustandskonflikt.
@@ -26,6 +27,10 @@ class _ZusammenfuehrungsPlan {
 
   final int vonLokal;
   final int vonOnline;
+
+  /// Lokaler Zustand, aus dem ein eigenständiger Zustandskonflikt gerechnet
+  /// wurde; sonst `null`.
+  final HeroState? zustandLokal;
 }
 
 /// Schlüssel des Zustands, wenn er nur als Ganzes gewählt werden kann.
@@ -115,10 +120,25 @@ extension _Zusammenfuehrung on SyncingHeroRepository {
       return false;
     }
     final held = HeroSheet.fromJson(zusammen.ergebnis);
+    final HeroSheet? widerspruch;
+    final RemoteHeroRecord gespeichert;
     try {
-      await _schreibeHeld(held, record, lokal: frisch);
+      (gespeichert, widerspruch) = await _schreibeHeld(
+        held,
+        record,
+        lokal: frisch,
+      );
     } on SyncPreconditionException {
       return false;
+    }
+    if (widerspruch != null) {
+      // Während des Uploads lokal widersprüchlich weitergeändert: Konflikt
+      // mit beiden frischen Ständen, ohne gemeinsame Basis.
+      await _openHeroConflict(
+        localHero: widerspruch,
+        remoteRecord: gespeichert,
+        localTimestamp: widerspruch.lastModified,
+      );
     }
     return true;
   }
@@ -152,8 +172,10 @@ extension _Zusammenfuehrung on SyncingHeroRepository {
         heroStateContentHash(frisch) != heroStateContentHash(lokal)) {
       return false;
     }
+    final HeroState? widerspruch;
+    final RemoteHeroStateRecord gespeichert;
     try {
-      await _schreibeZustand(
+      (gespeichert, widerspruch) = await _schreibeZustand(
         heroId,
         HeroState.fromJson(zusammen.ergebnis),
         record,
@@ -161,6 +183,13 @@ extension _Zusammenfuehrung on SyncingHeroRepository {
       );
     } on SyncPreconditionException {
       return false;
+    }
+    if (widerspruch != null) {
+      await _openStateConflict(
+        heroId: heroId,
+        localState: widerspruch,
+        remoteRecord: gespeichert,
+      );
     }
     return true;
   }
@@ -202,6 +231,7 @@ extension _Zusammenfuehrung on SyncingHeroRepository {
         felder: zustand.konflikte,
         vonLokal: zustand.vonLokal,
         vonOnline: zustand.vonOnline,
+        zustandLokal: lokal,
       );
     }
     return null;
@@ -336,7 +366,18 @@ extension _Zusammenfuehrung on SyncingHeroRepository {
       entscheidungen,
     );
     _pruefePlan(plan);
-    await _schreibeZustand(heroId, plan!.zustand!, details.remoteRecord);
+    final (_, widerspruch) = await _schreibeZustand(
+      heroId,
+      plan!.zustand!,
+      details.remoteRecord,
+      lokal: plan.zustandLokal ?? details.localState,
+    );
+    if (widerspruch != null) {
+      // Lokal widersprüchlich weitergeändert: mit frischen Ständen neu stellen.
+      throw const SyncPreconditionException(
+        'Der Zustand wurde während der Zusammenführung lokal geändert.',
+      );
+    }
   }
 
   void _pruefePlan(_ZusammenfuehrungsPlan? plan) {
@@ -355,10 +396,18 @@ extension _Zusammenfuehrung on SyncingHeroRepository {
 
   /// Schreibt den zusammengeführten Helden online (auf Basis von [record])
   /// und lokal und merkt ihn als neue Basis.
-  Future<void> _schreibeHeld(
+  ///
+  /// [lokal] ist der lokale Stand, aus dem [held] gerechnet wurde. Der Upload
+  /// dauert; speichert der Nutzer währenddessen, darf die Zusammenführung
+  /// seine Änderung nicht überschreiben. Sie wird dann auf [held] übertragen
+  /// (Dreiwege-Zusammenführung mit [lokal] als Ausgang) und bleibt als
+  /// ausstehender Upload erkennbar. Widerspricht sie dem Online-Stand, bleibt
+  /// lokal alles stehen, die Basis entfällt, und der zweite Rückgabewert
+  /// nennt den lokalen Stand, zu dem der Aufrufer den Konflikt stellt.
+  Future<(RemoteHeroRecord, HeroSheet?)> _schreibeHeld(
     HeroSheet held,
     RemoteHeroRecord record, {
-    HeroSheet? lokal,
+    required HeroSheet lokal,
   }) async {
     final online = record.hero;
     var gespeichert = record;
@@ -367,20 +416,50 @@ extension _Zusammenfuehrung on SyncingHeroRepository {
         held,
         previousRevision: record.revision,
       );
+      _merkeUeberholt(_heroKey(held.id), record.revision);
     }
-    final vorher = lokal ?? await local.loadHeroById(held.id);
-    if (vorher == null || heroContentHash(vorher) != heroContentHash(held)) {
-      await local.saveHero(held);
-    }
-    await _storeHeroMetadata(held, gespeichert);
+    final widerspruch = await _lokaleReihenfolge.reiheEin<HeroSheet?>(
+      speicher: this,
+      heroId: held.id,
+      vorgang: () async {
+        final jetzt = await local.loadHeroById(held.id);
+        if (jetzt == null) {
+          // Inzwischen lokal gelöscht: Die Löschung regelt ihr eigener Weg.
+          return null;
+        }
+        if (heroContentHash(jetzt) == heroContentHash(lokal)) {
+          if (heroContentHash(jetzt) != heroContentHash(held)) {
+            await local.saveHero(held);
+          }
+          await _storeHeroMetadata(held, gespeichert);
+          return null;
+        }
+        final uebertragen = fuehreSyncZusammen(
+          basis: lokal.toJson(),
+          lokal: jetzt.toJson(),
+          online: held.toJson(),
+          regeln: heldZusammenfuehrungsRegeln,
+        );
+        if (!uebertragen.vollstaendig) {
+          await basisStore.vergiss(_heroKey(held.id));
+          return jetzt;
+        }
+        await local.saveHero(HeroSheet.fromJson(uebertragen.ergebnis));
+        // Basis ist die zusammengeführte Fassung; die übertragene Änderung
+        // weicht davon ab und geht mit dem nächsten Upload hoch.
+        await _storeHeroMetadata(held, gespeichert);
+        return null;
+      },
+    );
+    return (gespeichert, widerspruch);
   }
 
   /// Wie [_schreibeHeld] für den Laufzeitzustand.
-  Future<void> _schreibeZustand(
+  Future<(RemoteHeroStateRecord, HeroState?)> _schreibeZustand(
     String heroId,
     HeroState zustand,
     RemoteHeroStateRecord record, {
-    HeroState? lokal,
+    required HeroState lokal,
   }) async {
     final gateway = _stateRemote!;
     final online = record.state;
@@ -392,12 +471,42 @@ extension _Zusammenfuehrung on SyncingHeroRepository {
         zustand,
         previousRevision: record.revision,
       );
+      _merkeUeberholt(_stateKey(heroId), record.revision);
+      _merkeEigeneZustandsRevision(heroId, gespeichert.revision);
     }
-    final vorher = lokal ?? await local.loadHeroState(heroId);
-    if (vorher == null ||
-        heroStateContentHash(vorher) != heroStateContentHash(zustand)) {
-      await local.saveHeroState(heroId, zustand);
-    }
-    await _storeStateMetadata(heroId, zustand, gespeichert);
+    final widerspruch = await _lokaleReihenfolge.reiheEin<HeroState?>(
+      speicher: this,
+      heroId: heroId,
+      vorgang: () async {
+        final jetzt = await local.loadHeroState(heroId);
+        if (jetzt == null) {
+          return null;
+        }
+        if (heroStateContentHash(jetzt) == heroStateContentHash(lokal)) {
+          if (heroStateContentHash(jetzt) != heroStateContentHash(zustand)) {
+            await local.saveHeroState(heroId, zustand);
+          }
+          await _storeStateMetadata(heroId, zustand, gespeichert);
+          return null;
+        }
+        final uebertragen = fuehreSyncZusammen(
+          basis: lokal.toJson(),
+          lokal: jetzt.toJson(),
+          online: zustand.toJson(),
+          regeln: zustandZusammenfuehrungsRegeln,
+        );
+        if (!uebertragen.vollstaendig) {
+          await basisStore.vergiss(_stateKey(heroId));
+          return jetzt;
+        }
+        await local.saveHeroState(
+          heroId,
+          HeroState.fromJson(uebertragen.ergebnis),
+        );
+        await _storeStateMetadata(heroId, zustand, gespeichert);
+        return null;
+      },
+    );
+    return (gespeichert, widerspruch);
   }
 }

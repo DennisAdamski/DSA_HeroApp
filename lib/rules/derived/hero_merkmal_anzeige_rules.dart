@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_herkunft.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 
 /// Herkunft eines Eintrags aus Sicht der Anzeige.
 enum MerkmalHerkunft {
@@ -142,12 +143,13 @@ String? _wirkungstext(HeroTraitEffect wirkung, HeroMerkmal eintrag) {
     case HeroTraitEffectArt.basiswert:
       final betrag = merkmalBasiswertBetrag(wirkung, eintrag);
       if (betrag == null || betrag == 0) return null;
-      return '${_basiswertName(wirkung.ziel)} ${_vorzeichen(betrag)}';
+      return '${_basiswertName(wirkung.ziel)} ${mitVorzeichen(betrag, nullText: '+0')}';
     case HeroTraitEffectArt.eigenschaft:
       final code = parseAttributeCode(eintrag.auswahl);
       if (code == null) return null;
       final betrag = merkmalEigenschaftBetrag(wirkung, eintrag);
-      final text = '${attributeCodeKey(code)} ${_vorzeichen(betrag)}';
+      final text =
+          '${attributeCodeKey(code)} ${mitVorzeichen(betrag, nullText: '+0')}';
       return wirkung.startwert ? '$text (auch Startwert)' : text;
     case HeroTraitEffectArt.schalter:
       return switch (wirkung.ziel) {
@@ -157,7 +159,7 @@ String? _wirkungstext(HeroTraitEffect wirkung, HeroMerkmal eintrag) {
         _ => null,
       };
     case HeroTraitEffectArt.wundschwelle:
-      return 'Wundschwellen ${_vorzeichen(wirkung.betrag)}';
+      return 'Wundschwellen ${mitVorzeichen(wirkung.betrag, nullText: '+0')}';
     case HeroTraitEffectArt.rast:
       final stufe = merkmalRastStufe(wirkung, eintrag);
       return switch (wirkung.ziel) {
@@ -214,4 +216,3 @@ String _basiswertName(String ziel) => switch (ziel) {
 };
 
 // Vorzeichen mit typografischem Minus.
-String _vorzeichen(int betrag) => betrag < 0 ? '−${-betrag}' : '+$betrag';

@@ -9,7 +9,7 @@
 
 import 'dart:convert';
 
-import 'package:dsa_heldenverwaltung/catalog/reisebericht_def.dart';
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
@@ -170,13 +170,14 @@ HeroSheet bucheReiseberichtEntwurf({
   required HeroSheet aktuell,
   required HeroReisebericht entwurf,
   required List<ReiseberichtDef> katalog,
+  required RulesCatalog? catalog,
   bool erzwingen = false,
 }) {
   final basisHash = stableContentHash(basis.reisebericht.toJson());
   final entwurfHash = stableContentHash(entwurf.toJson());
   final aktuellHash = stableContentHash(aktuell.reisebericht.toJson());
   if (entwurfHash == basisHash) {
-    return _bucheReisebericht(aktuell, katalog, aktuell.reisebericht);
+    return _bucheReisebericht(aktuell, katalog, aktuell.reisebericht, catalog);
   }
   if (aktuellHash != basisHash && aktuellHash != entwurfHash) {
     final gleicheBuchungen = _gleicheMengen(
@@ -190,7 +191,7 @@ HeroSheet bucheReiseberichtEntwurf({
       );
     }
   }
-  return _bucheReisebericht(aktuell, katalog, entwurf);
+  return _bucheReisebericht(aktuell, katalog, entwurf, catalog);
 }
 
 // Bucht [entwurf] gegen den gespeicherten Reisebericht von [held].
@@ -198,6 +199,7 @@ HeroSheet _bucheReisebericht(
   HeroSheet held,
   List<ReiseberichtDef> katalog,
   HeroReisebericht entwurf,
+  RulesCatalog? catalog,
 ) {
   final gebucht = held.reisebericht;
   final buchung = berechneReiseberichtBuchung(
@@ -213,6 +215,7 @@ HeroSheet _bucheReisebericht(
     buchung: buchung,
     gebucht: gebucht,
     entwurf: entwurf,
+    catalog: catalog,
   );
 }
 

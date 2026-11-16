@@ -36,7 +36,7 @@ void main() {
       epicAdvantagesActive: false,
     );
     expect(gefechtsZusatzoptionen(snap).single.verfuegbar, false);
-    expect(gefechtswerteFuer(snap).zusatzaktionen, 0);
+    expect(gefechtswerteFuer(snap, katalog: null).zusatzaktionen, 0);
   });
   for (final w in [
     const MainWeaponSlot(id: 'bow', name: 'Erbstück', talentId: 'tal_boegen'),

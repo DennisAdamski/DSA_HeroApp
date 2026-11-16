@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/state/house_rule_pack_admin_providers.dart'
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/house_rule_pack_editor_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 
 /// Verwaltungsoberflaeche fuer eingebaute und importierte Hausregel-Pakete.
 class HouseRulePackManagementScreen extends ConsumerWidget {
@@ -367,27 +368,16 @@ class HouseRulePackManagementScreen extends ConsumerWidget {
     WidgetRef ref,
     HouseRulePackAdminEntry entry,
   ) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAdaptiveConfirmDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Hausregelpaket löschen?'),
-        content: Text(
+      title: 'Hausregelpaket löschen?',
+      content:
           'Das importierte Paket "${entry.title}" wird aus dem '
           'Heldenspeicher entfernt.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Abbrechen'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Löschen'),
-          ),
-        ],
-      ),
+      confirmLabel: 'Löschen',
+      isDestructive: true,
     );
-    if (confirmed != true) {
+    if (confirmed != AdaptiveConfirmResult.confirm) {
       return;
     }
 

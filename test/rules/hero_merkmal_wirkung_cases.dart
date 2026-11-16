@@ -134,10 +134,7 @@ void _merkmalWirkung() {
         catalog: neuerKatalog,
       );
       expect(gesteigert.attributes.kk, 13);
-      expect(
-        computeEffectiveAttributes(gesteigert, catalog: neuerKatalog).kk,
-        15,
-      );
+      expect(_effektiv(gesteigert, neuerKatalog).kk, 15);
       // Gegenprobe: Der Namensweg kennt den neuen Namen nicht und schriebe
       // den Vorteil in den Rohwert.
       expect(

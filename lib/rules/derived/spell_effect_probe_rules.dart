@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_request_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_combat_rules.dart';
@@ -61,8 +62,7 @@ SpellEffectProbenAnpassung probenAnpassungFuer(
     }
     summe += beitrag.wert;
     texte.add(
-      '${beitrag.bezeichnung} ${beitrag.wert > 0 ? '+' : '−'}'
-      '${beitrag.wert.abs()}',
+      '${beitrag.bezeichnung} ${mitVorzeichen(beitrag.wert, nullText: '−0')}',
     );
   }
   return SpellEffectProbenAnpassung(

@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Persistierte Aktivierungs-Overrides fuer magische und goettliche Ressourcen.
@@ -31,15 +32,15 @@ class HeroResourceActivationConfig {
 
   /// Immutable Update fuer einzelne Override-Werte.
   HeroResourceActivationConfig copyWith({
-    Object? magicEnabledOverride = _keepValue,
-    Object? divineEnabledOverride = _keepValue,
+    Object? magicEnabledOverride = keepFieldValue,
+    Object? divineEnabledOverride = keepFieldValue,
     Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroResourceActivationConfig(
-      magicEnabledOverride: identical(magicEnabledOverride, _keepValue)
+      magicEnabledOverride: identical(magicEnabledOverride, keepFieldValue)
           ? this.magicEnabledOverride
           : magicEnabledOverride as bool?,
-      divineEnabledOverride: identical(divineEnabledOverride, _keepValue)
+      divineEnabledOverride: identical(divineEnabledOverride, keepFieldValue)
           ? this.divineEnabledOverride
           : divineEnabledOverride as bool?,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
@@ -70,5 +71,3 @@ class HeroResourceActivationConfig {
     );
   }
 }
-
-const Object _keepValue = Object();

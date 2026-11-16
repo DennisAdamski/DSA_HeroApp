@@ -166,3 +166,13 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Die UI2-Spielansicht führt „Begleiter“ nach „Zustand“, noch vor dem
   Würfelprotokoll. Fehlt der Hexe die SF Vertrautenbindung, ist das nur ein
   Hinweis beim Binden (Meisterentscheid).
+
+- `gefechtswerteFuer` verlangt den Regelkatalog (`required RulesCatalog?
+  katalog`): Ohne ihn fehlt die Waffendefinition, und das Umwandlungsverbot
+  (Waffen ab Länge 200, improvisierte Waffen) griffe nicht. Alle
+  Gefechtsregeln, die Gefechtswerte bilden (Laden, Zielen, Orientieren,
+  Ansagefolge, Meisterparade), reichen den Katalog deshalb durch; die
+  Oberfläche liest ihn aus `heroRulesCatalogProvider(heroId)`.
+- Vor- und Nachteile fragt auch die Vertrautenbindung über `werteMerkmaleAus`
+  ab (`hatVorteilMachtvollerVertrauter`, `hatNachteilKeinVertrauter`), nie in
+  der Oberfläche und nie über die gespeicherte Liste.

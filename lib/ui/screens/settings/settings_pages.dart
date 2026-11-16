@@ -177,6 +177,36 @@ class _AppearanceSettingsPageState
             ],
           ),
         ),
+        const SizedBox(height: 16),
+        _SettingsSectionCard(
+          title: 'Bewegung und Atmosphäre',
+          child: Column(
+            children: [
+              SwitchListTile.adaptive(
+                key: const ValueKey<String>('settings-animationen'),
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Animationen'),
+                subtitle: const Text(
+                  'Weiche Übergänge und Rückmeldungen in der neuen Oberfläche. '
+                  '„Bewegung reduzieren“ im System hat Vorrang.',
+                ),
+                value: ref.watch(animationenProvider),
+                onChanged: actions.setAnimationen,
+              ),
+              SwitchListTile.adaptive(
+                key: const ValueKey<String>('settings-dekorative-effekte'),
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Dekorative Effekte'),
+                subtitle: const Text(
+                  'Kurze Lichtschimmer und magische Akzente bei Interaktionen. '
+                  'Wirkt nur mit eingeschalteten Animationen.',
+                ),
+                value: ref.watch(dekorativeEffekteProvider),
+                onChanged: actions.setDekorativeEffekte,
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -466,15 +496,9 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
         '(${_formatSyncTime(report.zuletztGelaufen)})';
   }
 
-  String _formatSyncTime(DateTime? value) {
-    if (value == null) {
-      return 'Noch nie';
-    }
-    final local = value.toLocal();
-    String two(int number) => number.toString().padLeft(2, '0');
-    return '${local.year}-${two(local.month)}-${two(local.day)} '
-        '${two(local.hour)}:${two(local.minute)}';
-  }
+  String _formatSyncTime(DateTime? value) => value == null
+      ? 'Noch nie'
+      : formatiereSyncZeitpunkt(value, jetzt: DateTime.now());
 }
 
 /// Zeigt die bereits entschiedenen Offline-Helden und macht sie widerrufbar.
@@ -875,7 +899,7 @@ class _HouseRulesSettingsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final disabled = ref.watch(disabledHouseRulePackIdsProvider);
+    final disabled = ref.watch(catalogDisabledHouseRulePackIdsProvider);
     final actions = ref.read(settingsActionsProvider);
     final packCatalogAsync = ref.watch(houseRulePackCatalogProvider);
     final issuesAsync = ref.watch(houseRuleIssueSnapshotProvider);
@@ -1138,26 +1162,14 @@ class _CatalogContentPasswordCard extends ConsumerWidget {
   }
 
   Future<void> _removePassword(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAdaptiveConfirmDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Passwort entfernen?'),
-        content: const Text(
-          'Geschützte Kataloginhalte werden danach wieder als gesperrt angezeigt.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Abbrechen'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Entfernen'),
-          ),
-        ],
-      ),
+      title: 'Passwort entfernen?',
+      content: 'Geschützte Kataloginhalte werden danach wieder als gesperrt angezeigt.',
+      confirmLabel: 'Entfernen',
+      isDestructive: true,
     );
-    if (confirmed != true) {
+    if (confirmed != AdaptiveConfirmResult.confirm) {
       return;
     }
     await ref.read(settingsActionsProvider).setCatalogContentPassword(null);
@@ -1347,6 +1359,14 @@ class _LegalSettingsPage extends StatelessWidget {
                 'BlazeFace aus Googles MediaPipe (Apache-Lizenz 2.0). Es '
                 'rechnet vollständig auf diesem Gerät; Bilder verlassen es '
                 'dafür nicht.',
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Die Ortsauswahl nutzt Ortsnamen der Wiki Aventurica '
+                '(de.wiki-aventurica.de, CC BY-SA). Quelle und Lizenz stehen '
+                'unter „Lizenzen anzeigen“.',
+                key: const ValueKey<String>('settings-legal-wiki-aventurica'),
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: 8),

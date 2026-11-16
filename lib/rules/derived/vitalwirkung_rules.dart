@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/vitalwirkung.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/zustands_buchung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_anzeige_rules.dart';
 
 // Anwendung eines Verbrauchsgegenstands mit Wirkung auf Vitalwerte und Wunden
 // (Heiltrank, Verband, Kraftelixier …).
@@ -246,7 +247,7 @@ DiceLogEntry baueVitalProtokoll({
     if (anwendung.asp > 0) '+${anwendung.asp} AsP',
     if (anwendung.aup > 0) '+${anwendung.aup} AuP',
     for (final eintrag in anwendung.wundenJeZone.entries)
-      '${eintrag.value == 1 ? '1 Wunde' : '${eintrag.value} Wunden'} '
+      '${wundenText(eintrag.value)} '
           '${wundZoneLabel[eintrag.key]} geschlossen',
   ];
   return diceLogEntryFromRoll(

@@ -257,26 +257,6 @@ AdaptiveTableLayout resolveAdaptiveTableLayout(
   );
 }
 
-/// Baut die `DataTable.columns`-Liste aus geordneten Spaltendefinitionen.
-List<DataColumn> buildAdaptiveDataColumns(
-  List<AdaptiveDataColumnSpec> specs, {
-  double? availableWidth,
-  double columnSpacing = 56,
-  double horizontalMargin = 24,
-  Map<String, double> userWidths = const <String, double>{},
-}) {
-  if (availableWidth == null) {
-    return specs.map((spec) => spec.toDataColumn()).toList(growable: false);
-  }
-  return resolveAdaptiveDataTableLayout(
-    specs,
-    availableWidth: availableWidth,
-    columnSpacing: columnSpacing,
-    horizontalMargin: horizontalMargin,
-    userWidths: userWidths,
-  ).columns;
-}
-
 /// Loest adaptive `DataTable`-Spalten auf die verfuegbare Breite auf.
 AdaptiveDataTableLayout resolveAdaptiveDataTableLayout(
   List<AdaptiveDataColumnSpec> specs, {

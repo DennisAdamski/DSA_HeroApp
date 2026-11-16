@@ -565,7 +565,7 @@ void main() {
       deleteButton.onPressed!.call();
       await tester.pumpAndSettle();
 
-      expect(find.text('Gegenstand löschen'), findsOneWidget);
+      expect(find.text('Gegenstand löschen?'), findsOneWidget);
       await tester.tap(find.widgetWithText(TextButton, 'Löschen'));
       await tester.pumpAndSettle();
 

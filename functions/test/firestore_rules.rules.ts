@@ -280,6 +280,33 @@ test("groups_v2: Mitglied verlässt die Gruppe, Besitzer nicht", async () => {
   await assertSucceeds(deleteDoc(doc(owner, "groups_v2", "runde-e")));
 });
 
+test("groups_v2: Besitzer führt ein abgebrochenes Löschen zu Ende", async () => {
+  await legeGruppeAn("runde-h", "owner-h", ["member-h"]);
+  const owner = alsNutzer("owner-h");
+  // Abbruch nach dem eigenen Mitgliedseintrag: Das Gruppendokument steht noch.
+  await assertSucceeds(deleteDoc(doc(owner, "groups_v2", "runde-h", "members", "owner-h")));
+  await assertSucceeds(getDoc(doc(owner, "groups_v2", "runde-h")));
+  await assertSucceeds(getDoc(doc(owner, "groups_v2", "runde-h", "members", "member-h")));
+  await assertSucceeds(deleteDoc(doc(owner, "groups_v2", "runde-h", "members", "member-h")));
+  await assertSucceeds(deleteDoc(doc(owner, "groups_v2", "runde-h")));
+});
+
+test("groups_v2: ein übrig gebliebener Mitgliedseintrag gibt keinen Zugriff mehr", async () => {
+  await legeGruppeAn("runde-i", "owner-i", ["member-i"]);
+  await environment!.withSecurityRulesDisabled(async (context) => {
+    const admin = context.firestore();
+    await setDoc(doc(admin, "groups_v2", "runde-i", "shared_info", "notizen"), { text: "alt" });
+    await deleteDoc(doc(admin, "groups_v2", "runde-i"));
+  });
+  const member = alsNutzer("member-i");
+  await assertFails(getDoc(doc(member, "groups_v2", "runde-i", "shared_info", "notizen")));
+  await assertFails(
+    setDoc(doc(member, "groups_v2", "runde-i", "shared_info", "notizen"), { text: "neu" }),
+  );
+  // Den eigenen Eintrag darf er weiterhin entfernen.
+  await assertSucceeds(deleteDoc(doc(member, "groups_v2", "runde-i", "members", "member-i")));
+});
+
 test("groups_v2: Besitzer entfernt fremde Snapshots, Mitglieder nur den eigenen", async () => {
   await legeGruppeAn("runde-f", "owner-f", ["member-f", "member-f2"]);
   await environment!.withSecurityRulesDisabled(async (context) => {

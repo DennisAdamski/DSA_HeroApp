@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/legal/legal_pages.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_bewegung.dart';
 
 /// Wurzel-Widget der DSA-Heldenverwaltung mit plattformspezifischem Theme.
 class DsaAppShell extends ConsumerWidget {
@@ -43,6 +44,8 @@ class DsaAppShell extends ConsumerWidget {
     final debugModus = ref.watch(debugModusProvider);
     final oberflaeche = ref.watch(oberflaecheProvider);
     final apple = _isApple();
+    final animationen = ref.watch(animationenProvider);
+    final dekoration = ref.watch(dekorativeEffekteProvider);
 
     // Beide Oberflaechen bringen ihr eigenes Theme mit. Die Wahl muss hier
     // fallen und nicht weiter unten: gepushte Routen und Dialoge haengen am
@@ -79,7 +82,12 @@ class DsaAppShell extends ConsumerWidget {
           '/impressum': (_) => ImprintScreen(contact: legalContact),
         },
         builder: (context, child) {
-          if (!debugModus) return child!;
+          child = KartoEffektEinstellungen(
+            animationen: animationen,
+            dekorativeEffekte: dekoration,
+            child: child!,
+          );
+          if (!debugModus) return child;
           final layout = appLayoutOf(context);
           final label = switch (layout) {
             AppLayoutClass.compact => 'Mobil',
@@ -89,7 +97,7 @@ class DsaAppShell extends ConsumerWidget {
           };
           return Stack(
             children: [
-              child!,
+              child,
               Positioned(
                 top: MediaQuery.of(context).padding.top + 4,
                 left: 8,

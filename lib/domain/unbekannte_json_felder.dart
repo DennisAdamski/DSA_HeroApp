@@ -142,7 +142,7 @@ Map<String, Object?> ohneGeaenderteEnumWerte(
 /// Fuer `==` von Modellen, die unbekannte Felder tragen: Zwei Objekte, die
 /// sich nur darin unterscheiden, sind verschiedene Daten.
 bool unbekannteFelderGleich(Map<String, Object?> a, Map<String, Object?> b) {
-  return _jsonGleich(a, b);
+  return jsonRohwertGleich(a, b);
 }
 
 /// Hashwert passend zu [unbekannteFelderGleich].
@@ -153,20 +153,25 @@ int unbekannteFelderHash(Map<String, Object?> felder) {
   return Object.hashAllUnordered(felder.keys);
 }
 
-// Tiefer Vergleich roher JSON-Werte; Map-Reihenfolge zaehlt nicht.
-bool _jsonGleich(Object? a, Object? b) {
+/// Tiefer Vergleich roher JSON-Werte; die Map-Reihenfolge zaehlt nicht.
+///
+/// Zahlen vergleichen wie in Dart (`1 == 1.0`). Der einzige Tiefvergleich
+/// fuer JSON-Rohwerte: unbekannte Felder und der Objektvergleich des Syncs
+/// (`sync_object_diff.dart`) nutzen ihn gemeinsam.
+bool jsonRohwertGleich(Object? a, Object? b) {
+  if (identical(a, b)) return true;
   if (a is Map && b is Map) {
     if (a.length != b.length) return false;
     for (final entry in a.entries) {
       if (!b.containsKey(entry.key)) return false;
-      if (!_jsonGleich(entry.value, b[entry.key])) return false;
+      if (!jsonRohwertGleich(entry.value, b[entry.key])) return false;
     }
     return true;
   }
   if (a is List && b is List) {
     if (a.length != b.length) return false;
     for (var i = 0; i < a.length; i++) {
-      if (!_jsonGleich(a[i], b[i])) return false;
+      if (!jsonRohwertGleich(a[i], b[i])) return false;
     }
     return true;
   }
@@ -182,6 +187,25 @@ Object? _kopie(Object? wert) {
   }
   if (wert is List) {
     return <Object?>[for (final element in wert) _kopie(element)];
+  }
+  return wert;
+}
+
+/// Kanonische Form eines JSON-Werts: Map-Schluessel rekursiv sortiert (als
+/// Text), Listen in ihrer Reihenfolge.
+///
+/// Grundlage fuer stabile Hashes (`stableContentHash`) und den kanonischen
+/// Text der Sync-Zusammenfuehrung; gleiche Inhalte ergeben unabhaengig von der
+/// Einfuegereihenfolge dieselbe Form.
+Object? kanonischeJsonForm(Object? wert) {
+  if (wert is Map) {
+    final schluessel = wert.keys.map((k) => k.toString()).toList()..sort();
+    return <String, Object?>{
+      for (final k in schluessel) k: kanonischeJsonForm(wert[k]),
+    };
+  }
+  if (wert is Iterable) {
+    return wert.map(kanonischeJsonForm).toList(growable: false);
   }
   return wert;
 }

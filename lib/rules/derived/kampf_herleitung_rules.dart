@@ -10,6 +10,8 @@ library;
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/roemische_zahl_rules.dart';
 
 /// Herleitungen der Kampfvorschau für die Haupthand.
 class KampfHerleitungen {
@@ -96,8 +98,6 @@ String? _text(String? wert) {
   final getrimmt = wert?.trim() ?? '';
   return getrimmt.isEmpty ? null : getrimmt;
 }
-
-String _mitVorzeichen(int wert) => wert >= 0 ? '+$wert' : '$wert';
 
 /// Schrittnamen des Parierwaffenanteils in der Haupthand-PA; das Gefecht
 /// trennt damit die Hauptwaffenparade von der Kombination.
@@ -191,7 +191,7 @@ Herleitung herleiteBeKampf({
       betrag: -rgReduktion,
       art: HerleitungsArt.sonderfertigkeit,
       quelle: ruestungsgewoehnung > 0
-          ? 'Rüstungsgewöhnung ${_roemisch(ruestungsgewoehnung)}'
+          ? 'Rüstungsgewöhnung ${roemischeZahl(ruestungsgewoehnung)}'
           : null,
     ),
   ];
@@ -204,13 +204,6 @@ Herleitung herleiteBeKampf({
     ),
   );
 }
-
-String _roemisch(int stufe) => switch (stufe) {
-  1 => 'I',
-  2 => 'II',
-  3 => 'III',
-  _ => '$stufe',
-};
 
 /// Effektive Behinderung: −BE Kampf − BE-Regel des Talents, höchstens 0.
 Herleitung herleiteEbe({
@@ -624,7 +617,8 @@ Herleitung herleitePaMitIniParade({
         bezeichnung: 'INI-Parade-Bonus',
         betrag: iniParadeMod,
         art: HerleitungsArt.modifikator,
-        formel: '(Kampf-INI $kampfInitiative − 11) / 10',
+        formel:
+            'Kampf-INI $kampfInitiative: über 20 +1, über 30 +2, über 40 +3',
       ),
     ],
   );
@@ -658,8 +652,8 @@ Herleitung herleiteTpZuschlag({
   String? geschossName,
 }) {
   final wmHinweis = waffenmeisterKkBasis != 0 || waffenmeisterKkSchwelle != 0
-      ? 'Waffenmeister: Basis ${_mitVorzeichen(waffenmeisterKkBasis)}, '
-            'Schwelle ${_mitVorzeichen(waffenmeisterKkSchwelle)}'
+      ? 'Waffenmeister: Basis ${mitVorzeichen(waffenmeisterKkBasis, nullText: '+0')}, '
+            'Schwelle ${mitVorzeichen(waffenmeisterKkSchwelle, nullText: '+0')}'
       : null;
   return Herleitung(
     bezeichnung: 'TP',
@@ -685,7 +679,7 @@ Herleitung herleiteTpZuschlag({
         HerleitungsSchritt(
           bezeichnung:
               '${zauberName ?? 'Zaubereffekt'} '
-              '(KK ${_mitVorzeichen(zauberKk)})',
+              '(KK ${mitVorzeichen(zauberKk, nullText: '+0')})',
           betrag: zauberTpKk,
           art: HerleitungsArt.zauber,
           formel:

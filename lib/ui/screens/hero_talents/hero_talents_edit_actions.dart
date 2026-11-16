@@ -30,7 +30,6 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
     _draftTalentSpecialAbilities = List<TalentSpecialAbility>.from(
       hero.talentSpecialAbilities,
     );
-    _invalidCombatTalentIds = <String>{};
     _draftSprachen = Map<String, HeroLanguageEntry>.from(hero.sprachen);
     _draftSchriften = Map<String, HeroScriptEntry>.from(hero.schriften);
     _draftMuttersprache = hero.muttersprache;
@@ -74,7 +73,6 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
     }
     _editController.clearSyncSignature();
     _syncDraftFromHero(hero, force: true);
-    _invalidCombatTalentIds = <String>{};
     _editController.startEdit();
   }
 
@@ -82,27 +80,6 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
     final basis = _entwurfBasis;
     if (basis == null) {
       return;
-    }
-    if (widget.scope == _TalentTabScope.combat) {
-      final catalog = await ref.read(rulesCatalogProvider.future);
-      final issues = validateCombatTalentDistribution(
-        talents: catalog.talents,
-        talentEntries: _draftTalents,
-        filter: _matchesScope,
-      );
-      if (issues.isNotEmpty) {
-        if (mounted) {
-          setState(() {
-            _invalidCombatTalentIds = issues
-                .map((entry) => entry.talentId)
-                .toSet();
-          });
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(issues.first.message)));
-        }
-        return;
-      }
-      _invalidCombatTalentIds = <String>{};
     }
     final entwurf = basis.copyWith(
       talents: activateReferencedMetaTalentComponents(
@@ -151,7 +128,6 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
       _editController.clearSyncSignature();
       _syncDraftFromHero(hero, force: true);
     }
-    _invalidCombatTalentIds = <String>{};
     _editController.markDiscarded();
   }
 

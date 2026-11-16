@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/herleitung_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/requirement_checklist.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
 
 /// Ergebnis eines bestaetigten Erwerbsdialogs.
 class ErwerbErgebnis {
@@ -216,9 +217,9 @@ class _ErwerbDialogState extends State<_ErwerbDialog> {
     });
   }
 
-  String _formatDukaten(double value) {
-    return value.toStringAsFixed(1).replaceAll('.', ',');
-  }
+  // Kanonisches Dukatenformat (Kreuzer-genau, Dezimalkomma).
+  String _formatDukaten(double value) =>
+      formatDsaCurrencyDukaten(dukatenToDsaKreuzer(value));
 
   @override
   Widget build(BuildContext context) {

@@ -481,7 +481,7 @@ class _CollectionOpenTile extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 2),
                 child: Text(
-                  'SE alle ${def.seIntervall} Eintraege: ${def.se.map((s) => s.name).join(", ")}',
+                  'SE alle ${def.seIntervall} Einträge: ${def.se.map((s) => s.name).join(", ")}',
                   style: Theme.of(context).textTheme.labelSmall,
                 ),
               ),

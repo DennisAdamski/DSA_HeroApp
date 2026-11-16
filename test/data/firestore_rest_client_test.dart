@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -17,6 +18,21 @@ void main() {
   }
 
   group('FirestoreRestClient', () {
+    test('ein hängender Request endet mit SyncNetworkException', () async {
+      final haengt = MockClient((request) => Completer<http.Response>().future);
+      final schnell = FirestoreRestClient(
+        projectId: 'test-project',
+        idTokenProvider: () async => 'token-1',
+        zeitlimit: const Duration(milliseconds: 20),
+        httpClient: haengt,
+      );
+
+      await expectLater(
+        schnell.getDocument('users/user-1/heroes/h-1'),
+        throwsA(isA<SyncNetworkException>()),
+      );
+    });
+
     test('getDocument parses fields and updateTime', () async {
       final httpClient = MockClient((request) async {
         return http.Response(
@@ -119,6 +135,54 @@ void main() {
       await expectLater(
         client(httpClient).getDocument('users/user-1/heroes/h-1'),
         throwsA(isA<StateError>()),
+      );
+    });
+
+    test('listDocuments blättert über alle Seiten (SYNC-07)', () async {
+      final marken = <String?>[];
+      final httpClient = MockClient((request) async {
+        final marke = request.url.queryParameters['pageToken'];
+        marken.add(marke);
+        expect(request.url.queryParameters['pageSize'], '300');
+        final nummer = marke == null ? 1 : 2;
+        return http.Response(
+          jsonEncode({
+            'documents': [
+              {
+                'name':
+                    'projects/test-project/databases/(default)/documents/'
+                    'users/user-1/heroes/h-$nummer',
+                'fields': <String, Object?>{},
+              },
+            ],
+            if (marke == null) 'nextPageToken': 'seite-2',
+          }),
+          200,
+        );
+      });
+
+      final dokumente = await client(httpClient)
+          .listDocuments('users/user-1/heroes');
+
+      expect(dokumente.map((d) => d.id), <String>['h-1', 'h-2']);
+      expect(marken, <String?>[null, 'seite-2']);
+    });
+
+    test('ein hängender Request endet als Netzwerkfehler (SYNC-06)', () async {
+      final httpClient = MockClient((request) async {
+        await Future<void>.delayed(const Duration(seconds: 5));
+        return http.Response('{}', 200);
+      });
+      final rest = FirestoreRestClient(
+        projectId: 'test-project',
+        idTokenProvider: () async => 'token-1',
+        httpClient: httpClient,
+        zeitlimit: const Duration(milliseconds: 20),
+      );
+
+      await expectLater(
+        rest.getDocument('users/user-1/heroes/h-1'),
+        throwsA(isA<SyncNetworkException>()),
       );
     });
   });

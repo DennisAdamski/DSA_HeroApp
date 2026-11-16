@@ -6,6 +6,22 @@ import 'avatar_file_storage_stub.dart'
     if (dart.library.js_interop) 'avatar_file_storage_web.dart'
     if (dart.library.io) 'avatar_file_storage_io.dart';
 
+/// Ob [dateiname] ein einzelner Dateiname ohne Pfadangabe ist.
+///
+/// Avatar-Dateinamen stehen im Heldenbogen und kommen damit auch aus
+/// importierten Heldendateien; Helden-ID und Eintrags-ID, aus denen neue Namen
+/// entstehen, ebenfalls. Mit Trennern, `..` oder einem absoluten Pfad läse,
+/// schriebe oder löschte die Dateiablage außerhalb des Avatar-Ordners.
+bool istSichererAvatarDateiname(String dateiname) {
+  return dateiname.isNotEmpty &&
+      dateiname != '.' &&
+      dateiname != '..' &&
+      !dateiname.contains('/') &&
+      !dateiname.contains(r'\') &&
+      !dateiname.contains(':') &&
+      !dateiname.codeUnits.any((einheit) => einheit < 0x20);
+}
+
 /// Plattformfassade fuer die Ablage von Avatar-Bildern.
 ///
 /// Die IO-Implementierung schreibt in den `avatare`-Ordner des

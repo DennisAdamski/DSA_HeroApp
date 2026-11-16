@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:hive_ce/hive.dart';
 
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
+import 'package:dsa_heldenverwaltung/data/unlesbare_helden_quelle.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 
@@ -12,7 +14,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 /// Haelt einen In-Memory-Index ([_heroIndex]) aktuell, der ueber
 /// Hive-Box-Events synchron gehalten wird.
 /// Wird ueber [create] asynchron initialisiert.
-class HiveHeroRepository implements HeroRepository {
+class HiveHeroRepository implements HeroRepository, UnlesbareHeldenQuelle {
   HiveHeroRepository._(this._heroesBox, this._statesBox);
 
   static const _heroesBoxName = 'heroes_v1';
@@ -29,6 +31,48 @@ class HiveHeroRepository implements HeroRepository {
       StreamController<Map<String, HeroSheet>>.broadcast();
 
   StreamSubscription<BoxEvent>? _heroEventSubscription;
+
+  /// Schlüssel der Einträge, die sich nicht als Held lesen lassen.
+  ///
+  /// Sie bleiben unverändert in der Box liegen (eine spätere Version kann sie
+  /// vielleicht lesen) und erscheinen in keiner Liste.
+  List<String> get unlesbareHelden =>
+      List<String>.unmodifiable(_unlesbar.keys.toList()..sort());
+
+  @override
+  List<UnlesbarerHeld> get unlesbareHeldenEintraege =>
+      List<UnlesbarerHeld>.unmodifiable(<UnlesbarerHeld>[
+        for (final schluessel in unlesbareHelden)
+          UnlesbarerHeld(schluessel: schluessel, name: _unlesbar[schluessel]),
+      ]);
+
+  // Schlüssel unlesbarer Einträge und, falls lesbar, ihr Rohname.
+  final Map<String, String?> _unlesbar = <String, String?>{};
+
+  // Liest einen Helden; `null` und ein Vermerk, wenn der Eintrag unlesbar ist.
+  // Ein einzelner beschädigter Eintrag darf weder das Öffnen des Profils noch
+  // die Anzeige der übrigen Helden verhindern.
+  HeroSheet? _liesHeld(String key, Map<dynamic, dynamic> raw) {
+    try {
+      final hero = HeroSheet.fromJson(raw.cast<String, dynamic>());
+      _unlesbar.remove(key);
+      return hero;
+    } on Object catch (error, stackTrace) {
+      final name = raw['name'];
+      _unlesbar[key] = name is String ? name : null;
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stackTrace,
+          library: 'hive_hero_repository',
+          context: ErrorDescription(
+            'Held "$key" ist nicht lesbar und wird übersprungen',
+          ),
+        ),
+      );
+      return null;
+    }
+  }
 
   /// Erstellt und initialisiert das Repository asynchron.
   ///
@@ -55,8 +99,10 @@ class HiveHeroRepository implements HeroRepository {
       if (raw is! Map) {
         continue;
       }
-      final hero = HeroSheet.fromJson(raw.cast<String, dynamic>());
-      _heroIndex[hero.id] = hero;
+      final hero = _liesHeld(key.toString(), raw);
+      if (hero != null) {
+        _heroIndex[hero.id] = hero;
+      }
     }
   }
 
@@ -71,12 +117,17 @@ class HiveHeroRepository implements HeroRepository {
     }
     final raw = event.value;
     if (raw is Map) {
-      final hero = HeroSheet.fromJson(raw.cast<String, dynamic>());
-      _heroIndex[hero.id] = hero;
-      if (hero.id != key) {
+      final hero = _liesHeld(key, raw);
+      if (hero == null) {
         _heroIndex.remove(key);
+      } else {
+        _heroIndex[hero.id] = hero;
+        if (hero.id != key) {
+          _heroIndex.remove(key);
+        }
       }
     } else {
+      _unlesbar.remove(key);
       _heroIndex.remove(key);
     }
     _heroIndexController.add(_buildHeroIndexSnapshot());
@@ -119,8 +170,10 @@ class HiveHeroRepository implements HeroRepository {
     if (raw is! Map) {
       return null;
     }
-    final hero = HeroSheet.fromJson(raw.cast<String, dynamic>());
-    _heroIndex[hero.id] = hero;
+    final hero = _liesHeld(heroId, raw);
+    if (hero != null) {
+      _heroIndex[hero.id] = hero;
+    }
     return hero;
   }
 

@@ -4,13 +4,17 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
+import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
+import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
+import 'package:dsa_heldenverwaltung/ui2/karte/karto_karten_blatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reise_tabelle.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseroute_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
@@ -135,10 +139,21 @@ Future<void> zeigeReiseroute({
   );
 }
 
-/// Die ganze Reiseroute: Übersicht, Filter nach Abenteuer und Zeitleiste.
+/// Darstellung der Stationen im Reiseroute-Blatt.
+enum KartoReiseAnsicht {
+  /// Zeilen mit Datum, Ort, Abenteuer und Notiz.
+  tabelle,
+
+  /// Senkrechte Zeitleiste mit Links zu Karte und Wiki.
+  zeitleiste,
+}
+
+/// Die ganze Reiseroute: Übersicht, Filter nach Abenteuer und die Stationen
+/// als Tabelle oder Zeitleiste.
 ///
 /// Liest den Helden selbst (`heroComputedProvider`), damit jede Änderung
-/// sofort erscheint.
+/// sofort erscheint. Beim Öffnen fordert das Blatt das Ortsverzeichnis von
+/// Avesmaps an.
 class KartoReiserouteBlatt extends ConsumerStatefulWidget {
   /// Blatt für den Helden [heroId].
   const KartoReiserouteBlatt({super.key, required this.heroId});
@@ -160,6 +175,18 @@ class _KartoReiserouteBlattState extends ConsumerState<KartoReiserouteBlatt>
 
   /// Gewähltes Abenteuer; `null` zeigt alle Stationen.
   String? _abenteuerId;
+
+  KartoReiseAnsicht _ansicht = KartoReiseAnsicht.tabelle;
+
+  @override
+  void initState() {
+    super.initState();
+    // Nach dem Bauen: Ein Provider darf währenddessen nicht geändert werden.
+    Future<void>.microtask(() {
+      if (!mounted) return;
+      ref.read(avesmapsOrteAnforderungProvider.notifier).fordereAn();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -195,6 +222,13 @@ class _KartoReiserouteBlattState extends ConsumerState<KartoReiserouteBlatt>
         Row(
           children: [
             Expanded(child: Text('Reiseroute', style: texte.titel)),
+            IconButton(
+              key: const ValueKey<String>('karto-reise-blatt-karte'),
+              tooltip: 'Auf der Karte zeigen',
+              icon: const Icon(Icons.map_outlined),
+              onPressed: () => zeigeKarte(context, heroId: heroId),
+            ),
+            const SizedBox(width: Abstand.knapp),
             FilledButton.icon(
               key: const ValueKey<String>('karto-reise-blatt-station-neu'),
               onPressed: bedienbar ? stationAnlegen : null,
@@ -246,6 +280,31 @@ class _KartoReiserouteBlattState extends ConsumerState<KartoReiserouteBlatt>
           ),
         ],
         if (fehler != null) _Fehler(fehler!),
+        if (etappen.isNotEmpty) ...[
+          const SizedBox(height: Abstand.weit),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: SegmentedButton<KartoReiseAnsicht>(
+              key: const ValueKey<String>('karto-reise-ansicht'),
+              showSelectedIcon: false,
+              segments: const [
+                ButtonSegment(
+                  value: KartoReiseAnsicht.tabelle,
+                  icon: Icon(Icons.table_rows_outlined),
+                  label: Text('Tabelle'),
+                ),
+                ButtonSegment(
+                  value: KartoReiseAnsicht.zeitleiste,
+                  icon: Icon(Icons.timeline_outlined),
+                  label: Text('Zeitleiste'),
+                ),
+              ],
+              selected: {_ansicht},
+              onSelectionChanged: (auswahl) =>
+                  setState(() => _ansicht = auswahl.first),
+            ),
+          ),
+        ],
         const SizedBox(height: Abstand.block),
         if (etappen.isEmpty)
           Text(
@@ -253,12 +312,25 @@ class _KartoReiserouteBlattState extends ConsumerState<KartoReiserouteBlatt>
             'und Abenteuer werden aus dem laufenden Spiel vorgeschlagen.',
             style: texte.fliess.copyWith(color: karto.schriftLeise),
           )
+        else if (_ansicht == KartoReiseAnsicht.tabelle)
+          KartoReiseTabelle(
+            etappen: etappen,
+            abenteuer: held.adventures,
+            onStation: bedienbar ? stationBearbeiten : null,
+          )
         else
           KartoReiseZeitleiste(
             etappen: etappen,
             onStation: bedienbar ? stationBearbeiten : null,
             mitKartenlink: true,
+            orte: ref.watch(ortsverzeichnisProvider),
           ),
+        const SizedBox(height: Abstand.block),
+        Text(
+          kOrtsdatenQuellen,
+          key: const ValueKey<String>('karto-reise-quellen'),
+          style: texte.legende.copyWith(color: karto.schriftStumm),
+        ),
       ],
     );
   }
@@ -274,6 +346,7 @@ class KartoReiseZeitleiste extends StatelessWidget {
     this.onStation,
     this.notizZeilen,
     this.mitKartenlink = false,
+    this.orte = const <OrtEintrag>[],
   });
 
   /// Darzustellende Etappen, bereits zeitlich geordnet.
@@ -285,8 +358,12 @@ class KartoReiseZeitleiste extends StatelessWidget {
   /// Höchstzahl der Notizzeilen; `null` zeigt die ganze Notiz.
   final int? notizZeilen;
 
-  /// Ob je Station ein Link auf die Avesmaps-Karte erscheint.
+  /// Ob je Station Links erscheinen: auf die Avesmaps-Karte (nur Siedlungen)
+  /// und, bei Orten des Ortsverzeichnisses, in das Wiki Aventurica.
   final bool mitKartenlink;
+
+  /// Ortsverzeichnis für die Links; leer, solange es nicht geladen ist.
+  final List<OrtEintrag> orte;
 
   @override
   Widget build(BuildContext context) {
@@ -300,6 +377,7 @@ class KartoReiseZeitleiste extends StatelessWidget {
             letzter: i == etappen.length - 1,
             notizZeilen: notizZeilen,
             mitKartenlink: mitKartenlink,
+            orte: orte,
             onTap: onStation == null
                 ? null
                 : () => onStation!(etappen[i].station),
@@ -316,6 +394,7 @@ class _ZeitleistenEintrag extends StatelessWidget {
     required this.letzter,
     required this.notizZeilen,
     required this.mitKartenlink,
+    required this.orte,
     required this.onTap,
   });
 
@@ -324,6 +403,7 @@ class _ZeitleistenEintrag extends StatelessWidget {
   final bool letzter;
   final int? notizZeilen;
   final bool mitKartenlink;
+  final List<OrtEintrag> orte;
   final VoidCallback? onTap;
 
   static const double _marke = 26;
@@ -337,7 +417,10 @@ class _ZeitleistenEintrag extends StatelessWidget {
     final notiz = station.notiz.trim();
     final datum = reiseStationDatumText(station);
     final abstand = erster ? null : reiseEtappenAbstandText(etappe);
-    final link = mitKartenlink ? avesmapsLink(ort) : null;
+    final link = mitKartenlink && kartenlinkSinnvoll(ort, orte)
+        ? avesmapsLink(ort)
+        : null;
+    final wikiLink = mitKartenlink ? wikiAventuricaLink(ort, orte) : null;
 
     final inhalt = Padding(
       padding: EdgeInsets.only(
@@ -370,6 +453,15 @@ class _ZeitleistenEintrag extends StatelessWidget {
                   icon: const Icon(Icons.open_in_new, size: 18),
                   onPressed: () =>
                       launchUrl(link, mode: LaunchMode.externalApplication),
+                ),
+              if (wikiLink != null)
+                IconButton(
+                  key: ValueKey<String>('karto-reise-wiki-${station.id}'),
+                  tooltip: 'Im Wiki Aventurica lesen',
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.menu_book_outlined, size: 18),
+                  onPressed: () =>
+                      launchUrl(wikiLink, mode: LaunchMode.externalApplication),
                 ),
             ],
           ),

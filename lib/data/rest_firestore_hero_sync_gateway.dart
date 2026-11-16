@@ -59,6 +59,7 @@ class RestFirestoreHeroSyncGateway
       '$_heroesCollectionPath/$heroId',
       fields,
       previousRevision: previousRevision,
+      art: SyncDokumentArt.held,
     );
     return _decodeHeroRecord(heroId, savedFields) ??
         RemoteHeroRecord(
@@ -86,6 +87,7 @@ class RestFirestoreHeroSyncGateway
       '$_statesCollectionPath/$heroId',
       fields,
       previousRevision: previousRevision,
+      art: SyncDokumentArt.zustand,
     );
     return _decodeStateRecord(heroId, savedFields) ??
         RemoteHeroStateRecord(
@@ -101,19 +103,23 @@ class RestFirestoreHeroSyncGateway
   @override
   Future<List<RemoteHeroRecord>> loadAllHeroes() async {
     final documents = await _rest.listDocuments(_heroesCollectionPath);
-    return documents
-        .map((document) => _decodeHeroRecord(document.id, document.fields))
-        .whereType<RemoteHeroRecord>()
-        .toList(growable: false);
+    return dekodiereEinzeln(
+      documents,
+      (document) => _decodeHeroRecord(document.id, document.fields),
+      melde: (document, fehler, stack) =>
+          meldeUnlesbaresSyncDokument('Held', document.id, fehler, stack),
+    );
   }
 
   @override
   Future<List<RemoteHeroStateRecord>> loadAllHeroStates() async {
     final documents = await _rest.listDocuments(_statesCollectionPath);
-    return documents
-        .map((document) => _decodeStateRecord(document.id, document.fields))
-        .whereType<RemoteHeroStateRecord>()
-        .toList(growable: false);
+    return dekodiereEinzeln(
+      documents,
+      (document) => _decodeStateRecord(document.id, document.fields),
+      melde: (document, fehler, stack) =>
+          meldeUnlesbaresSyncDokument('Zustand', document.id, fehler, stack),
+    );
   }
 
   @override
@@ -150,6 +156,7 @@ class RestFirestoreHeroSyncGateway
       '$_heroesCollectionPath/${hero.id}',
       fields,
       previousRevision: previousRevision,
+      art: SyncDokumentArt.held,
     );
     return _decodeHeroRecord(hero.id, savedFields) ??
         RemoteHeroRecord(
@@ -182,6 +189,7 @@ class RestFirestoreHeroSyncGateway
       '$_statesCollectionPath/$heroId',
       fields,
       previousRevision: previousRevision,
+      art: SyncDokumentArt.zustand,
     );
     return _decodeStateRecord(heroId, savedFields) ??
         RemoteHeroStateRecord(
@@ -195,19 +203,27 @@ class RestFirestoreHeroSyncGateway
   }
 
   @override
-  Stream<List<RemoteHeroRecord>> watchHeroes() async* {
-    yield await loadAllHeroes();
-    yield* Stream<void>.periodic(_pollInterval).asyncMap((_) {
-      return loadAllHeroes();
-    });
-  }
+  Stream<List<RemoteHeroRecord>> watchHeroes() => _beobachte(loadAllHeroes);
 
   @override
-  Stream<List<RemoteHeroStateRecord>> watchHeroStates() async* {
-    yield await loadAllHeroStates();
-    yield* Stream<void>.periodic(_pollInterval).asyncMap((_) {
-      return loadAllHeroStates();
-    });
+  Stream<List<RemoteHeroStateRecord>> watchHeroStates() {
+    return _beobachte(loadAllHeroStates);
+  }
+
+  /// Fragt [lade] sofort und danach im Abstand von [_pollInterval] ab.
+  ///
+  /// Ein Fehlschlag wird als Fehlerereignis gemeldet und beendet die
+  /// Beobachtung nicht: Startet die App ohne Netz, liefe sonst bis zum
+  /// Neustart kein Abgleich mehr, weil niemand neu abonniert.
+  Stream<T> _beobachte<T>(Future<T> Function() lade) async* {
+    while (true) {
+      try {
+        yield await lade();
+      } on Object catch (error, stackTrace) {
+        yield* Stream<T>.error(error, stackTrace);
+      }
+      await Future<void>.delayed(_pollInterval);
+    }
   }
 
   /// Schreibt per PATCH und erzwingt [previousRevision] serverseitig.
@@ -222,6 +238,7 @@ class RestFirestoreHeroSyncGateway
     String documentPath,
     Map<String, dynamic> fields, {
     required String? previousRevision,
+    required SyncDokumentArt art,
   }) async {
     if (previousRevision == null) {
       return _rest.patchDocumentFields(documentPath, fields);
@@ -233,9 +250,10 @@ class RestFirestoreHeroSyncGateway
         expectedRevision: previousRevision,
       );
     }
-    final currentRevision = readSyncRevision(
+    final currentRevision = revisionAusDokument(
       current.fields,
       _readTimestamp(current.fields[HeroSyncRecordFields.lastModified]),
+      art: art,
     );
     if (currentRevision != previousRevision) {
       throw SyncPreconditionException(

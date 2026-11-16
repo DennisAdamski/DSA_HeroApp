@@ -84,7 +84,7 @@ void main() {
         );
         final option = gefechtsZusatzoptionen(snap).firstWhere((o) => o.parade);
         expect(option.verfuegbar, true);
-        final w = gefechtswerteFuer(snap);
+        final w = gefechtswerteFuer(snap, katalog: null);
         var s = const Gefechtszustand(
           iniWurf: 6,
           dk: 'N',
@@ -168,14 +168,14 @@ void main() {
       testCatalog,
       _auftrag(Gefechtsaktion.parade, haupt),
     );
-    s = verbraucheGefechtsaktion(s, gefechtswerteFuer(snap), p);
+    s = verbraucheGefechtsaktion(s, gefechtswerteFuer(snap, katalog: null), p);
     final q = pruefeGefechtAuftrag(s, snap, testCatalog, auftrag);
     expect(q.status, isNot(Gefechtsfreigabe.gesperrt));
     expect(q.zielwert, snap.combatPreviewStats.offhandPreview!.pa! + 2 - 3);
     expect(q.paraden, 0);
     expect(q.zusatz, 1);
     s = s.copyWith(kontext: _kontext.copyWith(schildWmWirksam: false));
-    s = verbraucheGefechtsaktion(s, gefechtswerteFuer(snap), q);
+    s = verbraucheGefechtsaktion(s, gefechtswerteFuer(snap, katalog: null), q);
     // Angriffsdaten werden verworfen; es gelten wieder die Vorgaben.
     expect(s.kontext.finte, 0);
     expect(s.kontext.paradeVerboten, isNull);
@@ -195,7 +195,7 @@ void main() {
     );
     s = verbraucheGefechtsaktion(
       s,
-      gefechtswerteFuer(snap),
+      gefechtswerteFuer(snap, katalog: null),
       pruefeGefechtAuftrag(
         s,
         snap,

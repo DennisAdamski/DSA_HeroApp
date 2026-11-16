@@ -168,18 +168,6 @@ class CatalogRuleResolver {
       packTitle: provenance?.packTitle ?? '',
     );
   }
-
-  /// Liefert die rohe Feld-Provenienz fuer eine Talent-Komplexitaet.
-  HouseRuleFieldProvenance? talentComplexityProvenance(TalentDef talent) {
-    final section = talent.group.trim() == 'Kampftalent'
-        ? CatalogSectionId.combatTalents
-        : CatalogSectionId.talents;
-    return provenanceIndex.fieldProvenance(
-      section: section,
-      entryId: talent.id,
-      fieldPath: 'steigerung',
-    );
-  }
 }
 
 String _fieldKey({

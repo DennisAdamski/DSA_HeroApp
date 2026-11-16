@@ -40,11 +40,6 @@ int computeAutoPointCost({
   return cost;
 }
 
-/// Berechnet das verfuegbare Budget nach Abzug der Grundkosten.
-int computeAvailableBudget(int autoPointCost) {
-  return waffenmeisterTotalBudget - autoPointCost;
-}
-
 // ---------------------------------------------------------------------------
 // Punktekosten pro Bonus
 // ---------------------------------------------------------------------------

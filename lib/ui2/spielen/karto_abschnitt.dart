@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_bewegung.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_heldenbogen_rahmen.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_klappinhalt.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
@@ -15,9 +19,9 @@ import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 ///
 /// Listenaktionen stehen laut Projektrichtlinie im Abschnittskopf.
 ///
-/// Ein [akzent] hebt einzelne Begleitflaechen hervor, ohne eine weitere
-/// Flaechenstufe einzufuehren: eine Messingkante oben wie bei einer
-/// Kartenkartusche, oder eine leichte astrale Toenung fuer laufende Zauber.
+/// Äußere Spielkacheln tragen die feine Heldenbogen-Fassung. Ein [akzent]
+/// hebt das Symbol hervor oder tönt die Fläche für laufende Zauber; innere
+/// Abschnitte behalten ihre schlichte Fassung und optionale Messingoberkante.
 class KartoAbschnitt extends StatelessWidget {
   /// Erstellt einen benannten Abschnitt.
   const KartoAbschnitt({
@@ -28,6 +32,7 @@ class KartoAbschnitt extends StatelessWidget {
     this.aktion,
     this.stufe = KartoFlaechenstufe.feld,
     this.symbol,
+    this.titelMotiv,
     this.akzent,
     this.dicht = false,
   });
@@ -54,6 +59,9 @@ class KartoAbschnitt extends StatelessWidget {
   /// Kleines Symbol vor der Überschrift, in der Farbe des Akzents.
   final IconData? symbol;
 
+  /// Optionales persönliches Motiv anstelle des Standardsymbols.
+  final Widget? titelMotiv;
+
   /// Hervorhebung einer Begleitfläche; `null` lässt den Abschnitt schlicht.
   final KartoAkzent? akzent;
 
@@ -70,14 +78,27 @@ class KartoAbschnitt extends StatelessWidget {
     final zweitzeile = hinweis?.trim() ?? '';
     final akzentFarbe = akzent?.farbe(karto);
     final vergroessern = steuerung?.onVergroessern;
-    final titelBlock = symbol == null
-        ? Text(titel, style: texte.abschnitt)
+    final heldenbogen = steuerung != null;
+    final titelStil = heldenbogen
+        ? texte.abschnitt.copyWith(fontSize: 20, letterSpacing: 0)
+        : texte.abschnitt;
+    final motiv =
+        titelMotiv ??
+        (symbol == null
+            ? null
+            : Icon(
+                symbol,
+                size: heldenbogen ? 21 : 18,
+                color: akzentFarbe ?? karto.messing,
+              ));
+    final titelBlock = motiv == null
+        ? Text(titel, style: titelStil)
         : Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(symbol, size: 18, color: akzentFarbe ?? karto.messing),
+              motiv,
               const SizedBox(width: Abstand.normal),
-              Flexible(child: Text(titel, style: texte.abschnitt)),
+              Flexible(child: Text(titel, style: titelStil)),
             ],
           );
     // Mit Rückruf ist der Name die Klickfläche für die vergrößerte Ansicht;
@@ -99,10 +120,12 @@ class KartoAbschnitt extends StatelessWidget {
                   children: [
                     Flexible(child: titelBlock),
                     const SizedBox(width: Abstand.knapp),
-                    Icon(
-                      Icons.open_in_full,
-                      size: 14,
-                      color: karto.schriftLeise,
+                    _BeiBedarf(
+                      child: Icon(
+                        Icons.open_in_full,
+                        size: 14,
+                        color: karto.schriftLeise,
+                      ),
                     ),
                   ],
                 ),
@@ -113,7 +136,9 @@ class KartoAbschnitt extends StatelessWidget {
     final flaeche = KartoFlaeche(
       stufe: stufe,
       toenung: akzent?.toenung(karto),
-      innen: EdgeInsets.all(knapp ? Abstand.weit : Abstand.block),
+      innen: EdgeInsets.all(
+        heldenbogen ? Abstand.block : (knapp ? Abstand.weit : Abstand.block),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -164,38 +189,69 @@ class KartoAbschnitt extends StatelessWidget {
               },
             ),
           ),
-          if (!eingeklappt) ...[
-            SizedBox(height: knapp ? Abstand.normal : Abstand.weit),
-            // Die Steuerung gilt nur dem äußersten Abschnitt einer Kachel.
-            steuerung == null
-                ? child
-                : KartoKachelSteuerung._leer(
-                    groesse: steuerung.groesse,
-                    child: child,
+          KartoKlappinhalt(
+            eingeklappt: eingeklappt,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (heldenbogen) ...[
+                  const SizedBox(height: Abstand.normal),
+                  Divider(
+                    height: 1,
+                    thickness: 0.8,
+                    color: karto.messing.withValues(alpha: 0.32),
                   ),
-          ],
-        ],
-      ),
-    );
-    final kante = akzent?.kante(karto);
-    if (kante == null) return flaeche;
-    // Eine einseitige Kante vertraegt keinen Radius an der Dekoration; sie
-    // liegt deshalb als Leiste ueber der Flaeche und wird mit ihr gerundet.
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(kKartoRadius),
-      child: Stack(
-        children: [
-          flaeche,
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 3,
-            child: ColoredBox(color: kante),
+                ],
+                SizedBox(height: knapp ? Abstand.normal : Abstand.weit),
+                // Die Steuerung gilt nur dem äußersten Abschnitt einer Kachel.
+                steuerung == null
+                    ? child
+                    : KartoKachelSteuerung._leer(
+                        groesse: steuerung.groesse,
+                        child: child,
+                      ),
+              ],
+            ),
           ),
         ],
       ),
     );
+    // Die Messingfassung ersetzt die frühere kräftige Oberkante nur außen.
+    final kante = heldenbogen ? null : akzent?.kante(karto);
+    // Eine einseitige Kante vertraegt keinen Radius an der Dekoration; sie
+    // liegt deshalb als Leiste ueber der Flaeche und wird mit ihr gerundet.
+    final kachel = kante == null
+        ? flaeche
+        : ClipRRect(
+            borderRadius: BorderRadius.circular(kKartoRadius),
+            child: Stack(
+              // Reicht die Vorgaben durch: dehnt das Raster die Kachel
+              // (Lückenschluss), füllt die Fläche die ganze Höhe.
+              fit: StackFit.passthrough,
+              children: [
+                flaeche,
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 3,
+                  child: ColoredBox(color: kante),
+                ),
+              ],
+            ),
+          );
+    // Nur der äußerste Abschnitt einer Kachel blendet seine Kopf-Bedienung
+    // bei Bedarf ein.
+    return steuerung == null
+        ? kachel
+        : _Kachelzeiger(
+            builder: (aktiv) => KartoHeldenbogenRahmen(
+              aktiv: aktiv,
+              magisch: akzent == KartoAkzent.astral,
+              child: kachel,
+            ),
+          );
   }
 
   // Der Einklappknopf steht neben Titel und Kopfaktion, nicht in deren
@@ -212,17 +268,112 @@ class KartoAbschnitt extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(child: kopfzeile),
-        IconButton(
-          key: ValueKey<String>('karto-kachel-${steuerung.kennung}-einklappen'),
-          tooltip: eingeklappt ? '$titel aufklappen' : '$titel einklappen',
-          visualDensity: VisualDensity.compact,
-          icon: Icon(
-            eingeklappt ? Icons.expand_more : Icons.expand_less,
-            color: karto.schriftLeise,
+        // Eingeklappt bleibt der Pfeil stehen: er ist dann der einzige
+        // Hinweis, dass die Kachel mehr enthält.
+        _BeiBedarf(
+          immer: eingeklappt,
+          child: IconButton(
+            key: ValueKey<String>(
+              'karto-kachel-${steuerung.kennung}-einklappen',
+            ),
+            tooltip: eingeklappt ? '$titel aufklappen' : '$titel einklappen',
+            visualDensity: VisualDensity.compact,
+            icon: Icon(
+              eingeklappt ? Icons.expand_more : Icons.expand_less,
+              color: karto.schriftLeise,
+            ),
+            onPressed: () => einklappen(!eingeklappt),
           ),
-          onPressed: () => einklappen(!eingeklappt),
         ),
       ],
+    );
+  }
+}
+
+/// Merkt, ob der Zeiger über einer Kachel steht oder der Fokus in ihr liegt.
+///
+/// [_BeiBedarf] blendet danach die Kopf-Bedienung (Vergrößern, Einklappen)
+/// ein. So zeigt eine Seite mit vielen Kacheln nicht an jeder dauerhaft zwei
+/// Bediensymbole.
+class _Kachelzeiger extends StatefulWidget {
+  const _Kachelzeiger({required this.builder});
+
+  final Widget Function(bool aktiv) builder;
+
+  @override
+  State<_Kachelzeiger> createState() => _KachelzeigerState();
+}
+
+class _KachelzeigerState extends State<_Kachelzeiger> {
+  final ValueNotifier<bool> _aktiv = ValueNotifier<bool>(false);
+  bool _zeiger = false;
+  bool _fokus = false;
+
+  void _setze({bool? zeiger, bool? fokus}) {
+    _zeiger = zeiger ?? _zeiger;
+    _fokus = fokus ?? _fokus;
+    _aktiv.value = _zeiger || _fokus;
+  }
+
+  @override
+  void dispose() {
+    _aktiv.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => _setze(zeiger: true),
+      onExit: (_) => _setze(zeiger: false),
+      child: Focus(
+        // Nimmt selbst keinen Fokus; meldet nur den der Bedienelemente darin.
+        canRequestFocus: false,
+        skipTraversal: true,
+        onFocusChange: (fokus) => _setze(fokus: fokus),
+        child: _KachelzeigerScope(
+          notifier: _aktiv,
+          child: ValueListenableBuilder<bool>(
+            valueListenable: _aktiv,
+            builder: (context, aktiv, _) => widget.builder(aktiv),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _KachelzeigerScope extends InheritedNotifier<ValueNotifier<bool>> {
+  const _KachelzeigerScope({required super.notifier, required super.child});
+}
+
+/// Blendet [child] nur ein, solange die Kachel den Zeiger oder Fokus hat.
+///
+/// Ohne angeschlossene Maus (Touch-Geräte) bleibt [child] immer sichtbar,
+/// weil es dort kein Hover gibt. Ausgeblendet bleibt es im Baum und
+/// bedienbar: ein Klick auf die Stelle oder der Tabulator erreicht es weiter.
+class _BeiBedarf extends StatelessWidget {
+  const _BeiBedarf({required this.child, this.immer = false});
+
+  final Widget child;
+
+  /// Hält [child] unabhängig vom Zeiger sichtbar.
+  final bool immer;
+
+  @override
+  Widget build(BuildContext context) {
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<_KachelzeigerScope>();
+    final maus = RendererBinding.instance.mouseTracker.mouseIsConnected;
+    final sichtbar =
+        immer || scope == null || !maus || (scope.notifier?.value ?? true);
+    return AnimatedOpacity(
+      opacity: sichtbar ? 1 : 0,
+      duration: kartoDauer(context, Bewegung.kurz),
+      curve: Bewegung.kurve,
+      // Auch ausgeblendet für Vorleseprogramme vorhanden.
+      alwaysIncludeSemantics: true,
+      child: child,
     );
   }
 }

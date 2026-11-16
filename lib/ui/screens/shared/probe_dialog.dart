@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/trefferzonen.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/meisterhandwerk_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/trefferzonen_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -1392,7 +1393,7 @@ class _TrefferzonenZusatzwurfCardState
     final hasResult = _values != null;
     final modifierLabel = spec.modifier == 0
         ? ''
-        : ' (${spec.modifier >= 0 ? '+' : ''}${spec.modifier})';
+        : ' (${mitVorzeichen(spec.modifier)})';
 
     return Card(
       color: Theme.of(context).colorScheme.surfaceContainerHighest,

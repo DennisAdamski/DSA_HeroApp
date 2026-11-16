@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import 'package:dsa_heldenverwaltung/data/dateiname.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
 
 class IoHeroTransferFileGateway implements HeroTransferFileGateway {
@@ -28,7 +29,7 @@ class IoHeroTransferFileGateway implements HeroTransferFileGateway {
     required String fileNameBase,
     required String jsonPayload,
   }) async {
-    final safeName = _sanitizeFileName(fileNameBase);
+    final safeName = bereinigeDateiname(fileNameBase, fallback: 'held');
     final fileName = '$safeName.dsa-hero.json';
 
     if (_isDesktopPlatform()) {
@@ -37,8 +38,6 @@ class IoHeroTransferFileGateway implements HeroTransferFileGateway {
         fileName: fileName,
         bytes: utf8.encode(jsonPayload),
         mimeType: 'application/json',
-        type: FileType.custom,
-        allowedExtensions: const <String>['json'],
       );
       if (savedUri == null) {
         return const HeroTransferExportOutcome(
@@ -89,15 +88,6 @@ class IoHeroTransferFileGateway implements HeroTransferFileGateway {
       case TargetPlatform.fuchsia:
         return false;
     }
-  }
-
-  String _sanitizeFileName(String value) {
-    final trimmed = value.trim().isEmpty ? 'held' : value.trim();
-    final normalized = trimmed.replaceAll(
-      RegExp(r'[<>:"/\\|?*\x00-\x1F]'),
-      '_',
-    );
-    return normalized;
   }
 }
 

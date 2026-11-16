@@ -3,6 +3,12 @@
 Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unverändert. Die kurze [CLAUDE.md](../../CLAUDE.md) enthält die harten Regeln und den Themenindex.
 
 - Regellogik gehoert nach `lib/rules/derived/`.
+- Regelentscheidung „Hohe Initiative“ (WdS S. 78, REV-32): Der Bonus auf PA,
+  Ausweichen und Gefechtsabwehr kommt allein aus `hoheIniBonus`
+  (`ini_rules.dart`): INI über 20 +1, über 30 +2, über 40 +3. Die Bücher
+  kennen keine vierte Stufe, auch INI über 50 bleibt bei +3 (früher rechnete
+  die Kampfvorschau dort +4, das Gefecht +3). Nicht wieder staffeln; die
+  Grenzfälle pinnt `test/rules/hohe_ini_bonus_test.dart`.
 - Erklärbare Werte (ARCH-04) liefern Regelmodule als `Herleitung`
   (`lib/rules/derived/herleitung.dart`): additive Schritte mit Art, Formel,
   Quelle und Bedingung, der Wert ist die Summe. Begrenzungen und
@@ -198,8 +204,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Stern-Symbol der Sektion `AP und Level`.
 - Die Haupteigenschafts-Boni aus Kap. 2.1 liegen als
   `epicMainAttributeBonuses` mit `EpicBonusUmsetzung` je Einzelbonus vor.
-  Gerechnet werden nur zwei: eBE-Halbierung bei KK-Talenten
-  (`epicTalentEbeMultiplier` → `computeTalentEbe`) und bei KO die halbierte
+  Gerechnet werden nur drei: eBE-Halbierung bei KK-Talenten
+  (`epicTalentEbeMultiplier` → `computeTalentEbe`), bei KK die Tragkraft × 1,5
+  (`epicTragkraftMultiplier` → `herleiteTragkraft`, `tragkraft_rules.dart`) und bei KO die halbierte
   SB-Erschwernis beim Unterdrücken von Wunden
   (`computeSbUnterdrueckungErschwernis(halbiert:)`, Schalter
   `WundEffekte.unterdrueckungHalbiert`, gesetzt in `computeHeroWundEffekte`);
@@ -207,4 +214,58 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   erscheint als Hinweis in der Kampfvorschau (Muster:
   `buildAxxeleratusDefenseHint`). Alle uebrigen Boni sind in der UI
   ausdruecklich als `manuell` gekennzeichnet — mangels Modell fuer
-  Tragkraft, Gift, Krankheit, Handwerk und gezieltes Ausweichen.
+  Gift, Krankheit, Handwerk und gezieltes Ausweichen.
+  **Last und Tragkraft (SPIEL-02, 10.11.2026):** `berechneTragkraft` liefert
+  `TragkraftErgebnis` (Last, Tragkraft als `Herleitung` in Stein, BE-Zuschlag,
+  Stufe) aus WdS S. 144; der Snapshot trägt es als `tragkraft`. Es zählt nur
+  Dauerhaftes: die KK aus `permanentAttributes` (ohne laufende Zauber), die
+  epische Vervielfachung und `HeroSheet.tragkraftBoni` (Bärenrune: RkP\* × 10
+  Stein, Hausregel KK +1). Kurzzeitzauber werden bewusst nicht eingerechnet.
+
+  **Kräutersuche (11.11.2026):** `lib/rules/derived/kraeutersuche_rules.dart`
+  setzt Wege des Entdeckers S. 113–118 um, ohne Oberfläche und ohne Schreiben am
+  Helden. Eingabe ist `KraeuterSucheEingabe` (Landschaft, Jahreszeit, Dauer
+  1 oder 2 Stunden, TaW „Kräuter Suchen“ aus `computeMetaTalentBaseTaw`, drei
+  Eigenschaftswerte, Geländekunde, Ortskenntnis, AsP, Modus beliebig/gezielt/
+  Würzkräuter/Konservierung); `fuehreKraeutersucheDurch` würfelt über einen
+  `DiceRoller`, `kraeuterVorschau` rechnet ohne Wurf die Fundchancen. Die
+  Zeile „Modifikation der Probe nach Jahreszeit“ der Landschaftstabelle ist die
+  vollständige Landschaftserschwernis (sie enthält den Regionszuschlag schon);
+  nicht zusätzlich ansetzen. Erschwernis wird als negativer Poolmodifikator an
+  die Probe gegeben. Die Landschaft wählt der Aufrufer; `kraeuterLandschaftenFuerOrt`
+  schlägt sie aus der Unterart eines Orts vor. **Offen:** Das Metatalent
+  `meta_kraeutersuchen` wird in `hero_actions.dart` mit MU/IN/FF angelegt, das
+  Buch nennt KL/IN/FF; wegen der Bestandshelden (Hash) nicht stillschweigend
+  ändern, die Eigenschaften werden der Suche daher übergeben.
+
+  **Wildnisproben als gemeinsamer Kern (12.11.2026):** Kräuter suchen, Nahrung
+  sammeln und Jagd teilen Gerüst und Erleichterungen (WdE S. 112 f., Zoo
+  Botanica S. 58–61). `wildnis_probe_rules.dart` hält den
+  tätigkeitsneutralen Teil: `WildnisProbeEingabe` (TaW nach Dauer,
+  Basiserschwernis der Tätigkeit, Geländekunde −3/−1, Ortskenntnis −7, AsP je 3
+  −1, situativ), `wildnisProbenErschwernis`, `baueWildnisProbe`,
+  `wildnisTapStern` und die Anzeigeform `WildnisErgebnis`. `Gelaendekunde` zog
+  dorthin um; `kraeutersuche_rules.dart` exportiert sie weiter und delegiert
+  (`kraeuterProbenErschwernis`, `baueKraeutersucheProbe`, `kraeuterTapStern`).
+  `kraeuterLandschaftAlsWildnis` ordnet jede Kräuterlandschaft den
+  Geländearten zu, für die eine Geländekunde **passt** (−3) oder **ähnlich**
+  (−1, Meisterentscheid, nur ausdrückliche Nachbarn).
+  `wildnis_sonderfertigkeit_rules.dart` erkennt aus `Geländekunde (Waldkundig)`
+  und `Ortskenntnis (Gareth)` am Helden (`heroSpecialAbilityNames`), was für eine
+  Landschaft gilt: Geländekunde je Geländeart (beste Stufe gewinnt, Altbestand
+  ohne Variante zählt nicht), Ortskenntnis **nur am Standort** (Suchfaltung,
+  Klammerzusatz der Variante wird übergangen), nicht für jede Landschaft
+  gleicher Art. Das Ergebnis ist eine Vorbelegung (`gelaendekundeHerkunft`,
+  `ortskenntnisHerkunft` für die Anzeige); es schreibt nichts am Helden.
+  **Gezielte Kräutersuche (14.11.2026):** Laut WdE S. 113 (Probenmodifikationen)
+  erschwert bei der Suche nach einer bestimmten Heilwirkung oder Pflanze die
+  Suchschwierigkeit (Bestimmung + Häufigkeit) die **Probe**; zusätzlich teilt
+  sie die TaP\* für die Grundmengen. `kraeuterSuchziel` liefert das leichteste
+  findbare Vorkommen (ohne Pflanze die Pauschale der Landschaft),
+  `KraeuterSucheEingabe.zielSuchschwierigkeit` geht in die Basiserschwernis ein.
+  `fuehreKraeutersucheDurch`/`werteKraeutersucheAus` setzen sie selbst
+  (`kraeuterEingabeMitZiel`); wer nur `kraeuterProbenErschwernis` oder
+  `baueKraeutersucheProbe` aufruft, übergibt die Eingabe mit Ziel.
+  **Bewusst offen:** Zoo Botanica S. 224 lässt Geländekunde und Ortskenntnis nur
+  Erschwernisse abbauen, nicht darüber hinaus erleichtern; die Summe darf hier
+  unter 0 fallen (WdE-Lesart, wie bisher).

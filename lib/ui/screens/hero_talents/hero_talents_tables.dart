@@ -84,51 +84,6 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     ];
   }
 
-  // Kampf-Talente haben zusätzliche Spalten für AT/PA und Waffengattung, daher eigene Spaltenspezifikationen. Auch hier ist die TaW-Spalte im Bearbeitungsmodus breiter.
-  List<AdaptiveTableColumnSpec> _combatTalentColumnSpecs({
-    required bool isEditing,
-  }) {
-    return <AdaptiveTableColumnSpec>[
-      const AdaptiveTableColumnSpec(
-        columnId: 'name',
-        minWidth: 160,
-        maxWidth: 240,
-        flex: 2,
-        resizable: true,
-        resizeMaxWidth: 480,
-      ), // Talent-Name
-      const AdaptiveTableColumnSpec(
-        columnId: 'weaponCategory',
-        minWidth: 180,
-        maxWidth: 320,
-        flex: 2,
-        resizable: true,
-        resizeMaxWidth: 480,
-      ), // Waffengattung
-      const AdaptiveTableColumnSpec(
-        columnId: 'alternatives',
-        minWidth: 160,
-        maxWidth: 240,
-        flex: 2,
-        resizable: true,
-        resizeMaxWidth: 480,
-      ), // Ersatzweise
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80), // Kompl.
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90), // TaW
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90), // AT
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90), // PA
-      if (isEditing) const AdaptiveTableColumnSpec.fixed(90), // Begabung
-      const AdaptiveTableColumnSpec(
-        columnId: 'specialization',
-        minWidth: 180,
-        maxWidth: 320,
-        flex: 3,
-        resizable: true,
-        resizeMaxWidth: 640,
-      ), // Spezialisierung
-    ];
-  }
-
   Widget _buildMetaTalentsCard({
     required List<HeroMetaTalent> metaTalents,
     required List<TalentDef> catalogTalents,
@@ -217,31 +172,6 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     );
   }
 
-  Widget _buildCombatTalentsTable({required List<TalentDef> talents}) {
-    final isEditing = _editController.isEditing;
-    final columnSpecs = _combatTalentColumnSpecs(isEditing: isEditing);
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
-      child: PersistedTableColumnLayout(
-        tableId: 'talents.combat',
-        builder: (context, resizeBinding) => ResponsiveAdaptiveTable<TalentDef>(
-          columnSpecs: columnSpecs,
-          columnResize: resizeBinding,
-          headerRow: _buildCombatHeaderRow(isEditing: isEditing),
-          items: talents,
-          tableRowBuilder: (talent) =>
-              _buildCombatTalentRow(talent: talent, isEditing: isEditing),
-          cardBuilder: (cardContext, talent) => _buildCombatTalentMobileCard(
-            talent: talent,
-            isEditing: isEditing,
-          ),
-          ansicht: _tabellenAnsicht,
-        ),
-      ),
-    );
-  }
-
   TableRow _buildHeaderRow({required bool isEditing}) {
     final debug = ref.read(debugModusProvider);
     final cells = <Widget>[
@@ -258,22 +188,6 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     if (isEditing) {
       cells.add(_headerCell(debug ? 'gifted' : 'Begabung'));
     }
-    return TableRow(children: cells);
-  }
-
-  TableRow _buildCombatHeaderRow({required bool isEditing}) {
-    final debug = ref.read(debugModusProvider);
-    final cells = <Widget>[
-      _headerCell(debug ? 'talentName' : 'Name'),
-      _headerCell(debug ? 'waffengattung' : 'Waffengattung'),
-      _headerCell(debug ? 'ersatzweise' : 'Ersatzweise'),
-      _headerCell(debug ? 'steigerung' : 'Kompl.'),
-      _headerCell(debug ? 'taw' : 'TaW'),
-      _headerCell(debug ? 'at' : 'AT'),
-      _headerCell(debug ? 'pa' : 'PA'),
-      if (isEditing) _headerCell(debug ? 'gifted' : 'Begabung'),
-      _headerCell(debug ? 'specialization' : 'Spezialisierung'),
-    ];
     return TableRow(children: cells);
   }
 
@@ -405,99 +319,6 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         : null;
     return TableRow(
       decoration: BoxDecoration(color: giftedColor),
-      children: cells,
-    );
-  }
-
-  TableRow _buildCombatTalentRow({
-    required TalentDef talent,
-    required bool isEditing,
-  }) {
-    final entry = _entryForTalent(talent.id);
-    final isInvalid = _invalidCombatTalentIds.contains(talent.id);
-    final complexityResolution = _resolveTalentComplexity(talent, entry);
-
-    final effective = _latestHero != null
-        ? computeEffectiveAttributes(_latestHero!, catalog: _latestCatalog)
-        : const Attributes(
-            mu: 0,
-            kl: 0,
-            inn: 0,
-            ch: 0,
-            ff: 0,
-            ge: 0,
-            ko: 0,
-            kk: 0,
-          );
-
-    final cells = <Widget>[
-      _tappableNameCell(
-        talent.name,
-        key: ValueKey<String>('talents-row-${talent.id}'),
-        onTap: () async {
-          await _ensureEditingSession();
-          if (!mounted || !_editController.isEditing) return;
-          await showAdaptiveDetailSheet<void>(
-            context: context,
-            builder: (_) => _TalentDetailDialog(
-              talent: talent,
-              entry: _entryForTalent(talent.id),
-              complexityResolution: complexityResolution,
-              effectiveAttributes: effective,
-              activeBaseBe: 0,
-              isEditing: true,
-              state: this,
-            ),
-          );
-        },
-      ),
-      _textCell(_fallback(talent.weaponCategory)),
-      _textCell(_fallback(talent.alternatives)),
-      _complexityCell(complexityResolution, befund: _befundFuer(talent)),
-      _intInputCell(
-        talentId: talent.id,
-        field: 'talentValue',
-        value: entry.talentValue ?? 0,
-        isEditing: isEditing,
-        isError: isInvalid,
-      ),
-      _intInputCell(
-        talentId: talent.id,
-        field: 'atValue',
-        value: entry.atValue,
-        isEditing: isEditing,
-        isError: isInvalid,
-      ),
-      _intInputCell(
-        talentId: talent.id,
-        field: 'paValue',
-        value: entry.paValue,
-        isEditing: isEditing,
-        isError: isInvalid,
-      ),
-      if (isEditing)
-        _giftedCell(
-          talentId: talent.id,
-          value: entry.gifted,
-          isEditing: isEditing,
-          befund: _befundFuer(talent),
-        ),
-      _combatSpecializationCell(
-        talent: talent,
-        entry: entry,
-        isEditing: isEditing,
-      ),
-    ];
-
-    final rowColor = isInvalid
-        ? Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.4)
-        : ((entry.gifted || _befundFuer(talent).abgeleitetBegabt) && isEditing
-              ? Theme.of(context).colorScheme.tertiaryContainer
-                    .withValues(alpha: 0.4)
-              : null);
-
-    return TableRow(
-      decoration: BoxDecoration(color: rowColor),
       children: cells,
     );
   }
@@ -738,75 +559,6 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     return Row(mainAxisSize: MainAxisSize.min, children: actions);
   }
 
-  Widget _buildCombatTalentMobileCard({
-    required TalentDef talent,
-    required bool isEditing,
-  }) {
-    final entry = _entryForTalent(talent.id);
-    final isInvalid = _invalidCombatTalentIds.contains(talent.id);
-    final complexityResolution = _resolveTalentComplexity(talent, entry);
-    final effective = _latestHero != null
-        ? computeEffectiveAttributes(_latestHero!, catalog: _latestCatalog)
-        : const Attributes(
-            mu: 0,
-            kl: 0,
-            inn: 0,
-            ch: 0,
-            ff: 0,
-            ge: 0,
-            ko: 0,
-            kk: 0,
-          );
-    final specs = entry.combatSpecializations.isNotEmpty
-        ? entry.combatSpecializations
-        : _splitSpecializationTokens(entry.specializations);
-    final subtitleParts = <String>[
-      if (talent.weaponCategory.trim().isNotEmpty) talent.weaponCategory,
-      if (talent.alternatives.trim().isNotEmpty)
-        'Ersatz: ${talent.alternatives}',
-    ];
-
-    final detailParts = <String>[
-      'AT ${entry.atValue}',
-      'PA ${entry.paValue}',
-      'Kompl. ${complexityResolution.effectiveKomplexitaet}',
-      ...subtitleParts,
-      if (specs.isNotEmpty) 'Spez: ${specs.join(', ')}',
-    ];
-    final attributeLabel = _buildShortAttributeLabel(
-      effective,
-      talent.attributes,
-    );
-
-    return _MobileCardShell(
-      key: ValueKey<String>('combat-talents-mobile-card-${talent.id}'),
-      title: talent.name,
-      isEditing: isEditing,
-      isGifted: _befundFuer(talent).istBegabt(gifted: entry.gifted),
-      isError: isInvalid,
-      primaryLabel: 'TaW',
-      primaryValue: '${entry.talentValue ?? 0}',
-      inlineMeta: _compactAttributeLabel(attributeLabel),
-      detailLine: detailParts.join(' · '),
-      onTap: () async {
-        await _ensureEditingSession();
-        if (!mounted || !_editController.isEditing) return;
-        await showAdaptiveDetailSheet<void>(
-          context: context,
-          builder: (_) => _TalentDetailDialog(
-            talent: talent,
-            entry: _entryForTalent(talent.id),
-            complexityResolution: complexityResolution,
-            effectiveAttributes: effective,
-            activeBaseBe: 0,
-            isEditing: true,
-            state: this,
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildMetaTalentMobileCard({
     required HeroMetaTalent metaTalent,
     required List<TalentDef> catalogTalents,
@@ -902,7 +654,6 @@ class _MobileCardShell extends StatelessWidget {
     this.trailing,
     this.isEditing = false,
     this.isGifted = false,
-    this.isError = false,
   });
 
   final String title;
@@ -923,15 +674,12 @@ class _MobileCardShell extends StatelessWidget {
   final Widget? trailing;
   final bool isEditing;
   final bool isGifted;
-  final bool isError;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final Color? background;
-    if (isError) {
-      background = theme.colorScheme.errorContainer.withValues(alpha: 0.4);
-    } else if (isGifted && isEditing) {
+    if (isGifted && isEditing) {
       background = theme.colorScheme.tertiaryContainer.withValues(alpha: 0.4);
     } else {
       background = null;

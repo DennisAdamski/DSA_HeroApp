@@ -2,6 +2,13 @@
 
 Stand: 14.10.2026. Roadmap-ID: **MAG-EFF**. Status: **Recherche und Vorschlag für spätere Umsetzung**.
 
+> **Umsetzungsstand (05.11.2026):** 17 Zauberprofile sind umgesetzt (Stand
+> 16.10.2026); alle weiteren Zauber sind auf Entscheidung vom 16.10.2026
+> zurückgestellt. Der aktuelle Status und die nächsten Kandidaten stehen in der
+> [Roadmap](architecture_roadmap.md#fachlicher-ausbau-mag-eff--zaubereffekte);
+> die Paketbeschreibungen unten bleiben als Recherche- und Planungsgrundlage
+> unverändert.
+
 ## Ziel und Umfang
 
 Zauber sollen ihre tatsächlich nutzbaren Auswirkungen auf einen Charakter sichtbar und, soweit eindeutig regelbasiert, berechenbar machen: Eigenschaften, Kampfwerte, Proben, Ressourcen, Wunden, Handlungsmöglichkeiten, Wahrnehmung und Bewegung. Betrachtet werden alle Repräsentationen, positive und negative Wirkungen, selbst gewirkte und von anderen empfangene Zauber sowie Wirkungen außerhalb des Kampfes. Ein Held muss einen Zauber nicht kennen, um sein Ziel sein zu können.

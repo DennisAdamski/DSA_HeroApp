@@ -371,6 +371,7 @@ void main() {
         aktuell: aktuell,
         entwurf: entwurf,
         katalog: katalog,
+        catalog: null,
       );
 
       expect(ergebnis.apTotal, 1110);
@@ -403,6 +404,7 @@ void main() {
         aktuell: aktuell,
         entwurf: const HeroReisebericht(),
         katalog: katalog,
+        catalog: null,
       );
 
       expect(ergebnis.apTotal, 1100);
@@ -424,6 +426,7 @@ void main() {
         aktuell: aktuell,
         entwurf: _basis.reisebericht,
         katalog: katalog,
+        catalog: null,
       );
 
       expect(identical(ergebnis, aktuell), isTrue);
@@ -445,6 +448,7 @@ void main() {
             aktuell: aktuell,
             entwurf: entwurf,
             katalog: katalog,
+            catalog: null,
             erzwingen: erzwingen,
           ),
         );
@@ -464,6 +468,7 @@ void main() {
           aktuell: aktuell,
           entwurf: entwurf,
           katalog: katalog,
+          catalog: null,
         ),
       );
       expect(konflikt.erzwingbar, isTrue);
@@ -473,6 +478,7 @@ void main() {
         aktuell: aktuell,
         entwurf: entwurf,
         katalog: katalog,
+        catalog: null,
         erzwingen: true,
       );
       expect(ergebnis.reisebericht.checkedIds, {'r1'});

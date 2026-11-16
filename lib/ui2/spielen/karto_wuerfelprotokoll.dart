@@ -49,6 +49,7 @@ class KartoProtokollAbschnitt extends StatelessWidget {
     final anzahl = werte.state.diceLog.length;
     return KartoAbschnitt(
       titel: 'Würfelprotokoll',
+      symbol: Icons.history,
       aktion: anzahl > grenze
           ? TextButton(
               key: const ValueKey<String>('karto-spiel-protokoll-alle'),

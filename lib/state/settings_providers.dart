@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_config.dart'
     show AvatarApiConfig;
 import 'package:dsa_heldenverwaltung/domain/rules_index_remote_config.dart'
@@ -143,6 +144,16 @@ final oberflaecheProvider = Provider<Oberflaeche>((ref) {
       Oberflaeche.codex;
 });
 
+/// Geraetelokale Freigabe fuer Animationen.
+final animationenProvider = Provider<bool>((ref) {
+  return ref.watch(appSettingsProvider).valueOrNull?.animationen ?? true;
+});
+
+/// Geraetelokale Freigabe fuer dekorative Licht- und Magieeffekte.
+final dekorativeEffekteProvider = Provider<bool>((ref) {
+  return ref.watch(appSettingsProvider).valueOrNull?.dekorativeEffekte ?? true;
+});
+
 /// Gewuenschte Darstellung breiter Datenlisten (Tabelle oder Karten).
 final tabellenAnsichtProvider = Provider<TabellenAnsicht>((ref) {
   return ref.watch(appSettingsProvider).valueOrNull?.tabellenAnsicht ??
@@ -155,16 +166,15 @@ final abenteuerSortierungProvider = Provider<AbenteuerSortierung>((ref) {
       AbenteuerSortierung.zuletztBearbeitet;
 });
 
-/// Ob die Kernwerte-Rail im Workspace zugeklappt ist.
-final summaryRailCollapsedProvider = Provider<bool>((ref) {
-  return ref.watch(appSettingsProvider).valueOrNull?.summaryRailCollapsed ??
-      false;
-});
-
 /// Ob die Vor- und Nachteile der Spielansicht aufgeklappt sind (nur dieses Geraet).
 final merkmaleAufgeklapptProvider = Provider<bool>((ref) {
   return ref.watch(appSettingsProvider).valueOrNull?.merkmaleAufgeklappt ??
       false;
+});
+
+/// Geraeteweite Vorlage der Spielansicht; `null` ohne Vorlage.
+final spielansichtVorlageProvider = Provider<HeroSpielansicht?>((ref) {
+  return ref.watch(appSettingsProvider).valueOrNull?.spielansichtVorlage;
 });
 
 /// true wenn ein gueltiges Entschluesselungspasswort gespeichert ist.
@@ -235,6 +245,16 @@ class SettingsActions {
     await _repo.save(current.copyWith(heroStoragePath: null));
   }
 
+  /// Speichert die Animationswahl ohne andere Einstellungen zu ersetzen.
+  Future<void> setAnimationen(bool aktiv) async {
+    await _repo.save(_repo.load().copyWith(animationen: aktiv));
+  }
+
+  /// Speichert die Dekorationswahl unabhaengig von der Animationswahl.
+  Future<void> setDekorativeEffekte(bool aktiv) async {
+    await _repo.save(_repo.load().copyWith(dekorativeEffekte: aktiv));
+  }
+
   /// Setzt die aktive Oberflaeche.
   Future<void> setOberflaeche(Oberflaeche oberflaeche) async {
     final current = _repo.load();
@@ -278,19 +298,18 @@ class SettingsActions {
     await _repo.save(current.copyWith(rulesIndexRemoteConfig: config));
   }
 
-  /// Schaltet den Collapse-Zustand der Kernwerte-Rail um.
-  Future<void> toggleSummaryRailCollapsed() async {
-    final current = _repo.load();
-    await _repo.save(
-      current.copyWith(summaryRailCollapsed: !current.summaryRailCollapsed),
-    );
-  }
-
   /// Klappt die Vor- und Nachteile der Spielansicht auf oder zu.
   Future<void> setMerkmaleAufgeklappt(bool aufgeklappt) async {
     final current = _repo.load();
     if (current.merkmaleAufgeklappt == aufgeklappt) return;
     await _repo.save(current.copyWith(merkmaleAufgeklappt: aufgeklappt));
+  }
+
+  /// Speichert die Vorlage der Spielansicht; `null` entfernt sie.
+  Future<void> setSpielansichtVorlage(HeroSpielansicht? vorlage) async {
+    final current = _repo.load();
+    if (current.spielansichtVorlage == vorlage) return;
+    await _repo.save(current.copyWith(spielansichtVorlage: vorlage));
   }
 
   /// Speichert eine einzelne Spaltenbreite, ohne andere Tabellen anzutasten.

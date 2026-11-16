@@ -45,7 +45,7 @@ jobs:
 
     steps:
       - name: Repository auschecken
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
           fetch-depth: 0
@@ -81,19 +81,19 @@ jobs:
 
     steps:
       - name: Repository auschecken
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
 
       - name: Node.js 22 einrichten
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: functions/package-lock.json
 
       - name: Java 21 für Firestore-Emulator einrichten
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: '21'
@@ -114,12 +114,12 @@ jobs:
 
     steps:
       - name: Repository auschecken
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
 
       - name: Flutter einrichten
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
           flutter-version: 3.47.1
@@ -154,12 +154,12 @@ jobs:
 
     steps:
       - name: Repository auschecken
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
 
       - name: Flutter einrichten
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
           flutter-version: 3.47.1
@@ -190,7 +190,7 @@ jobs:
 
       - name: Testreport hochladen
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: flutter-tests-${{ matrix.shard.index }}
           path: reports/flutter-tests-${{ matrix.shard.index }}.json
@@ -223,12 +223,12 @@ jobs:
 
     steps:
       - name: Repository auschecken
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
 
       - name: Python einrichten
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.x'
 
@@ -238,9 +238,11 @@ jobs:
       - name: Testwerkzeuge und Regeltest-Inventur pruefen
         run: |
           python -m unittest \
+            tool/test_avesmaps_karte_kacheln.py \
             tool/test_ci_relevant_changes.py \
             tool/test_flutter_ci_structure.py \
             tool/test_flutter_test_shards.py \
+            tool/test_import_wiki_ortsfakten.py \
             tool/test_rule_test_evidence.py \
             tool/test_summarize_flutter_tests.py
           python tool/check_rule_test_evidence.py
@@ -254,10 +256,10 @@ jobs:
     needs: [changes, analyze]
     if: needs.changes.outputs.relevant == 'true'
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
           flutter-version: 3.47.1
@@ -309,7 +311,7 @@ jobs:
           if [ "$BRANCH" = "test" ] || [ "$BRANCH" = "main" ]; then
             grep -Fq "$FEEDBACK_API_URL" build/web/main.dart.js
           fi
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: web-release
           path: build/web
@@ -327,10 +329,10 @@ jobs:
       group: hosting-${{ inputs.branch || github.ref_name }}
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: web-release
           path: build/web
@@ -355,7 +357,7 @@ jobs:
           fi
       - name: Geprüften Web-Build deployen
         if: steps.current.outputs.deploy == 'true'
-        uses: FirebaseExtended/action-hosting-deploy@v0
+        uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a # v0.11.0
         with:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HELDENSYNC_CCF0B }}
           projectId: heldensync-ccf0b

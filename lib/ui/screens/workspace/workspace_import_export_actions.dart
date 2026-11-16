@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/state/warte_auf_wert.dart';
 
 /// Kapselt Import-/Export-Aktionen fuer die Workspace-Shell.
 class WorkspaceImportExportActions {
@@ -49,8 +50,9 @@ class WorkspaceImportExportActions {
     WidgetRef ref,
     HeroTransferBundle bundle,
   ) async {
-    final existing = await ref.read(
-      heroByIdFutureProvider(bundle.hero.id).future,
+    final existing = await warteAufWertImWidget(
+      ref,
+      heroByIdFutureProvider(bundle.hero.id),
     );
     if (existing == null) {
       return ImportConflictResolution.overwriteExisting;
@@ -96,9 +98,19 @@ class WorkspaceImportExportActions {
 /// damit ein fehlendes Porträt nie stumm wie „kein Bild“ aussieht.
 String importMeldung(HeldImportErgebnis ergebnis) {
   final fehlend = ergebnis.fehlendeBilder;
-  if (fehlend <= 0) {
+  final ausgelassen = ergebnis.ausgelasseneKatalogeintraege;
+  if (fehlend <= 0 && ausgelassen <= 0) {
     return 'Held erfolgreich importiert';
   }
-  final bilder = fehlend == 1 ? '1 Bild konnte' : '$fehlend Bilder konnten';
-  return 'Held importiert – $bilder nicht gespeichert werden.';
+  final hinweise = <String>[
+    if (fehlend > 0)
+      fehlend == 1
+          ? '1 Bild konnte nicht gespeichert werden'
+          : '$fehlend Bilder konnten nicht gespeichert werden',
+    if (ausgelassen > 0)
+      ausgelassen == 1
+          ? '1 eigener Katalogeintrag wurde nicht übernommen'
+          : '$ausgelassen eigene Katalogeinträge wurden nicht übernommen',
+  ];
+  return 'Held importiert – ${hinweise.join(', ')}.';
 }

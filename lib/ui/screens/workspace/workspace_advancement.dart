@@ -129,7 +129,7 @@ extension _WorkspaceAdvancement on _HeroWorkspaceScreenState {
           .commit();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Steigerungen übernommen.')),
+          const SnackBar(content: Text('Entwicklung übernommen.')),
         );
       }
       return true;
@@ -161,7 +161,7 @@ extension _WorkspaceAdvancement on _HeroWorkspaceScreenState {
       content:
           'Die geplanten Steigerungen sind noch nicht gespeichert. '
           'Du kannst weiter planen, die Runde verwerfen oder gemeinsam übernehmen.',
-      cancelLabel: 'Weiter planen',
+      cancelLabel: 'Weiterplanen',
       confirmLabel: 'Verwerfen',
       saveLabel: session.canCommit ? 'Änderungen übernehmen' : null,
       isDestructive: true,

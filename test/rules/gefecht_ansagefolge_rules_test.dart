@@ -31,7 +31,7 @@ GefechtAuftrag _auftrag({int finte = 0, int wucht = 0, ManeuverDef? m}) =>
 
 void main() {
   final snap = fixture.ansageSnapshot();
-  final w = gefechtswerteFuer(snap);
+  final w = gefechtswerteFuer(snap, katalog: null);
   test('Aktiver Klingentänzer halbiert ungerade Ansagen aufgerundet', () {
     final kt = buildHeroComputedSnapshot(
       hero: snap.hero.copyWith(
@@ -45,10 +45,10 @@ void main() {
       catalog: testCatalog,
       epicAdvantagesActive: false,
     );
-    expect(gefechtsAnsageFehlmalus(kt, _auftrag(finte: 5)), 3);
+    expect(gefechtsAnsageFehlmalus(kt, _auftrag(finte: 5), null), 3);
   });
   test('FK-Sonderansagen erzeugen keinen Nahkampf-Folgemalus', () {
-    expect(gefechtsAnsageFehlmalus(fk.ladeSnapshot(), fk.zielauftrag), 0);
+    expect(gefechtsAnsageFehlmalus(fk.ladeSnapshot(), fk.zielauftrag, null), 0);
   });
   test('Schadenswürfe bleiben auch als manuelle Fachprobe unverändert', () {
     const r = ResolvedProbeRequest(
@@ -163,7 +163,7 @@ void main() {
         typ: 'Angriffsaktion',
         erschwernis: 'Angriff +4',
       );
-      expect(gefechtsAnsageFehlmalus(snap, _auftrag(finte: 3, m: m)), 7);
+      expect(gefechtsAnsageFehlmalus(snap, _auftrag(finte: 3, m: m), null), 7);
     },
   );
   test(

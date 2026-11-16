@@ -242,10 +242,7 @@ class HouseRuleCatalogResolver {
     };
 
     return HouseRuleCatalogResolverResult(
-      resolvedBaseData: CatalogSourceData(
-        version: baseData.version,
-        source: baseData.source,
-        metadata: baseData.metadata,
+      resolvedBaseData: baseData.copyWith(
         sections: resolvedSections.map(
           (section, entries) => MapEntry(
             section,

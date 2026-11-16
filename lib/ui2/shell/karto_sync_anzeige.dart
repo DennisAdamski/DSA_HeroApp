@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/sync_anzeige_rules.dart';
 
 /// Wie dringend ein Syncstand die Aufmerksamkeit braucht.
 enum KartoSyncStufe {
@@ -98,22 +99,4 @@ KartoSyncAnzeige? beschreibeKartoSync(
         ? 'Sync: noch nicht abgeglichen'
         : 'Abgeglichen ${formatiereSyncZeitpunkt(zuletzt, jetzt: jetzt)}',
   );
-}
-
-/// Kurzform ohne Datum am selben Tag, sonst mit Tag und Monat.
-///
-/// Absolut statt „vor 5 Minuten“: der Statusstrom meldet nur Änderungen, ein
-/// relativer Text bliebe zwischen zwei Abgleichen veraltet stehen.
-String formatiereSyncZeitpunkt(DateTime zeitpunkt, {required DateTime jetzt}) {
-  final lokal = zeitpunkt.toLocal();
-  final heute = jetzt.toLocal();
-  String zwei(int zahl) => zahl.toString().padLeft(2, '0');
-  final uhr = '${zwei(lokal.hour)}:${zwei(lokal.minute)}';
-  final selberTag =
-      lokal.year == heute.year &&
-      lokal.month == heute.month &&
-      lokal.day == heute.day;
-  return selberTag
-      ? 'um $uhr'
-      : 'am ${zwei(lokal.day)}.${zwei(lokal.month)}. $uhr';
 }

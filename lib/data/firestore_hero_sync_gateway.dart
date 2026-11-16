@@ -13,8 +13,20 @@ import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 class FirestoreHeroSyncGateway
     implements RemoteHeroSyncGateway, RemoteHeroStateSyncGateway {
   /// Erstellt das Gateway fuer den privaten User-Subtree.
-  FirestoreHeroSyncGateway({required this.userId, FirebaseFirestore? firestore})
-    : _firestore = firestore ?? FirebaseFirestore.instance;
+  FirestoreHeroSyncGateway({
+    required this.userId,
+    FirebaseFirestore? firestore,
+    this.zeitlimit = const Duration(seconds: 30),
+  }) : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  /// Höchstdauer eines einzelnen Firestore-Zugriffs.
+  ///
+  /// Ohne Netz endet ein direktes `set()` des Plugins erst mit der
+  /// Serverbestätigung; Speichern und App-Start warteten so lange. Nach dem
+  /// Limit gilt der Zugriff als Netzwerkfehler. Ein vom Plugin vorgemerkter
+  /// Schreibzugriff kann die Cloud später trotzdem erreichen; der nächste
+  /// Abgleich erkennt den Stand dann als inhaltsgleich.
+  final Duration zeitlimit;
 
   /// UID des angemeldeten Firebase-Users.
   final String userId;
@@ -40,6 +52,7 @@ class FirestoreHeroSyncGateway
         lastModifiedValue: FieldValue.serverTimestamp(),
       ),
       previousRevision: previousRevision,
+      art: SyncDokumentArt.held,
       setOptions: SetOptions(merge: true),
     );
     return RemoteHeroRecord(
@@ -65,6 +78,7 @@ class FirestoreHeroSyncGateway
         lastModifiedValue: FieldValue.serverTimestamp(),
       ),
       previousRevision: previousRevision,
+      art: SyncDokumentArt.zustand,
       setOptions: SetOptions(merge: true),
     );
     return RemoteHeroStateRecord(
@@ -80,19 +94,23 @@ class FirestoreHeroSyncGateway
   @override
   Future<List<RemoteHeroRecord>> loadAllHeroes() async {
     final snapshot = await _mapFirestoreErrors(() => _heroesCollection.get());
-    return snapshot.docs
-        .map(_decodeHeroRecord)
-        .whereType<RemoteHeroRecord>()
-        .toList(growable: false);
+    return dekodiereEinzeln(
+      snapshot.docs,
+      _decodeHeroRecord,
+      melde: (doc, fehler, stack) =>
+          meldeUnlesbaresSyncDokument('Held', doc.id, fehler, stack),
+    );
   }
 
   @override
   Future<List<RemoteHeroStateRecord>> loadAllHeroStates() async {
     final snapshot = await _mapFirestoreErrors(() => _statesCollection.get());
-    return snapshot.docs
-        .map(_decodeStateRecord)
-        .whereType<RemoteHeroStateRecord>()
-        .toList(growable: false);
+    return dekodiereEinzeln(
+      snapshot.docs,
+      _decodeStateRecord,
+      melde: (doc, fehler, stack) =>
+          meldeUnlesbaresSyncDokument('Zustand', doc.id, fehler, stack),
+    );
   }
 
   @override
@@ -127,6 +145,7 @@ class FirestoreHeroSyncGateway
         lastModifiedValue: FieldValue.serverTimestamp(),
       ),
       previousRevision: previousRevision,
+      art: SyncDokumentArt.held,
     );
     return RemoteHeroRecord(
       id: hero.id,
@@ -156,6 +175,7 @@ class FirestoreHeroSyncGateway
         lastModifiedValue: FieldValue.serverTimestamp(),
       ),
       previousRevision: previousRevision,
+      art: SyncDokumentArt.zustand,
     );
     return RemoteHeroStateRecord(
       heroId: heroId,
@@ -170,20 +190,24 @@ class FirestoreHeroSyncGateway
   @override
   Stream<List<RemoteHeroRecord>> watchHeroes() {
     return _mapStreamErrors(_heroesCollection.snapshots()).map((snapshot) {
-      return snapshot.docs
-          .map(_decodeHeroRecord)
-          .whereType<RemoteHeroRecord>()
-          .toList(growable: false);
+      return dekodiereEinzeln(
+        snapshot.docs,
+        _decodeHeroRecord,
+        melde: (doc, fehler, stack) =>
+            meldeUnlesbaresSyncDokument('Held', doc.id, fehler, stack),
+      );
     });
   }
 
   @override
   Stream<List<RemoteHeroStateRecord>> watchHeroStates() {
     return _mapStreamErrors(_statesCollection.snapshots()).map((snapshot) {
-      return snapshot.docs
-          .map(_decodeStateRecord)
-          .whereType<RemoteHeroStateRecord>()
-          .toList(growable: false);
+      return dekodiereEinzeln(
+        snapshot.docs,
+        _decodeStateRecord,
+        melde: (doc, fehler, stack) =>
+            meldeUnlesbaresSyncDokument('Zustand', doc.id, fehler, stack),
+      );
     });
   }
 
@@ -233,6 +257,7 @@ class FirestoreHeroSyncGateway
     DocumentReference<Map<String, dynamic>> docRef,
     Map<String, dynamic> fields, {
     required String? previousRevision,
+    required SyncDokumentArt art,
     SetOptions? setOptions,
   }) async {
     if (previousRevision == null) {
@@ -248,9 +273,10 @@ class FirestoreHeroSyncGateway
         final snapshot = await transaction.get(docRef);
         final data = snapshot.data();
         final currentRevision = snapshot.exists && data != null
-            ? readSyncRevision(
+            ? revisionAusDokument(
                 data,
                 _readTimestamp(data[HeroSyncRecordFields.lastModified]),
+                art: art,
               )
             : null;
         if (currentRevision != previousRevision) {
@@ -276,9 +302,14 @@ class FirestoreHeroSyncGateway
   /// in typisierte Sync-Fehler.
   Future<T> _mapFirestoreErrors<T>(Future<T> Function() action) async {
     try {
-      return await action();
+      return await action().timeout(zeitlimit);
     } on FirebaseException catch (error) {
       throw _mapFirebaseException(error);
+    } on TimeoutException catch (error) {
+      throw SyncNetworkException(
+        'Firestore hat nicht rechtzeitig geantwortet.',
+        cause: error,
+      );
     }
   }
 

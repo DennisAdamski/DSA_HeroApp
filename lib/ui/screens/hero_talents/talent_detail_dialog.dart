@@ -368,14 +368,7 @@ class _TalentDetailDialogState extends State<_TalentDetailDialog> {
     required _HeroTalentTableTabState state,
     required TalentDef talent,
   }) {
-    final isCombat = talent.group.toLowerCase().contains('kampf');
-    if (isCombat) {
-      return state._combatSpecializationCell(
-        talent: talent,
-        entry: _liveEntry,
-        isEditing: true,
-      );
-    }
+    // Kampftalente bearbeitet der Kampf-Tab; hier stehen nur Talente.
     return state._specializationBadgesCell(
       talentId: talent.id,
       talent: talent,

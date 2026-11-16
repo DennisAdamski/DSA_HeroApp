@@ -43,6 +43,40 @@ void main() {
   }
 
   group('RestFirestoreHeroSyncGateway', () {
+    test('watchHeroes überlebt einen Fehlschlag des ersten Abrufs '
+        '(SYNC-05)', () async {
+      var aufrufe = 0;
+      final client = MockClient((request) async {
+        aufrufe++;
+        if (aufrufe == 1) {
+          throw http.ClientException('offline');
+        }
+        return http.Response('{"documents": []}', 200);
+      });
+      final beobachtung = RestFirestoreHeroSyncGateway(
+        userId: 'user-1',
+        projectId: 'test-project',
+        httpClient: client,
+        idTokenProvider: () async => 'token-1',
+        pollInterval: const Duration(milliseconds: 5),
+      ).watchHeroes();
+
+      var daten = 0;
+      final fehler = <Object>[];
+      var beendet = false;
+      final abo = beobachtung.listen(
+        (_) => daten++,
+        onError: fehler.add,
+        onDone: () => beendet = true,
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 80));
+      await abo.cancel();
+
+      expect(fehler.single, isA<SyncNetworkException>());
+      expect(daten, greaterThan(0));
+      expect(beendet, isFalse);
+    });
+
     test(
       'writes heroes to the authenticated Firestore REST document',
       () async {
@@ -225,6 +259,38 @@ void main() {
         );
       },
     );
+
+    // Altdokument ohne Revision und Zeitstempel: Lesen und Schreibvorbedingung
+    // müssen dieselbe Rückfall-Revision bilden (REV-19).
+    test('accepts the decoded legacy revision of an old document', () async {
+      final requests = <http.Request>[];
+      final remoteHero = hero('h-1', 'Alrik');
+      final legacyDocument = {
+        'name':
+            'projects/test-project/databases/(default)/documents/'
+            'users/user-1/heroes/h-1',
+        'updateTime': '2026-01-01T12:00:00Z',
+        'fields': {
+          'deleted': {'booleanValue': false},
+          'payload': _firestoreValue(remoteHero.toJson()),
+        },
+      };
+      final client = MockClient((request) async {
+        requests.add(request);
+        if (request.method == 'GET') {
+          return http.Response(jsonEncode(legacyDocument), 200);
+        }
+        return http.Response(request.body, 200);
+      });
+      final remote = await gateway(client: client).loadHero('h-1');
+      requests.clear();
+
+      await gateway(client: client)
+          .saveHero(hero('h-1', 'Alrik 2'), previousRevision: remote!.revision);
+
+      expect(remote.revision, 'legacy-${heroContentHash(remoteHero)}');
+      expect(requests.map((r) => r.method), ['GET', 'PATCH']);
+    });
 
     test('aborts the save without PATCH when the revision moved', () async {
       final requests = <http.Request>[];

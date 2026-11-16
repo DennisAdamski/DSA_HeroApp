@@ -167,6 +167,25 @@ String? reiseEtappenAbstandText(ReiseEtappe etappe) {
   return teile.isEmpty ? null : teile.join(' · ');
 }
 
+/// Titel des Abenteuers, zu dem [station] gehört, oder `null` ohne
+/// Zuordnung.
+///
+/// Ein Abenteuer ohne Titel heißt „Ohne Titel“; ist das zugeordnete Abenteuer
+/// inzwischen entfernt, steht „Entferntes Abenteuer“, damit die Zuordnung
+/// sichtbar bleibt.
+String? reiseStationAbenteuerTitel(
+  HeroReiseStation station,
+  List<HeroAdventureEntry> abenteuer,
+) {
+  if (station.adventureId.isEmpty) return null;
+  for (final eintrag in abenteuer) {
+    if (eintrag.id != station.adventureId) continue;
+    final titel = eintrag.title.trim();
+    return titel.isEmpty ? 'Ohne Titel' : titel;
+  }
+  return 'Entferntes Abenteuer';
+}
+
 /// Vorbelegung einer neuen Station: Standort des Helden, Datum und Abenteuer
 /// des laufenden Abenteuers.
 ///

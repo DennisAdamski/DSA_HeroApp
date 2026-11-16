@@ -74,7 +74,9 @@ class HeroHerkunftSection extends StatelessWidget {
                 onPressed: aenderbar
                     ? () => _hinzufuegen(context, eintraege)
                     : null,
-                child: const Text('+ Herkunftsmodifikator'),
+                // Kurz gehalten: das längste Wort muss bei 360 px und
+                // Textfaktor 2 in eine Zeile passen (kein Umbruch im Wort).
+                child: const Text('+ Modifikator'),
               ),
           ],
         ),

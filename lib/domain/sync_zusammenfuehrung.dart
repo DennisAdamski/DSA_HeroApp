@@ -17,6 +17,8 @@ library;
 
 import 'dart:convert';
 
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Seite, deren Wert ein echter Konflikt übernehmen soll.
 enum SyncSeite {
   /// Der Online-Stand.
@@ -251,18 +253,7 @@ String _kanonisch(Object? wert) {
   if (identical(wert, _fehlt)) {
     return '\u0000fehlt';
   }
-  return jsonEncode(_sortiert(wert));
-}
-
-Object? _sortiert(Object? wert) {
-  if (wert is Map) {
-    final schluessel = wert.keys.map((k) => '$k').toList()..sort();
-    return <String, Object?>{for (final k in schluessel) k: _sortiert(wert[k])};
-  }
-  if (wert is List) {
-    return wert.map(_sortiert).toList();
-  }
-  return wert;
+  return jsonEncode(kanonischeJsonForm(wert));
 }
 
 bool _gleich(Object? a, Object? b) => _kanonisch(a) == _kanonisch(b);

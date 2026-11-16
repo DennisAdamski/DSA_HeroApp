@@ -27,17 +27,6 @@ final externeHeldenProvider = StreamProvider<Map<String, ExternerHeld>>((ref) {
   return repo.watchAll();
 });
 
-/// Externer Held per ID.
-final externerHeldByIdProvider = Provider.family<ExternerHeld?, String>((
-  ref,
-  id,
-) {
-  final all =
-      ref.watch(externeHeldenProvider).valueOrNull ??
-      const <String, ExternerHeld>{};
-  return all[id];
-});
-
 /// Alle externen Helden einer bestimmten Gruppe eines Helden.
 final gruppenMitgliederProvider =
     Provider.family<List<ExternerHeld>, ({String heroId, String gruppenCode})>((

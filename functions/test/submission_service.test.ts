@@ -101,6 +101,33 @@ test("marks a timeout uncertain and recovers it by correlation marker", async ()
   assert.equal(github.created.length, 1);
 });
 
+test("throttles repeated GitHub searches for an uncertain submission", async () => {
+  const store = new MemoryStore();
+  const github = new MemoryGithub();
+  github.timeoutAfterCreate = true;
+  github.hideFromSearch = true;
+  let now = new Date("2026-10-15T20:00:00Z");
+  const service = new FeedbackSubmissionService(store, github, {
+    testMode: true,
+    now: () => now,
+  });
+  await service.submit("account-a", submission);
+
+  // Die erste Abfrage sucht, die folgenden innerhalb der Sperre nicht.
+  for (let index = 0; index < 5; index++) {
+    const status = await service.getStatus("account-a", submission.requestId);
+    assert.equal(status.status, "uncertain");
+  }
+  assert.equal(github.searches, 1);
+
+  // Nach Ablauf der Sperre wird wieder gesucht und die Meldung gefunden.
+  now = new Date("2026-10-15T20:01:01Z");
+  github.hideFromSearch = false;
+  const recovered = await service.getStatus("account-a", submission.requestId);
+  assert.equal(recovered.status, "created");
+  assert.equal(github.searches, 2);
+});
+
 test("does not expose a submission owned by another account", async () => {
   const store = new MemoryStore();
   const service = new FeedbackSubmissionService(store, new MemoryGithub(), {
@@ -153,10 +180,11 @@ class MemoryStore implements FeedbackSubmissionStore {
     Object.assign(value, { status: "created", issueNumber, issueUrl });
   }
 
-  async markUncertain(uid: string, requestId: string) {
+  async markUncertain(uid: string, requestId: string, checkedAt?: Date) {
     const value = await this.get(uid, requestId);
     if (value == null) throw new Error("NOT_FOUND");
     value.status = "uncertain";
+    if (checkedAt != null) value.checkedAt = checkedAt;
   }
 
   async markFailed(uid: string, requestId: string, code: string) {
@@ -169,6 +197,8 @@ class MemoryStore implements FeedbackSubmissionStore {
 class MemoryGithub implements FeedbackIssueClient {
   readonly created: string[] = [];
   timeoutAfterCreate = false;
+  hideFromSearch = false;
+  searches = 0;
 
   async createIssue(_title: string, _body: string, _labels: string[], marker: string) {
     this.created.push(marker);
@@ -179,6 +209,8 @@ class MemoryGithub implements FeedbackIssueClient {
   }
 
   async findByMarker(marker: string) {
+    this.searches++;
+    if (this.hideFromSearch) return null;
     return this.created.includes(marker)
       ? { number: 17, url: "https://github.test/issues/17" }
       : null;

@@ -8,6 +8,7 @@
 // gespeichert wird.
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
@@ -15,6 +16,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/alchimika_elixier_rules.dart'
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampf_aenderung_rules.dart';
 
 /// Höchstmenge eines Verbrauchsgegenstands; mehr lässt der Block nicht zu.
 const int kDabeiMengeHoechstbestand = 9999;
@@ -29,6 +31,77 @@ bool istDabeiVerbrauchsgegenstand(HeroInventoryEntry eintrag) {
       !isCombatLinkedInventorySource(eintrag.source) &&
       eintrag.abgelegt == null &&
       eintrag.traegerTyp == InventoryTraeger.held;
+}
+
+/// Ob [eintrag] ein Verbrauchsgegenstand ist, den ein **Begleiter** trägt
+/// (Packtier, Vertrauter, Reittier).
+///
+/// Gleiche Bedingungen wie bei [istDabeiVerbrauchsgegenstand], nur mit dem
+/// Begleiter als Träger. Die Last des Begleiters belastet den Helden nicht.
+bool istDabeiBegleiterVerbrauchsgegenstand(HeroInventoryEntry eintrag) {
+  return eintrag.itemType == InventoryItemType.verbrauchsgegenstand &&
+      !isCombatLinkedInventorySource(eintrag.source) &&
+      eintrag.abgelegt == null &&
+      eintrag.traegerTyp == InventoryTraeger.begleiter;
+}
+
+/// Verbrauchsgegenstände, die ein Begleiter trägt, unter dessen Namen.
+class DabeiBegleiterVerbrauch {
+  /// Erstellt die Gruppe für den Begleiter [begleiterId].
+  const DabeiBegleiterVerbrauch({
+    required this.begleiterId,
+    required this.name,
+    required this.eintraege,
+  });
+
+  /// ID des Begleiters; leer bei Einträgen ohne Träger-ID.
+  final String begleiterId;
+
+  /// Gezeigter Name; „Begleiter“, wenn es den Begleiter nicht mehr gibt.
+  final String name;
+
+  /// Die Verbrauchsgegenstände in gespeicherter Reihenfolge.
+  final List<HeroInventoryEntry> eintraege;
+}
+
+/// Die Verbrauchsgegenstände aller Begleiter, nach Begleiter gruppiert.
+///
+/// Die Gruppen folgen der Reihenfolge der Begleiter am Helden; Einträge eines
+/// nicht mehr vorhandenen Begleiters stehen zuletzt in einer Gruppe
+/// „Begleiter“. Begleiter ohne Verbrauchsgegenstand erscheinen nicht.
+List<DabeiBegleiterVerbrauch> dabeiBegleiterVerbrauch(HeroSheet held) {
+  final alle = held.inventoryEntries
+      .where(istDabeiBegleiterVerbrauchsgegenstand)
+      .toList(growable: false);
+  if (alle.isEmpty) return const <DabeiBegleiterVerbrauch>[];
+  final ergebnis = <DabeiBegleiterVerbrauch>[];
+  final bekannt = <String>{};
+  for (final begleiter in held.companions) {
+    bekannt.add(begleiter.id);
+    final eigene = alle.where((e) => e.traegerId == begleiter.id).toList();
+    if (eigene.isEmpty) continue;
+    final name = begleiter.name.trim();
+    ergebnis.add(
+      DabeiBegleiterVerbrauch(
+        begleiterId: begleiter.id,
+        name: name.isEmpty ? 'Begleiter' : name,
+        eintraege: List<HeroInventoryEntry>.unmodifiable(eigene),
+      ),
+    );
+  }
+  final verwaist = alle
+      .where((e) => !bekannt.contains(e.traegerId))
+      .toList(growable: false);
+  if (verwaist.isNotEmpty) {
+    ergebnis.add(
+      DabeiBegleiterVerbrauch(
+        begleiterId: '',
+        name: 'Begleiter',
+        eintraege: List<HeroInventoryEntry>.unmodifiable(verwaist),
+      ),
+    );
+  }
+  return List<DabeiBegleiterVerbrauch>.unmodifiable(ergebnis);
 }
 
 /// Die Verbrauchsgegenstände des Blocks in gespeicherter Reihenfolge.
@@ -96,7 +169,8 @@ HeroSheet mitVerbrauchsmengenSchritt(
     throw StateError('Der Gegenstand wurde inzwischen geändert oder entfernt.');
   }
   final gespeichert = held.inventoryEntries[index];
-  if (!istDabeiVerbrauchsgegenstand(gespeichert)) {
+  if (!istDabeiVerbrauchsgegenstand(gespeichert) &&
+      !istDabeiBegleiterVerbrauchsgegenstand(gespeichert)) {
     throw StateError(
       '„${dabeiName(gespeichert)}“ ist kein Verbrauchsgegenstand mehr.',
     );
@@ -153,24 +227,144 @@ int? dabeiBetragKreuzer(String eingabe) {
   return kreuzer;
 }
 
-/// Verschiebt den gespeicherten Geldstand um [deltaKreuzer].
+/// Ein Geschossbestand einer Fernkampfwaffe im Block „Dabei“.
 ///
-/// Anders als der Münzknopf im Inventar kappt dieser Weg nie still bei 0: Ein
-/// Abzug über den Bestand hinaus ist ein [StateError], damit am Tisch kein
-/// Betrag verloren geht, der gar nicht da war. Ist der gespeicherte Text kein
-/// Betrag, wirft die Funktion ebenfalls.
-HeroSheet mitGeldSchritt(HeroSheet held, int deltaKreuzer) {
-  if (deltaKreuzer == 0) return held;
-  final aktuell = parseDsaCurrencyToKreuzer(held.dukaten);
-  if (aktuell == null) {
-    throw StateError(
-      'Der gespeicherte Dukatenwert ist nicht numerisch lesbar.',
-    );
+/// Der Bestand gehört dem Kampf-Slot (`RangedProjectile.count`); der
+/// verknüpfte Inventareintrag ist nur seine Projektion und wird beim
+/// Speichern abgeglichen. Deshalb schreibt der Block Munition über die
+/// Kampfkonfiguration ([mitMunitionsSchritt]), nie über das Inventar.
+class DabeiMunition {
+  /// Erstellt den Verweis auf das Geschoss [geschoss] der Waffe [waffe].
+  const DabeiMunition({
+    required this.waffe,
+    required this.waffenIndex,
+    required this.geschoss,
+    required this.geschossIndex,
+    required this.aktiv,
+  });
+
+  /// Angezeigter Stand der Waffe.
+  final MainWeaponSlot waffe;
+
+  /// Angezeigte Position der Waffe; hilft nur bei Slots ohne ID.
+  final int waffenIndex;
+
+  /// Angezeigter Stand des Geschosses.
+  final RangedProjectile geschoss;
+
+  /// Angezeigte Position des Geschosses in seiner Waffe.
+  final int geschossIndex;
+
+  /// Ob das Geschoss das gewählte Geschoss der Waffe ist.
+  final bool aktiv;
+
+  /// Gezeigter Name des Geschosses.
+  String get name => geschoss.name.trim();
+
+  /// Gezeigter Name der Waffe.
+  String get waffenName => waffe.name.trim();
+
+  /// Gespeicherter Bestand.
+  int get anzahl => geschoss.count;
+
+  /// Ob der angezeigte Bestand ein Geschoss hergibt.
+  bool get kannAbziehen => anzahl > 0;
+
+  /// Ob der angezeigte Bestand unter [kGeschossHoechstbestand] liegt.
+  bool get kannHinzufuegen => anzahl < kGeschossHoechstbestand;
+}
+
+/// Die Geschossbestände aller Fernkampfwaffen in gespeicherter Reihenfolge.
+///
+/// Wie im Inventarabgleich zählen nur benannte Waffen, die Geschosse führen,
+/// und nur benannte Geschosse; unbenannte haben keinen Inventareintrag und
+/// keinen stabilen Verweis.
+List<DabeiMunition> dabeiMunition(CombatConfig config) {
+  final ergebnis = <DabeiMunition>[];
+  final slots = config.weaponSlots;
+  for (var w = 0; w < slots.length; w++) {
+    final waffe = slots[w];
+    if (waffe.name.trim().isEmpty || !waffe.fuehrtGeschosse) continue;
+    final profil = waffe.rangedProfile;
+    for (var g = 0; g < profil.projectiles.length; g++) {
+      final geschoss = profil.projectiles[g];
+      if (geschoss.name.trim().isEmpty) continue;
+      ergebnis.add(
+        DabeiMunition(
+          waffe: waffe,
+          waffenIndex: w,
+          geschoss: geschoss,
+          geschossIndex: g,
+          aktiv: profil.selectedProjectileIndex == g,
+        ),
+      );
+    }
   }
-  if (aktuell + deltaKreuzer < 0) {
-    throw StateError(
-      'Nicht genug Geld: ${formatDsaCurrencyBreakdown(aktuell)} vorhanden.',
+  return List<DabeiMunition>.unmodifiable(ergebnis);
+}
+
+/// Verschiebt den Bestand des Geschosses [angezeigt] um [delta] Stück.
+///
+/// Gerechnet wird vom **gespeicherten** Bestand, damit mehrere schnelle Klicks
+/// nacheinander alle zählen; begrenzt auf 0 bis [kGeschossHoechstbestand].
+/// Waffe und Geschoss werden über ihre IDs gefunden, ohne ID über Name und
+/// angezeigte Position (der Bestand selbst darf sich inzwischen geändert
+/// haben). Ändert sich nichts, kommt der Held selbst zurück.
+///
+/// Wirft einen [StateError], wenn Waffe oder Geschoss fehlen.
+HeroSheet mitMunitionsSchritt(
+  HeroSheet held,
+  DabeiMunition angezeigt,
+  int delta,
+) {
+  if (delta == 0) return held;
+  return mitKampfAenderung(held, (config) {
+    final slots = config.weaponSlots;
+    final w = _findeMunitionswaffe(slots, angezeigt);
+    if (w < 0) {
+      throw StateError(
+        '„${angezeigt.waffenName}“ wurde inzwischen geändert oder entfernt.',
+      );
+    }
+    final waffe = slots[w];
+    final geschosse = waffe.rangedProfile.projectiles;
+    final g = _findeMunitionsgeschoss(geschosse, angezeigt);
+    if (g < 0) {
+      throw StateError(
+        '„${angezeigt.name}“ wurde inzwischen geändert oder entfernt.',
+      );
+    }
+    return mitGeschossSchritt(
+      config,
+      waffe,
+      geschosse[g],
+      delta,
+      index: w,
+      geschossIndex: g,
     );
+  });
+}
+
+// Position der angezeigten Waffe: per ID, ohne ID per Name an der angezeigten
+// Position, sonst die erste gleichnamige Fernkampfwaffe.
+int _findeMunitionswaffe(List<MainWeaponSlot> slots, DabeiMunition m) {
+  final id = m.waffe.id;
+  if (id.isNotEmpty) return slots.indexWhere((s) => s.id == id);
+  bool passt(MainWeaponSlot s) =>
+      s.fuehrtGeschosse && s.name.trim() == m.waffenName;
+  if (m.waffenIndex < slots.length && passt(slots[m.waffenIndex])) {
+    return m.waffenIndex;
   }
-  return mitDukatenSchritt(held, deltaKreuzer);
+  return slots.indexWhere(passt);
+}
+
+// Position des angezeigten Geschosses; wie [_findeMunitionswaffe].
+int _findeMunitionsgeschoss(List<RangedProjectile> geschosse, DabeiMunition m) {
+  final id = m.geschoss.id;
+  if (id.isNotEmpty) return geschosse.indexWhere((g) => g.id == id);
+  bool passt(RangedProjectile g) => g.name.trim() == m.name;
+  if (m.geschossIndex < geschosse.length && passt(geschosse[m.geschossIndex])) {
+    return m.geschossIndex;
+  }
+  return geschosse.indexWhere(passt);
 }

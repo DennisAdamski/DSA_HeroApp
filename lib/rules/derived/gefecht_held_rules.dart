@@ -34,7 +34,7 @@ GefechtsKampfmittelprofil? _profilOderWaffenlos(
 /// Ersetzt Vorschau-INI durch Sitzungswerte und übernimmt aktuelle Heldendaten.
 Gefechtswerte gefechtswerteFuer(
   HeroComputedSnapshot snapshot, {
-  RulesCatalog? katalog,
+  required RulesCatalog? katalog,
   GefechtsKampfmittelwahl? kampfmittel,
 }) {
   final c = snapshot.combatPreviewStats;
@@ -224,11 +224,7 @@ Gefechtspruefung pruefeGefechtsmanoever(
   }
   final voraussetzungen = evaluateRequirements(
     m.voraussetzungenStruktur,
-    buildHeroRequirementContext(
-      snapshot.hero,
-      catalog: katalog,
-      mods: snapshot.derivedStats.modifiers,
-    ),
+    buildHeroRequirementContext(snapshot.hero, catalog: katalog),
   );
   for (final v in voraussetzungen) {
     if (!basisAnsage && v.status == RequirementStatus.nichtErfuellt) {

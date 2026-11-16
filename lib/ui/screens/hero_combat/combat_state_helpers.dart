@@ -124,7 +124,29 @@ extension _CombatStateHelpers on _HeroCombatTabState {
       return;
     }
 
-    final catalog = await ref.read(rulesCatalogProvider.future);
+    // Held-gebundener Katalog (Regelprofil); Warten über das Abo, damit ein
+    // Ladefehler das Speichern beendet statt es hängen zu lassen.
+    final RulesCatalog catalog;
+    try {
+      catalog = await warteAufAsyncWert(
+        ref,
+        heroRulesCatalogProvider(widget.heroId),
+      );
+    } on Object catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Speichern nicht möglich, Regelkatalog fehlt: $error',
+            ),
+          ),
+        );
+      }
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
     final weaponValidation = pruefeKampfSlots(
       config: _draftCombatConfig,
       catalog: catalog,
@@ -316,15 +338,5 @@ extension _CombatStateHelpers on _HeroCombatTabState {
       normalized.add(trimmed);
     }
     return List<String>.unmodifiable(normalized);
-  }
-
-  String _normalizeToken(String raw) {
-    var value = raw.trim().toLowerCase();
-    value = value
-        .replaceAll(String.fromCharCode(228), 'ae')
-        .replaceAll(String.fromCharCode(246), 'oe')
-        .replaceAll(String.fromCharCode(252), 'ue')
-        .replaceAll(String.fromCharCode(223), 'ss');
-    return value.replaceAll(RegExp(r'[^a-z0-9]+'), '');
   }
 }

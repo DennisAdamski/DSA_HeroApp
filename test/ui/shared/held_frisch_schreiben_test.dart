@@ -13,6 +13,8 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/bridges/karto_spiel_bruecke.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wunden_detail_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 
 import '../../test_support/bogen_test_repository.dart';
 import '../../ui2/shell/karto_test_support.dart';
@@ -72,7 +74,13 @@ void main() {
       if (werte == null) {
         return const SizedBox.shrink();
       }
-      return KartoZustandsblock(heroId: 'rondra', werte: werte);
+      // Weit: die Statuswerte stehen als Zeilen mit ihren Knöpfen; schmal
+      // stünden sie als Raster (siehe karto_zustandsblock_test.dart).
+      return KartoKachelSteuerung(
+        kennung: 'zustand',
+        groesse: KartoKachelGroesse.weit,
+        child: KartoZustandsblock(heroId: 'rondra', werte: werte),
+      );
     },
   );
 
@@ -248,22 +256,34 @@ void main() {
       expect(find.byType(SnackBar), findsNothing);
     });
 
-    testWidgets('während einer Planung ist das Zahnrad gesperrt', (
-      tester,
-    ) async {
+    testWidgets('während einer Planung fragt das Zahnrad nach (wie die '
+        'Übersicht)', (tester) async {
       await zeige(tester, wundenKnopf());
       starteRunde();
       await tester.tap(find.text('Wunden'));
       await tester.pumpAndSettle();
 
-      final zahnrad = tester.widget<IconButton>(
-        find.byKey(const ValueKey('wunden-wundschwelle-modifikatoren')),
+      final zahnrad = find.byKey(
+        const ValueKey('wunden-wundschwelle-modifikatoren'),
       );
-      expect(zahnrad.onPressed, isNull);
-      expect(
-        zahnrad.tooltip,
-        'Wundschwelle-Modifikatoren – während der Planung gesperrt',
-      );
+      await tester.tap(zahnrad);
+      await tester.pumpAndSettle();
+      expect(find.text('Planung verwerfen und bearbeiten'), findsOneWidget);
+
+      // Abbrechen erhält die Planung und öffnet keinen Modifikatordialog.
+      await tester.tap(find.text('Abbrechen'));
+      await tester.pumpAndSettle();
+      expect(find.text('Modifikatoren: Wundschwelle'), findsNothing);
+      expect(container.read(advancementSessionProvider('rondra')), isNotNull);
+
+      // Verwerfen beendet die Planung und öffnet den Dialog.
+      await tester.tap(zahnrad);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Planung verwerfen und bearbeiten'));
+      await tester.pumpAndSettle();
+      expect(find.text('Modifikatoren: Wundschwelle'), findsOneWidget);
+      expect(container.read(advancementSessionProvider('rondra')), isNull);
+      expect(repo.bogenSpeicherungen, 0);
     });
   });
 

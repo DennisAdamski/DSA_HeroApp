@@ -592,24 +592,14 @@ class _AlbumCard extends ConsumerWidget {
     if (!darfBearbeiten || !context.mounted) {
       return;
     }
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAdaptiveConfirmDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Bild entfernen?'),
-        content: const Text('Das Bild wird unwiderruflich gelöscht.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Abbrechen'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Entfernen'),
-          ),
-        ],
-      ),
+      title: 'Bild entfernen?',
+      content: 'Das Bild wird unwiderruflich gelöscht.',
+      confirmLabel: 'Entfernen',
+      isDestructive: true,
     );
-    if (confirmed != true) return;
+    if (confirmed != AdaptiveConfirmResult.confirm) return;
     if (!context.mounted) return;
     await ref
         .read(heroActionsProvider)

@@ -44,7 +44,7 @@ Gefechtspruefung pruefeGefechtAuftrag(
     eigenerAuftrag: eigenerAuftrag,
   );
   final ansagen = ergaenzeGefechtsansagen(basis, s, snapshot, katalog, auftrag);
-  final zielen = ergaenzeGefechtsZielen(ansagen, s, snapshot, auftrag);
+  final zielen = ergaenzeGefechtsZielen(ansagen, s, snapshot, auftrag, katalog);
   final freigabe = ergaenzeGefechtsfreigabe(zielen, auftrag);
   final mp = ergaenzeGefechtsMeisterparade(
     freigabe,
@@ -53,7 +53,7 @@ Gefechtspruefung pruefeGefechtAuftrag(
     katalog,
     auftrag,
   );
-  final folge = ergaenzeGefechtsAnsagefolge(mp, s, snapshot, auftrag);
+  final folge = ergaenzeGefechtsAnsagefolge(mp, s, snapshot, auftrag, katalog);
   return ergaenzeGefechtsPatzerfreigabe(folge, s, folge.kampfmittel);
 }
 

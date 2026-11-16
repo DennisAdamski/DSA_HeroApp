@@ -1,4 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/avatar_config.dart';
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/domain/rules_index_remote_config.dart';
 
 /// Aktive Oberflaeche der App.
@@ -46,6 +48,8 @@ class AppSettings {
   const AppSettings({
     this.debugModus = false,
     this.dunkelModus = false,
+    this.animationen = true,
+    this.dekorativeEffekte = true,
     this.heroStoragePath,
     this.lastSelectedHeroId,
     this.avatarApiConfig = const AvatarApiConfig(),
@@ -54,6 +58,7 @@ class AppSettings {
     this.abenteuerSortierung = AbenteuerSortierung.zuletztBearbeitet,
     this.summaryRailCollapsed = false,
     this.merkmaleAufgeklappt = false,
+    this.spielansichtVorlage,
     this.tableColumnWidths = const <String, Map<String, double>>{},
     this.catalogContentPassword,
     this.rulesIndexRemoteConfig = const RulesIndexRemoteConfig(),
@@ -65,6 +70,12 @@ class AppSettings {
 
   final bool debugModus;
   final bool dunkelModus;
+
+  /// Erlaubt Animationen auf diesem Geraet; Systemvorgaben haben Vorrang.
+  final bool animationen;
+
+  /// Erlaubt kurze Licht- und Magieeffekte zusaetzlich zu Bedienanimationen.
+  final bool dekorativeEffekte;
   final String? heroStoragePath;
 
   /// Zuletzt auf der Startseite ausgewaehlte Helden-ID.
@@ -88,6 +99,11 @@ class AppSettings {
   /// Ob die Vor- und Nachteile der Spielansicht aufgeklappt sind (geraeteweit).
   final bool merkmaleAufgeklappt;
 
+  /// Geraeteweite Vorlage der Spielansicht (Kachelanordnung); `null` ohne
+  /// Vorlage. Helden ohne eigene Anordnung folgen ihr, am Helden aendert sie
+  /// nichts und sie wird nicht synchronisiert.
+  final HeroSpielansicht? spielansichtVorlage;
+
   /// Geräteweit gespeicherte Spaltenbreiten nach Tabellen- und Spalten-ID.
   final Map<String, Map<String, double>> tableColumnWidths;
 
@@ -108,16 +124,19 @@ class AppSettings {
   AppSettings copyWith({
     bool? debugModus,
     bool? dunkelModus,
-    Object? heroStoragePath = _copySentinel,
-    Object? lastSelectedHeroId = _copySentinel,
+    bool? animationen,
+    bool? dekorativeEffekte,
+    Object? heroStoragePath = keepFieldValue,
+    Object? lastSelectedHeroId = keepFieldValue,
     AvatarApiConfig? avatarApiConfig,
     Oberflaeche? oberflaeche,
     TabellenAnsicht? tabellenAnsicht,
     AbenteuerSortierung? abenteuerSortierung,
     bool? summaryRailCollapsed,
     bool? merkmaleAufgeklappt,
+    Object? spielansichtVorlage = keepFieldValue,
     Map<String, Map<String, double>>? tableColumnWidths,
-    Object? catalogContentPassword = _copySentinel,
+    Object? catalogContentPassword = keepFieldValue,
     RulesIndexRemoteConfig? rulesIndexRemoteConfig,
     Set<String>? disabledHouseRulePackIds,
     @Deprecated('Use disabledHouseRulePackIds instead')
@@ -126,10 +145,12 @@ class AppSettings {
     return AppSettings(
       debugModus: debugModus ?? this.debugModus,
       dunkelModus: dunkelModus ?? this.dunkelModus,
-      heroStoragePath: identical(heroStoragePath, _copySentinel)
+      animationen: animationen ?? this.animationen,
+      dekorativeEffekte: dekorativeEffekte ?? this.dekorativeEffekte,
+      heroStoragePath: identical(heroStoragePath, keepFieldValue)
           ? this.heroStoragePath
           : heroStoragePath as String?,
-      lastSelectedHeroId: identical(lastSelectedHeroId, _copySentinel)
+      lastSelectedHeroId: identical(lastSelectedHeroId, keepFieldValue)
           ? this.lastSelectedHeroId
           : lastSelectedHeroId as String?,
       avatarApiConfig: avatarApiConfig ?? this.avatarApiConfig,
@@ -138,8 +159,11 @@ class AppSettings {
       abenteuerSortierung: abenteuerSortierung ?? this.abenteuerSortierung,
       summaryRailCollapsed: summaryRailCollapsed ?? this.summaryRailCollapsed,
       merkmaleAufgeklappt: merkmaleAufgeklappt ?? this.merkmaleAufgeklappt,
+      spielansichtVorlage: identical(spielansichtVorlage, keepFieldValue)
+          ? this.spielansichtVorlage
+          : spielansichtVorlage as HeroSpielansicht?,
       tableColumnWidths: tableColumnWidths ?? this.tableColumnWidths,
-      catalogContentPassword: identical(catalogContentPassword, _copySentinel)
+      catalogContentPassword: identical(catalogContentPassword, keepFieldValue)
           ? this.catalogContentPassword
           : catalogContentPassword as String?,
       rulesIndexRemoteConfig:
@@ -154,6 +178,8 @@ class AppSettings {
   Map<String, dynamic> toJson() => {
     'debugModus': debugModus,
     'dunkelModus': dunkelModus,
+    'animationen': animationen,
+    'dekorativeEffekte': dekorativeEffekte,
     'heroStoragePath': heroStoragePath,
     'lastSelectedHeroId': lastSelectedHeroId,
     'avatarApiConfig': avatarApiConfig.toJson(),
@@ -162,6 +188,8 @@ class AppSettings {
     'abenteuerSortierung': abenteuerSortierung.name,
     'summaryRailCollapsed': summaryRailCollapsed,
     'merkmaleAufgeklappt': merkmaleAufgeklappt,
+    if (spielansichtVorlage != null)
+      'spielansichtVorlage': spielansichtVorlage!.toJson(),
     'tableColumnWidths': <String, Map<String, double>>{
       for (final entry in tableColumnWidths.entries)
         entry.key: Map<String, double>.from(entry.value),
@@ -197,6 +225,12 @@ class AppSettings {
     return AppSettings(
       debugModus: json['debugModus'] as bool? ?? false,
       dunkelModus: json['dunkelModus'] as bool? ?? false,
+      animationen: json['animationen'] is bool
+          ? json['animationen'] as bool
+          : true,
+      dekorativeEffekte: json['dekorativeEffekte'] is bool
+          ? json['dekorativeEffekte'] as bool
+          : true,
       heroStoragePath: heroStoragePath == null || heroStoragePath.isEmpty
           ? null
           : heroStoragePath,
@@ -209,6 +243,7 @@ class AppSettings {
       abenteuerSortierung: abenteuerSortierung,
       summaryRailCollapsed: json['summaryRailCollapsed'] as bool? ?? false,
       merkmaleAufgeklappt: json['merkmaleAufgeklappt'] as bool? ?? false,
+      spielansichtVorlage: _parseSpielansicht(json['spielansichtVorlage']),
       tableColumnWidths: _parseTableColumnWidths(json['tableColumnWidths']),
       catalogContentPassword: _parseNullableString(
         json['catalogContentPassword'],
@@ -273,11 +308,14 @@ class AppSettings {
     return Map<String, Map<String, double>>.unmodifiable(result);
   }
 
+  static HeroSpielansicht? _parseSpielansicht(dynamic raw) {
+    if (raw is! Map) return null;
+    return HeroSpielansicht.fromJson(Map<String, dynamic>.from(raw));
+  }
+
   static String? _parseNullableString(dynamic raw) {
     if (raw is! String) return null;
     final trimmed = raw.trim();
     return trimmed.isEmpty ? null : trimmed;
   }
 }
-
-const Object _copySentinel = Object();

@@ -1,6 +1,6 @@
 # To-do-Liste: Weiterentwicklung der Heldenverwaltung
 
-Stand: 01.11.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
+Stand: 05.11.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
 Aufgaben und der Verlauf der Teilstände stehen unverändert im
 [Archiv](archiv/README.md); Verweise wie „ARCH-05 Teilstand (3)“ in Code und
 Dokumentation meinen den dortigen Text.
@@ -9,6 +9,23 @@ Grundlage ist die Diskussion „Wenn du die App komplett neu bauen würdest, was
 würdest du anpassen?“ (18.09.2026) mit sieben Vorschlägen (ARCH-01 bis ARCH-07)
 und dem fachlichen Ausbau MAG-EFF und TRANK. Vor einer Umsetzung den jeweiligen
 Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
+
+## Kurzüberblick (05.11.2026)
+
+| Bereich | Erledigt | Teilweise / offen |
+| --- | --- | --- |
+| Architektur (ARCH) | 01, 03, 05, 06 abgenommen | 02 und 04: Code fertig, manuelle Prüfung fehlt; 07 begleitend |
+| Fachlicher Ausbau | MAG-EFF: 17 Zauberprofile; TRANK: Teilstände 1 und 2 | weitere Zauber zurückgestellt; Elixiere, Verbandszeug offen; Kräutersuche als Regelfunktion vorhanden (ohne Oberfläche) |
+| Spielabend (SPIEL) | 01, 02, 05, 06, 07 | 03 (nicht begonnen), 04 (Produktion) |
+| Weitere Themen | Gefecht, Gefechtslage 1–7, Reittiere P1, Vertraute V1/V2, Reiseroute Stufe 1, Gruppen v2, Feedback, Redesign R1–R3, Aufräumserie REV-01–16 | siehe [Weitere Themen](#weitere-themen-stand-05112026) |
+
+**Größter Hebel:** Viele Hauptpunkte warten nur noch auf eine **manuelle
+Prüfsitzung mit zwei Geräten bzw. zwei Konten gegen echtes Firebase**. Eine
+Sitzung deckt ab: ARCH-02 (Abweichung durch ältere App, Export → Import,
+Zwei-Geräte-Sync), ARCH-04 (Gruppenvorgabe), ARCH-06 (Geräte- und
+Live-Firebase-Prüfung) und den Großteil von ARCH-07 (Web/IndexedDB, native
+Pfade, `file_picker`). Danach bleiben fachlich vor allem die Lernregeln aus
+ARCH-04, SPIEL-03 und der Produktionsschritt von SPIEL-04.
 
 ## Fachlicher Ausbau: MAG-EFF – Zaubereffekte
 
@@ -91,7 +108,7 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   `AppSettings.merkmaleAufgeklappt`, kein Sync, 01.11.2026). Details in
   [ui_oberflaeche.md](hinweise/ui_oberflaeche.md). Bewusst offen: Das Protokoll
   hält nur 50 Einträge, ältere Proben fallen aus dem Streifen.
-- [ ] **SPIEL-02 — Gegenstände und Geld im Spiel.** Beobachtung: Auf der Spielen-Seite
+- [x] **SPIEL-02 — Gegenstände und Geld im Spiel.** Beobachtung: Auf der Spielen-Seite
   weder Dukaten noch Munition, Tränke oder Proviant; zur Belastung nur der
   Eintrag im Zustand-Block. Vorschlag: Block „Dabei“ mit Geld, Munition und
   Verbrauchbarem (+/−); ein Trank wendet beim Benutzen Effekt und Menge
@@ -105,9 +122,27 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   (01.11.2026):** Einträge mit Vitalwirkung oder Katalogelixier tragen im Block
   „Benutzen“; es öffnet denselben Dialog wie das Gefechtsinventar
   (`gefechtsVitalwirkung`, Anwenden bzw. Einnehmen), der Wirkung und Stück
-  selbst bucht. **Offen:** Munition mit −/+ (Menge sitzt im Kampf-Slot und im
-  Inventar zugleich, `slotRef`-Regeln, Gefecht schreibt dieselben Werte);
-  Belastung im Block; Verbrauchsgegenstände von Begleitern.
+  selbst bucht. **Munition (07.11.2026):** Abschnitt „Munition“ mit −/+ je
+  Geschoss benannter Fernkampfwaffen. Der Kampf-Slot führt den Bestand,
+  geschrieben wird nur `RangedProjectile.count` über `mitMunitionsSchritt`
+  (`mitKampfAenderung` + `mitGeschossSchritt`, vom gespeicherten Wert); das
+  Inventar gleicht `updateHero` ab. Während eines laufenden Gefechts ist die
+  Munition im Block gesperrt, weil das Gefecht Ladezustand und Schuss am
+  Bestand führt (Tests in `spiel_dabei_rules_test.dart` und
+  `karto_dabei_abschnitt_test.dart`). **Belastung (10.11.2026):** Abschnitt
+  „Belastung“ im Block: getragenes Gewicht gegen die Tragkraft (WdS S. 144:
+  TK = KK in Stein; Last mit halbem Gewicht für alles, was eng am Körper
+  getragen wird (Rüstung, Kleidung, getragene Ausrüstung, Waffen in den Händen)
+  und mit dem Gewicht des Geldes, BE-Folge und Hinweise, dauerhafte
+  Tragkraftquellen wie die Bärenrune (`HeroSheet.tragkraftBoni`, nur
+  Dauerhaftes, keine Kurzzeitzauber), epische KK-Haupteigenschaft × 1,5, dazu
+  Erschöpfung und Überanstrengung mit −/+ (`tragkraft_rules.dart`,
+  `tragkraft_rules_test.dart`, Details in
+  [ui_oberflaeche.md](hinweise/ui_oberflaeche.md)). **Begleiter (10.11.2026):**
+  Verbrauchsgegenstände, die Begleiter tragen, stehen je Begleiter im Block
+  und zählen mit −/+ (ohne „Benutzen“; `dabeiBegleiterVerbrauch`). **Grenze:**
+  die optionale Reiseregel „BE aus zusätzlicher Last je 25 %“ (Erschöpfung im
+  Marsch) ist nicht eingerechnet. SPIEL-02 damit abgeschlossen.
 - [ ] **SPIEL-03 — Zustände und Dauer.** Beobachtung: „Aktive Effekte“ kennt Zauber,
   aber keine schnellen Marker für Betäubung, Furcht oder Schmerz; der
   Kampfrundenzähler ist flüchtig und zählt keine Effektdauern herunter.
@@ -172,11 +207,14 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   [ui_oberflaeche.md](hinweise/ui_oberflaeche.md)): additive Felder `ort` und
   `datum` an `HeroNoteEntry`/`HeroAdventurePersonEntry` (nur bei Belegung im
   JSON), Vorbelegung in Dialog und Schnell-Erfassung, Zeile „Ort · Datum“ auf
-  den Karten, Suchknopf mit Suchfeld in Abschnitt und Blatt. Die Notizen im
-  Notizen-Tab der Verwaltung (Bestandsoberfläche) zeigen die neuen Felder noch
-  nicht, erhalten sie aber beim Bearbeiten (`copyWith`). **Offen:** Ort und
-  Datum im Bestandseditor, Suche über die allgemeinen Notizen des Helden
-  (`HeroSheet.notes`), Umlautfaltung „oe“→„ö“.
+  den Karten, Suchknopf mit Suchfeld in Abschnitt und Blatt. Die Dialoge für
+  Abenteuer-Notizen und -Personen im Notizen-Tab der Verwaltung
+  (Bestandsoberfläche) bearbeiten Ort und Datum jetzt ebenfalls (14.11.2026,
+  Test in `hero_workspace_edit_mode_test.dart`). **Offen:** Suche über die
+  allgemeinen Notizen des Helden
+  (`HeroSheet.notes`). *Erledigt 05.11.2026:* Umlautfaltung (`suchFaltung`,
+  REV-08: „ö“, „oe“ und „o“ fallen zusammen); das Datum ist strukturiert
+  gespeichert (`HeroAdventureDateValue`, REV-01).
 - [x] **SPIEL-07 — Spielansicht selbst anordnen.** Beobachtung: Die feste
   Haupt- und Seitenspalte verschenkte Platz (breite Abschnitte wie „Dabei“ mit
   viel Leerraum), Reihenfolge und Umfang ließen sich nicht anpassen. **Umgesetzt
@@ -184,8 +222,12 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   Kachelraster mit Spaltenzahl nach Breite, je Kachel Reihenfolge, Breite
   (schmal/mittel/voll), Ausblenden und Einklappen, soweit die Kachel es
   erlaubt; gespeichert je Held in `HeroSheet.spielansicht` und damit über den
-  Helden-Sync abgeglichen. **Offen:** kontoweite Vorlage für alle Helden,
-  Anordnen während einer offenen Planung.
+  Helden-Sync abgeglichen. **Vorlage (14.11.2026):** geräteweite
+  Vorlage in `AppSettings.spielansichtVorlage` (Menü „Vorlage“ im
+  Anordnen-Modus: speichern, laden, entfernen); Helden ohne eigene Anordnung
+  folgen ihr, am Helden wird nichts geschrieben. **Offen:** kontoweite Vorlage
+  (Sync über Firestore, bewusst zurückgestellt), Anordnen während einer
+  offenen Planung.
   **Größenstufen der Kacheln (04.11.2026):** Jede Kachel kennt
   `kompakt`/`normal`/`weit` nach ihrer eigenen Breite und zeigt in `weit` mehr
   oder anderes, ohne Standardbreiten zu ändern: Ressourcen (±5/±1), Kampf
@@ -198,6 +240,46 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   [ui_oberflaeche.md](hinweise/ui_oberflaeche.md). **Offen:** Sichtprüfung im
   Web (Kachel per Anordnen auf „Mittel“, Fenster ziehen, Schrift 2,
   Vergrößern-Dialog).
+
+## Weitere Themen (Stand 05.11.2026)
+
+Themen außerhalb von ARCH, MAG-EFF, TRANK und SPIEL. Details stehen im jeweils
+verlinkten Plan; hier nur Status und offene Punkte.
+
+| Thema | Status | Offen |
+| --- | --- | --- |
+| Gefecht ([Implementierung](gefecht_implementation.md), [Folgepakete](gefecht_folgepakete_plan.md)) | umgesetzt, Review und Restschulden abgeschlossen | – |
+| [Gefechtslage](gefecht_lage_konzept.md) | Schritte 1–7 umgesetzt (16.10.2026) | Konzentration auf einen Gegner (Paradesperre), Bedienung der Taktik |
+| [Reittiere](reittier_plan.md) | P1 umgesetzt (08.10.2026) | P2 Spielansicht (u. a. Wunden der Begleiter), P3 Reiterkampf |
+| [Vertraute](vertraute_plan.md) | V1 und V2 umgesetzt (08.10.2026) | V3 Gefecht |
+| [Reiseroute](reiseroute_plan.md) | Stufe 1 umgesetzt (03.11.2026): Stationsliste, Spielkachel, Zeitleiste. Avesmaps hat am 12.11.2026 geantwortet: Ortsdaten und Route über die Entwickler-API v1 erlaubt, Kacheln nicht. Seit 13.11.2026: Ortsauswahl mit Avesmaps-Orten und Kartenposition, Tabellenansicht im Blatt, Standort-Kachel mit Ortsdetails (D), Aventurien-Karte im Avesmaps-Stil mit Route und Vollbild, Kachelwerkzeug und Karten-Site vorbereitet | Zugang zur Karten-API und Kacheln veröffentlichen, Sichtprüfung im Web, Reisewege zwischen Stationen, Verweis am Standort |
+| [Gruppen v2](gruppen_sharing_offene_schritte.md) | abgesichert, Legacy-Pfad `gruppen/*` gesperrt | Mitglieder in der Oberfläche entfernen, Live-Listener, Windows-Transport, Emulator-Test, optional einmalige Einladungen |
+| [Feedback als GitHub-Issue](feedback_github_plan.md) | in Produktion (16.10.2026) | – |
+| [Redesign R1–R3](redesign_implementation.md) | umgesetzt, [Abnahme](redesign_acceptance.md) | – |
+| Meisterhandwerk ([Hinweise](hinweise/katalog_sonderfertigkeiten.md)) | AsP-Einsatz bei Proben auf das gewählte Talent (03.11.2026) | – |
+| Aventurischer Kalender ([Hinweise](hinweise/regeln_herleitung.md)) | Feiertage als Katalogdatei `feiertage.json`, „Feiertage in der Nähe“ im Datumsdialog, Datum per Plus-Taste weiterzählen (02.–05.11.2026) | – |
+
+**Aufräumserie REV-01 bis REV-16 (05.11.2026, Merge #246).** Ergebnis eines
+Code-Reviews; alle Punkte sind umgesetzt, die IDs stehen in den Commits und
+Tests:
+
+- REV-01: Notizen und Personen speichern ihr Datum strukturiert
+  (`HeroAdventureDateValue`, gemeinsame Eingabe `KartoDatumFelder`).
+- REV-02: Das Würfelprotokoll merkt sich die Probe über einen stabilen Verweis.
+- REV-03/-04: Das Hintergrundladen der Wissensbasis endet bei jedem Fehler;
+  BOMs entfernt.
+- REV-05: ein Schreibweg für die Kartograph-Oberflächen (`karto_held_schreiben.dart`).
+- REV-06: Die Bezugswege der Wissensbasis halten die Cloud-Fassung konsistent;
+  WebDAV-Bezug entfernt.
+- REV-07: Katalogschlüssel nur einmal ableiten.
+- REV-08: eine Suchfaltung (`suchFaltung`) für Probensuche, Kurzregeln und Abenteuer.
+- REV-09: Rundungsregel (WdH S. 6) an einer Stelle (`excel_rounding.dart`).
+- REV-10: Profilwechsel-Vorschau einmal komponiert.
+- REV-11: gemeinsamer Transport der Cloud-Function-Clients (`cloud_function_transport.dart`).
+- REV-12: Feiertage als Katalogdatei statt Dart-Tabelle.
+- REV-13/-14: Weit-Prüfung der Kacheln und Kalenderumrechnung je einmal.
+- REV-15/-16: ein Helfer zum Verschieben in Listen (`liste_verschieben.dart`),
+  Regeltest-Inventur im Pre-Push-Hook.
 
 ## Arbeitsweise und gemeinsame Grenzen
 
@@ -327,9 +409,10 @@ HTTP 403, weil das frische Profil einen nicht registrierten Debug-Token erzeugt.
 Auf `heldensync-test.web.app` (Build `66698c5`) wurde im echten Edge ein
 Kultur-Modifikator samt Freitext-Fragment angelegt, gespeichert, synchronisiert
 (0 offene Konflikte) und wieder entfernt; dort ist nur die Zwei-Geräte-Prüfung
-offen. Nicht geprüft: Abweichung durch ältere App und Export → Import. Kleine
-Optikmängel bei 360 px/Textfaktor 2 (kein Überlauf): der Button
-„+ Herkunftsmodifikator“ und der Dialogtitel brechen mitten im Wort um.
+offen. Nicht geprüft: Abweichung durch ältere App und Export → Import. Die
+Optikmängel bei 360 px/Textfaktor 2 (Button und Dialogtitel brachen mitten im
+Wort um) sind behoben (14.11.2026): Button „+ Modifikator“, Dialogtitel in
+`titleMedium`.
 
 ## ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf
 

@@ -74,6 +74,28 @@ class CatalogSourceData {
   List<Map<String, dynamic>> entriesFor(CatalogSectionId section) {
     return sections[section] ?? const <Map<String, dynamic>>[];
   }
+
+  /// Kopie mit ersetzten Sektionen und Listen.
+  ///
+  /// Alle übrigen Felder, auch [catalogSaltV3], bleiben erhalten; ein
+  /// handgeschriebener Konstruktoraufruf verlor den Salt früher.
+  CatalogSourceData copyWith({
+    Map<CatalogSectionId, List<Map<String, dynamic>>>? sections,
+    List<Map<String, dynamic>>? reisebericht,
+    List<Map<String, dynamic>>? spellEffects,
+    List<Map<String, dynamic>>? alchimika,
+  }) {
+    return CatalogSourceData(
+      version: version,
+      source: source,
+      metadata: metadata,
+      sections: sections ?? this.sections,
+      reisebericht: reisebericht ?? this.reisebericht,
+      spellEffects: spellEffects ?? this.spellEffects,
+      alchimika: alchimika ?? this.alchimika,
+      catalogSaltV3: catalogSaltV3,
+    );
+  }
 }
 
 /// Gueltiger benutzerdefinierter Katalogeintrag aus dem Heldenspeicher.
@@ -211,16 +233,7 @@ class CatalogRuntimeData {
       baseData: baseData,
       resolvedBaseData: effectiveBaseData,
       customSnapshot: customSnapshot,
-      effectiveData: CatalogSourceData(
-        version: baseData.version,
-        source: baseData.source,
-        metadata: baseData.metadata,
-        sections: effectiveSections,
-        reisebericht: baseData.reisebericht,
-        spellEffects: baseData.spellEffects,
-        alchimika: baseData.alchimika,
-        catalogSaltV3: baseData.catalogSaltV3,
-      ),
+      effectiveData: baseData.copyWith(sections: effectiveSections),
       issues: List<CatalogIssue>.unmodifiable(issues),
       packCatalog: packCatalog,
       activeHouseRulePackIds: Set<String>.unmodifiable(activeHouseRulePackIds),

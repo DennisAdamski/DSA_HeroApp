@@ -239,7 +239,7 @@ void main() {
         epicAdvantagesActive: false,
       );
       expect(
-        gefechtswerteFuer(s).iniBasis,
+        gefechtswerteFuer(s, katalog: null).iniBasis,
         s.combatPreviewStats.kampfInitiative -
             s.combatPreviewStats.iniWurfEffective -
             8,
@@ -384,7 +384,7 @@ void main() {
       ),
       talente: {'tal_staebe': const HeroTalentEntry(talentValue: 10)},
     );
-    expect(gefechtswerteFuer(werte).stabUmwandlung, true);
+    expect(gefechtswerteFuer(werte, katalog: null).stabUmwandlung, true);
     final s = wandleGefechtUm(
       beginneGefecht(6),
       Gefechtsumwandlung.zweiteAttacke,
@@ -392,7 +392,7 @@ void main() {
     expect(
       pruefeGefechtsaktion(
         s,
-        gefechtswerteFuer(werte),
+        gefechtswerteFuer(werte, katalog: null),
         Gefechtsaktion.angriff,
       ).erschwernis,
       0,

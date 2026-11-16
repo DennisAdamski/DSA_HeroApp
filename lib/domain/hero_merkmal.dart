@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_herkunft.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
@@ -92,22 +93,22 @@ class HeroMerkmal {
   HeroMerkmal copyWith({
     String? katalogId,
     String? text,
-    Object? wert = _unveraendert,
+    Object? wert = keepFieldValue,
     String? auswahl,
     List<String>? kandidatenIds,
     HeroMerkmalZuordnung? zuordnung,
-    Object? herkunft = _unveraendert,
+    Object? herkunft = keepFieldValue,
     Map<String, Object?>? unbekannteFelder,
     Map<String, Object?>? unbekannteEnumWerte,
   }) {
     return HeroMerkmal(
       katalogId: katalogId ?? this.katalogId,
       text: text ?? this.text,
-      wert: identical(wert, _unveraendert) ? this.wert : wert as int?,
+      wert: identical(wert, keepFieldValue) ? this.wert : wert as int?,
       auswahl: auswahl ?? this.auswahl,
       kandidatenIds: kandidatenIds ?? this.kandidatenIds,
       zuordnung: zuordnung ?? this.zuordnung,
-      herkunft: identical(herkunft, _unveraendert)
+      herkunft: identical(herkunft, keepFieldValue)
           ? this.herkunft
           : herkunft as HeroHerkunft?,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
@@ -116,7 +117,7 @@ class HeroMerkmal {
           ohneGeaenderteEnumWerte(this.unbekannteEnumWerte, {
             'zuordnung': zuordnung != null && zuordnung != this.zuordnung,
             'herkunft':
-                !identical(herkunft, _unveraendert) &&
+                !identical(herkunft, keepFieldValue) &&
                 (herkunft == null || herkunft != this.herkunft),
           }),
     );
@@ -213,8 +214,6 @@ List<HeroMerkmal> leseHeroMerkmale(Object? roh) {
     ),
   );
 }
-
-const Object _unveraendert = Object();
 
 bool _listenGleich(List<String> a, List<String> b) {
   if (a.length != b.length) {

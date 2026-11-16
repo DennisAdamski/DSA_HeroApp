@@ -36,13 +36,15 @@ class CustomCatalogRepository {
     // No-Op: Es gibt keine Custom-Eintraege im Web.
   }
 
-  Future<void> importTransferEntries({
+  /// Übernimmt im Web nichts und meldet das über die Anzahl `0`.
+  ///
+  /// Ein Export mit eingebetteten Einträgen bleibt so importierbar; der
+  /// Import nennt die ausgelassenen Einträge.
+  Future<int> importTransferEntries({
     required String catalogVersion,
     required Iterable<CustomCatalogEntryRecord> entries,
   }) async {
-    throw UnsupportedError(
-      'Custom-Kataloge stehen im Web v1 nicht zur Verfuegung.',
-    );
+    return 0;
   }
 
   Future<List<CustomCatalogEntryRecord>> loadEntriesByIds({

@@ -2669,7 +2669,7 @@ oberster JSON-Schlüssel, beidseitige Änderungen fragen nach.
 Die Übersicht ersetzt die drei Textfelder „Rasse/Kultur/Profession
 Modifikatoren“ durch je eine `HeroHerkunftSection`
 (`ui/screens/hero_overview/hero_herkunft_section.dart`): Chips der Gruppe,
-`+ Herkunftsmodifikator` im Header, Ändern/Entfernen im Bearbeitungsmodus und
+`+ Modifikator` im Header, Ändern/Entfernen im Bearbeitungsmodus und
 die beiden Abgleichsknöpfe bei einer Textabweichung. Das Widget rechnet nichts;
 es liest Liste, Abweichung und Sperren aus
 `hero_herkunft_migration_rules.dart` und meldet Änderungen über Callbacks.
@@ -3275,10 +3275,10 @@ ueber die Settings-Katalogverwaltung bearbeitet.
 - Alle drei Effekte sind über das Hausregel-Paket `epic_rules_v1.advantages`
   (`isHouseRuleActiveProvider`) geschaltet — dieselbe Regel, die schon die
   Bonus-Anzeige steuert.
+- **KK Tragkraft × 1,5** rechnet seit 10.11.2026 `berechneTragkraft`
+  (`tragkraft_rules.dart`, Anzeige im Block „Dabei“ der Spielansicht).
 - **Weiterhin nicht unterstützt** (in der UI als „manuell" ausgewiesen), weil
   der jeweilige Regelbereich nicht modelliert ist:
-  KK Tragkraft × 1,5 (es gibt keine Tragkraftberechnung für Helden;
-  `tragkraft` existiert nur als Freitextfeld auf `HeroCompanion`),
   MU MR +7 gegen angstauslösende Zauber (MR ist ein einzelner Kennwert,
   „angstauslösend" ist nicht kategorisiert),
   KO Gift ×0,5 und Krankheit ×0,7 (kein Gift-/Krankheitsmodell),

@@ -32,7 +32,3 @@ Herleitung? sbProbeHerleitung(WidgetRef ref, String heroId) {
     talentBeOverride: ref.read(talentBeOverrideProvider(heroId)),
   )?.taw;
 }
-
-/// TaW* der Selbstbeherrschung; Summe von [sbProbeHerleitung].
-int? sbProbeTaw(WidgetRef ref, String heroId) =>
-    sbProbeHerleitung(ref, heroId)?.wert;

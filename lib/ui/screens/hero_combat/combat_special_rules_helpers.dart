@@ -23,8 +23,6 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
     return buildHeroRequirementContext(
       hero.copyWith(combatConfig: _draftCombatConfig),
       catalog: catalog,
-      mods:
-          hero.persistentMods + aggregateNamedStatModifiers(hero.statModifiers),
     );
   }
 
@@ -484,19 +482,13 @@ class _CombatSpecialAbilityDetailsDialog extends StatelessWidget {
                 ...ability.kampfwertBoni.map((bonus) {
                   final bonusParts = <String>[];
                   if (bonus.atBonus != 0) {
-                    bonusParts.add(
-                      'AT ${bonus.atBonus >= 0 ? '+' : ''}${bonus.atBonus}',
-                    );
+                    bonusParts.add('AT ${mitVorzeichen(bonus.atBonus)}');
                   }
                   if (bonus.paBonus != 0) {
-                    bonusParts.add(
-                      'PA ${bonus.paBonus >= 0 ? '+' : ''}${bonus.paBonus}',
-                    );
+                    bonusParts.add('PA ${mitVorzeichen(bonus.paBonus)}');
                   }
                   if (bonus.iniMod != 0) {
-                    bonusParts.add(
-                      'INI ${bonus.iniMod >= 0 ? '+' : ''}${bonus.iniMod}',
-                    );
+                    bonusParts.add('INI ${mitVorzeichen(bonus.iniMod)}');
                   }
                   final target = bonus.giltFuerTalent.trim().isEmpty
                       ? 'allgemein'

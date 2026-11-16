@@ -12,8 +12,8 @@ Future<AdaptiveConfirmResult> showWorkspaceDiscardDialog(
     content:
         'Wenn du fortfährst, gehen die ungespeicherten Änderungen '
         'im aktuellen Tab verloren.',
-    cancelLabel: 'Nein',
-    confirmLabel: 'Ja',
+    cancelLabel: 'Weiter bearbeiten',
+    confirmLabel: 'Verwerfen',
     saveLabel: 'Änderungen speichern',
     isDestructive: true,
   );

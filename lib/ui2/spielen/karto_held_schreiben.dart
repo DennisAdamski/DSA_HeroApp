@@ -52,10 +52,12 @@ mixin KartoHeldSchreiben<T extends ConsumerStatefulWidget> on ConsumerState<T> {
       fehler = null;
     });
     try {
-      if (ref.read(advancementSessionProvider(heroId)) != null) {
-        throw StateError(planungsSperre);
-      }
-      await ref.read(heroActionsProvider).updateHero(heroId, aenderung);
+      await aendereHeldAusserhalbPlanung(
+        ref,
+        heroId,
+        aenderung,
+        sperre: planungsSperre,
+      );
       return true;
     } catch (error) {
       if (mounted) {
@@ -66,6 +68,24 @@ mixin KartoHeldSchreiben<T extends ConsumerStatefulWidget> on ConsumerState<T> {
       if (einzeln && mounted) setState(() => schreibt = false);
     }
   }
+}
+
+/// Schreibt den Bogen frisch, solange keine Planung offen ist.
+///
+/// Kern von [KartoHeldSchreiben.schreibeHeld] für Kartograph-Wege ohne
+/// eigenen Zustand (etwa das Abbuchen im Gefecht): Bei offener Planung
+/// endet der Aufruf mit einem [StateError] mit [sperre], sonst lädt
+/// `updateHero` den gespeicherten Helden und wendet nur [aenderung] an.
+Future<HeroSheet> aendereHeldAusserhalbPlanung(
+  WidgetRef ref,
+  String heroId,
+  HeroSheet Function(HeroSheet held) aenderung, {
+  required String sperre,
+}) {
+  if (ref.read(advancementSessionProvider(heroId)) != null) {
+    return Future<HeroSheet>.error(StateError(sperre));
+  }
+  return ref.read(heroActionsProvider).updateHero(heroId, aenderung);
 }
 
 /// Lesbarer Text eines Schreibfehlers: die Meldung eines [StateError], sonst

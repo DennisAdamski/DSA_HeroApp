@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
@@ -20,13 +21,14 @@ Gefechtspruefung ergaenzeGefechtsZielen(
   Gefechtszustand s,
   HeroComputedSnapshot snap,
   GefechtAuftrag a,
+  RulesCatalog? k,
 ) {
   final n = a.zielErleichterung;
   if (n == 0) return p;
   final sperren = [...p.sperrgruende];
   final fehlend = [...p.fehlendeAngaben];
   final hinweise = [...p.hinweise];
-  final w = gefechtswerteFuer(snap, kampfmittel: p.kampfmittel);
+  final w = gefechtswerteFuer(snap, katalog: k, kampfmittel: p.kampfmittel);
   if (n < 0 || n > 4) {
     sperren.add('Optionales Zielen erlaubt 0 bis 4 Punkte Erleichterung.');
   }

@@ -380,7 +380,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Lernspalte'), findsOneWidget);
-    expect(find.textContaining('Merkmalskenntnis: -1 Spalte'), findsOneWidget);
+    expect(find.textContaining('Merkmalskenntnis: −1 Spalte'), findsOneWidget);
     expect(find.text('Ergebnis: Spalte C'), findsOneWidget);
     expect(find.text('Hexalogie'), findsOneWidget);
   });

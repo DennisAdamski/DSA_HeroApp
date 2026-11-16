@@ -178,4 +178,100 @@ void main() {
     );
     expect(deletedManifest, isNull);
   });
+
+  test('ein Manifest mit falschen Typen wird gemeldet statt den Katalog '
+      'scheitern zu lassen (KAT-03)', () async {
+    final tempDir = await Directory.systemTemp.createTemp('house_rule_typ_');
+    addTearDown(() async {
+      if (await tempDir.exists()) {
+        await tempDir.delete(recursive: true);
+      }
+    });
+    final wurzel = path.join(
+      tempDir.path,
+      HouseRulePackRepository.houseRulePackRootDirectory,
+      'house_rules_v1',
+    );
+    Directory(path.join(wurzel, 'kaputt')).createSync(recursive: true);
+    File(path.join(wurzel, 'kaputt', 'manifest.json')).writeAsStringSync(
+      '{"id": "kaputt", "title": "Kaputt", "patches": {"falsch": 1}}',
+    );
+    Directory(path.join(wurzel, 'gut')).createSync(recursive: true);
+    File(path.join(wurzel, 'gut', 'manifest.json'))
+        .writeAsStringSync('{"id": "gut", "title": "Gut"}');
+
+    final geladen = await HouseRulePackRepository(heroStoragePath: tempDir.path)
+        .load(catalogVersion: 'house_rules_v1');
+
+    expect(geladen.packs.map((p) => p.id), <String>['gut']);
+    expect(geladen.issues, hasLength(1));
+  });
+
+  group('Paket-ID mit Pfadangabe (KAT-02)', () {
+    late Directory tempDir;
+    late HouseRulePackRepository repository;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp('house_rule_pack_id_');
+      addTearDown(() async {
+        if (await tempDir.exists()) {
+          await tempDir.delete(recursive: true);
+        }
+      });
+      repository = HouseRulePackRepository(
+        heroStoragePath: path.join(tempDir.path, 'helden'),
+      );
+    });
+
+    test('Speichern schreibt nicht außerhalb des Paketordners', () async {
+      for (final id in <String>['../../ausbruch', '..', r'a\b', '/tmp/x']) {
+        await expectLater(
+          repository.saveManifest(
+            catalogVersion: 'house_rules_v1',
+            manifestJson: <String, dynamic>{'id': id, 'title': 'Böse'},
+          ),
+          throwsFormatException,
+          reason: id,
+        );
+      }
+      expect(
+        Directory(path.join(tempDir.path, 'ausbruch')).existsSync(),
+        isFalse,
+      );
+    });
+
+    test('Löschen entfernt nichts außerhalb des Paketordners', () async {
+      final fremd = Directory(path.join(tempDir.path, 'fremd'))
+        ..createSync(recursive: true);
+      File(path.join(fremd.path, 'wichtig.txt')).writeAsStringSync('x');
+
+      await expectLater(
+        repository.deletePack(
+          catalogVersion: 'house_rules_v1',
+          packId: '../../../fremd',
+        ),
+        throwsFormatException,
+      );
+      expect(File(path.join(fremd.path, 'wichtig.txt')).existsSync(), isTrue);
+    });
+
+    test('ein abgelegtes Manifest mit Pfad-ID wird nicht angeboten', () async {
+      final ordner = Directory(
+        path.join(
+          tempDir.path,
+          'helden',
+          HouseRulePackRepository.houseRulePackRootDirectory,
+          'house_rules_v1',
+          'harmlos',
+        ),
+      )..createSync(recursive: true);
+      File(path.join(ordner.path, 'manifest.json'))
+          .writeAsStringSync('{"id": "../../../fremd", "title": "Getarnt"}');
+
+      final geladen = await repository.load(catalogVersion: 'house_rules_v1');
+
+      expect(geladen.packs, isEmpty);
+      expect(geladen.issues.single.message, contains('Pfadangabe'));
+    });
+  });
 }

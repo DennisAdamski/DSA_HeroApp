@@ -111,6 +111,11 @@ PROTECTED_FIELDS: dict[str, dict[str, str]] = {
         'hinweise': 'list',
         'hausregel_text': 'string',
     },
+    # Kraeuterkatalog: Kurzbeschreibung in eigenen Worten nach der Zoo
+    # Botanica. Name, Kurzfakten und Fundstelle (`quelle`) bleiben Klartext.
+    'kraeuter.json': {
+        'beschreibung': 'string',
+    },
     # vertrautenmagie_rituale.json wird BEWUSST nicht verschluesselt:
     # der gleiche Inhalt liegt als Klartext-Preset in
     # lib/catalog/vertrautenmagie_preset.dart und wird per
@@ -350,7 +355,7 @@ def verify_password_v3(catalog_dir: Path, key: bytes) -> bool:
             continue
         with open(file_path, 'r', encoding='utf-8-sig') as f:
             data = json.load(f)
-        entries = data if isinstance(data, list) else data.get('rituals', [])
+        entries = catalog_entries(data) or []
         for entry in entries:
             if not isinstance(entry, dict):
                 continue
@@ -362,6 +367,21 @@ def verify_password_v3(catalog_dir: Path, key: bytes) -> bool:
 
 
 # --- Datei-Verarbeitung ---
+
+# Schluessel verschachtelter Eintragslisten in Objektdateien.
+NESTED_ENTRY_KEYS = ('rituals', 'kraeuter')
+
+
+def catalog_entries(data) -> list | None:
+    """Eintraege einer Katalogdatei: Top-Level-Array oder verschachtelte Liste."""
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict):
+        for key in NESTED_ENTRY_KEYS:
+            if isinstance(data.get(key), list):
+                return data[key]
+    return None
+
 
 def process_file(
     file_path: Path,
@@ -379,12 +399,9 @@ def process_file(
     with open(file_path, 'r', encoding='utf-8-sig') as f:
         data = json.load(f)
 
-    # Eintraege ermitteln: Top-Level-Array oder verschachteltes 'rituals'-Array.
-    if isinstance(data, list):
-        entries = data
-    elif isinstance(data, dict) and isinstance(data.get('rituals'), list):
-        entries = data['rituals']
-    else:
+    # Eintraege ermitteln: Top-Level-Array oder verschachtelte Liste.
+    entries = catalog_entries(data)
+    if entries is None:
         print(f'  Warnung: {file_path.name} hat kein bekanntes Format, uebersprungen.', file=sys.stderr)
         return 0
 

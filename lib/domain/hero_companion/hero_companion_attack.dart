@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Einzelner Angriffsmodus eines Begleiters (z.B. Beißen, Krallen, Sturzflug).
@@ -63,8 +64,8 @@ class HeroCompanionAttack {
     String? id,
     String? name,
     String? dk,
-    Object? at = _keepNull,
-    Object? pa = _keepNull,
+    Object? at = keepFieldValue,
+    Object? pa = keepFieldValue,
     String? tp,
     String? beschreibung,
     int? steigerungAt,
@@ -75,8 +76,8 @@ class HeroCompanionAttack {
       id: id ?? this.id,
       name: name ?? this.name,
       dk: dk ?? this.dk,
-      at: identical(at, _keepNull) ? this.at : at as int?,
-      pa: identical(pa, _keepNull) ? this.pa : pa as int?,
+      at: identical(at, keepFieldValue) ? this.at : at as int?,
+      pa: identical(pa, keepFieldValue) ? this.pa : pa as int?,
       tp: tp ?? this.tp,
       beschreibung: beschreibung ?? this.beschreibung,
       steigerungAt: steigerungAt ?? this.steigerungAt,
@@ -141,6 +142,3 @@ class HeroCompanionAttack {
     unbekannteFelderHash(unbekannteFelder),
   );
 }
-
-/// Sentinel-Wert fuer nullable copyWith-Felder.
-const Object _keepNull = Object();

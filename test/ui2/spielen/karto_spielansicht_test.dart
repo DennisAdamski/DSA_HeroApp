@@ -310,7 +310,9 @@ void main() {
         ]),
       );
       expect(find.text('Die Spuren im Nebel'), findsNothing);
-      expect(find.textContaining('Phex'), findsNothing);
+      // Das Datum des Abschnitts; die Wildnis-Kachel nennt den Monat der
+      // Jahreszeit, daher nicht der Monatsname allein.
+      expect(find.textContaining('1043 BF'), findsNothing);
     });
   });
 
@@ -583,7 +585,9 @@ void main() {
         'zustand',
         'dabei',
         'abenteuer',
+        'standort',
         'merkmale',
+        'wildnis',
         'protokoll',
       ]) {
         await tester.ensureVisible(k('karto-kachel-$art-vergroessern'));
@@ -1040,6 +1044,36 @@ void main() {
       );
     });
 
+    testWidgets('Anordnen zeigt die Vorschau in echter Höhe, eingeklappt '
+        'ohne Vorschau', (tester) async {
+      await zeige(
+        tester,
+        held: magisch().copyWith(
+          adventures: const [_nebel],
+          spielansicht: const HeroSpielansicht(
+            kacheln: [HeroSpielkachel(id: 'kampf', eingeklappt: true)],
+          ),
+        ),
+        breite: 1280,
+        hoehe: 4000,
+      );
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+
+      double hoehe(String id) =>
+          tester.getSize(k('karto-kachel-$id-vorschau')).height;
+      // Keine einheitliche Höhe mehr: die Karten zeigen, wie groß die
+      // Kacheln sind.
+      expect(hoehe('abenteuer'), greaterThan(hoehe('eigenschaften')));
+
+      expect(k('karto-kachel-kampf-vorschau'), findsNothing);
+      expect(
+        tester.widget<Text>(k('karto-kachel-kampf-breite-name')).data,
+        endsWith('Eingeklappt'),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('Vorschau folgt der gewählten Breite', (tester) async {
       await zeige(tester, held: weltlich(), breite: 1280, hoehe: 4000);
       await tester.tap(k('karto-spiel-anordnen'));
@@ -1282,6 +1316,9 @@ void main() {
 
     testWidgets('der Vergrößern-Dialog zeigt die Spalten', (tester) async {
       await zeige(tester, held: mitAbenteuern([_viele]), breite: 1280);
+      // Die Kachel steht unter dem Block „Dabei“ und liegt außerhalb des
+      // ersten Bildschirms.
+      await tester.ensureVisible(k('karto-kachel-abenteuer-vergroessern'));
       await tester.tap(k('karto-kachel-abenteuer-vergroessern'));
       await tester.pumpAndSettle();
       expect(
@@ -1633,15 +1670,27 @@ void main() {
         },
         breite: 1440,
       );
-      expect(find.text('Gareth'), findsOneWidget);
-      expect(find.text('Standort'), findsNothing);
+      // Der Standort steht in der Abenteuer-Kachel und in der eigenen
+      // Standort-Kachel, nirgends sonst.
+      final imAbenteuer = find.descendant(
+        of: find.byKey(const ValueKey<String>('karto-kachel-abenteuer')),
+        matching: find.text('Gareth'),
+      );
+      final inDerKachel = find.descendant(
+        of: find.byKey(const ValueKey<String>('karto-kachel-standort')),
+        matching: find.text('Gareth'),
+      );
+      expect(imAbenteuer, findsOneWidget);
+      expect(inDerKachel, findsOneWidget);
+      expect(find.text('Gareth'), findsNWidgets(2));
       expect(
         find.descendant(
-          of: find.byKey(const ValueKey<String>('karto-kachel-abenteuer')),
-          matching: find.text('Gareth'),
+          of: find.byKey(const ValueKey<String>('karto-kachel-standort')),
+          matching: find.text('Standort'),
         ),
         findsOneWidget,
       );
+      expect(find.text('Standort'), findsOneWidget);
     });
 
     testWidgets('Standort speichert über die Brücke', (tester) async {
@@ -2147,6 +2196,8 @@ void main() {
           breite: 1280,
           einstellungen: einstellungen,
         );
+        // Die Standort-Kachel davor schiebt sie unter den ersten Bildschirm.
+        await tester.ensureVisible(k('karto-kachel-merkmale-vergroessern'));
         await tester.tap(k('karto-kachel-merkmale-vergroessern'));
         await tester.pumpAndSettle();
         expect(
@@ -2226,6 +2277,200 @@ void main() {
     );
     expect(ressource(KartoRessource.karma), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  group('Vorlage der Spielansicht', () {
+    Finder k(String schluessel) => find.byKey(ValueKey<String>(schluessel));
+
+    // Kampf steht in der Vorlage vor den Ressourcen; Kacheln ohne Eintrag
+    // rücken sonst hinter ihren Vorgänger der Standardanordnung.
+    const kampfZuerst = HeroSpielansicht(
+      kacheln: [
+        HeroSpielkachel(id: 'kampf'),
+        HeroSpielkachel(id: 'ressourcen'),
+      ],
+    );
+
+    Future<void> waehleVorlage(WidgetTester tester, String eintrag) async {
+      await tester.ensureVisible(k('karto-spiel-anordnen-vorlage'));
+      await tester.tap(k('karto-spiel-anordnen-vorlage'));
+      await tester.pumpAndSettle();
+      await tester.tap(k('karto-spiel-anordnen-vorlage-$eintrag'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('Speichern legt die Anordnung nur in den Geräteeinstellungen '
+        'ab', (tester) async {
+      final einstellungen = _Einstellungen();
+      addTearDown(einstellungen.close);
+      final repo = _ZaehlendesRepository(heroes: [weltlich()]);
+      await zeige(
+        tester,
+        held: weltlich(),
+        repository: repo,
+        breite: 1280,
+        einstellungen: einstellungen,
+      );
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(k('karto-kachel-kampf-vor'));
+      await tester.tap(k('karto-kachel-kampf-vor'));
+      await tester.pumpAndSettle();
+
+      await waehleVorlage(tester, 'speichern');
+
+      final vorlage = einstellungen.load().spielansichtVorlage!;
+      final ids = vorlage.kacheln.map((k) => k.id).toList();
+      expect(ids.indexOf('kampf'), lessThan(ids.indexOf('eigenschaften')));
+      // Der Held bleibt unberührt, der Entwurf offen.
+      expect(repo.speicherungen, 0);
+      expect(k('karto-spiel-anordnen-fertig'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('ein Held ohne eigene Anordnung folgt der Vorlage', (
+      tester,
+    ) async {
+      final einstellungen = _Einstellungen(
+        const AppSettings(spielansichtVorlage: kampfZuerst),
+      );
+      addTearDown(einstellungen.close);
+      await zeige(
+        tester,
+        held: weltlich(),
+        breite: 1280,
+        einstellungen: einstellungen,
+      );
+      expect(
+        tester.getTopLeft(find.text('Kampf')).dy,
+        lessThan(tester.getTopLeft(find.text('Ressourcen')).dy),
+      );
+    });
+
+    testWidgets('die eigene Anordnung des Helden geht der Vorlage vor', (
+      tester,
+    ) async {
+      final einstellungen = _Einstellungen(
+        const AppSettings(spielansichtVorlage: kampfZuerst),
+      );
+      addTearDown(einstellungen.close);
+      final held = weltlich().copyWith(
+        spielansicht: const HeroSpielansicht(
+          kacheln: [
+            HeroSpielkachel(id: 'ressourcen'),
+            HeroSpielkachel(id: 'kampf'),
+          ],
+        ),
+      );
+      await zeige(
+        tester,
+        held: held,
+        breite: 1280,
+        einstellungen: einstellungen,
+      );
+      expect(
+        tester.getTopLeft(find.text('Ressourcen')).dy,
+        lessThan(tester.getTopLeft(find.text('Kampf')).dy),
+      );
+    });
+
+    testWidgets('Laden füllt den Entwurf, erst Fertig schreibt den Helden', (
+      tester,
+    ) async {
+      final einstellungen = _Einstellungen(
+        const AppSettings(spielansichtVorlage: kampfZuerst),
+      );
+      addTearDown(einstellungen.close);
+      // Der Held hat schon eine eigene Anordnung, die von der Vorlage abweicht.
+      final held = weltlich().copyWith(
+        spielansicht: const HeroSpielansicht(
+          kacheln: [
+            HeroSpielkachel(id: 'ressourcen'),
+            HeroSpielkachel(id: 'kampf'),
+          ],
+        ),
+      );
+      final repo = _ZaehlendesRepository(heroes: [held]);
+      await zeige(
+        tester,
+        held: held,
+        repository: repo,
+        breite: 1280,
+        einstellungen: einstellungen,
+      );
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+      await waehleVorlage(tester, 'laden');
+      expect(repo.speicherungen, 0);
+
+      await tester.ensureVisible(k('karto-spiel-anordnen-fertig'));
+      await tester.tap(k('karto-spiel-anordnen-fertig'));
+      await tester.pumpAndSettle();
+      expect(repo.speicherungen, 1);
+      final ids = (await repo.loadHeroById('praiodan'))!.spielansicht!.kacheln
+          .map((k) => k.id)
+          .toList();
+      expect(ids.first, 'kampf');
+    });
+
+    testWidgets('ohne Vorlage ist Laden gesperrt; Entfernen löscht sie', (
+      tester,
+    ) async {
+      final einstellungen = _Einstellungen();
+      addTearDown(einstellungen.close);
+      await zeige(
+        tester,
+        held: weltlich(),
+        breite: 1280,
+        einstellungen: einstellungen,
+      );
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(k('karto-spiel-anordnen-vorlage'));
+      await tester.tap(k('karto-spiel-anordnen-vorlage'));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<PopupMenuItem<Object?>>(
+              k('karto-spiel-anordnen-vorlage-laden'),
+            )
+            .enabled,
+        isFalse,
+      );
+      await tester.tap(k('karto-spiel-anordnen-vorlage-speichern'));
+      await tester.pumpAndSettle();
+      expect(einstellungen.load().spielansichtVorlage, isNotNull);
+
+      await waehleVorlage(tester, 'loeschen');
+      expect(einstellungen.load().spielansichtVorlage, isNull);
+    });
+
+    testWidgets('Einklappen behält die Anordnung der Vorlage', (tester) async {
+      final einstellungen = _Einstellungen(
+        const AppSettings(spielansichtVorlage: kampfZuerst),
+      );
+      addTearDown(einstellungen.close);
+      final repo = _ZaehlendesRepository(heroes: [weltlich()]);
+      await zeige(
+        tester,
+        held: weltlich(),
+        repository: repo,
+        breite: 1280,
+        einstellungen: einstellungen,
+      );
+      await tester.ensureVisible(k('karto-kachel-kampf-einklappen'));
+      await tester.tap(k('karto-kachel-kampf-einklappen'));
+      await tester.pumpAndSettle();
+
+      expect(repo.speicherungen, 1);
+      final ansicht = (await repo.loadHeroById('praiodan'))!.spielansicht!;
+      expect(ansicht.kacheln.first.id, 'kampf');
+      expect(ansicht.kachel('kampf')!.eingeklappt, isTrue);
+      expect(
+        tester.getTopLeft(find.text('Kampf')).dy,
+        lessThan(tester.getTopLeft(find.text('Ressourcen')).dy),
+      );
+    });
   });
 }
 

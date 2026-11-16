@@ -658,8 +658,9 @@ void main() {
         lineFor('eBE bei KK-Talenten halbiert'),
         isNot(contains('manuell')),
       );
+      expect(lineFor('Tragkraft KK'), isNot(contains('manuell')));
       // Nicht gerechnet -> ausdruecklich markiert.
-      expect(lineFor('Tragkraft KK'), contains('manuell'));
+      expect(lineFor('Zurückdrängen möglich'), contains('manuell'));
       expect(
         find.byKey(const ValueKey<String>('overview-epic-manual-note')),
         findsOneWidget,

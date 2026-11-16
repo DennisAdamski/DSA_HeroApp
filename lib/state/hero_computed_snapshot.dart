@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/hero_stat_inputs.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_modifier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/tragkraft_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/waffenlos_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 
@@ -26,6 +27,8 @@ class HeroComputedSnapshot {
     required this.effectiveStartAttributes,
     required this.attributeMaximums,
     required this.effectiveAttributes,
+    required this.permanentAttributes,
+    required this.tragkraft,
     required this.probenEigenschaften,
     required this.derivedStats,
     required this.combatPreviewStats,
@@ -48,6 +51,13 @@ class HeroComputedSnapshot {
   final Attributes effectiveStartAttributes;
   final Attributes attributeMaximums;
   final Attributes effectiveAttributes;
+
+  /// Eigenschaften ohne laufende Zauber (Attributo, Karnifilo …): Grundlage
+  /// für Werte, die nur Dauerhaftes zählen, etwa die Tragkraft.
+  final Attributes permanentAttributes;
+
+  /// Last und Tragkraft des Helden (SPIEL-02, WdS S. 144).
+  final TragkraftErgebnis tragkraft;
 
   /// Eigenschaftswerte für Eigenschafts-, Talent- und Zauberproben:
   /// [effectiveAttributes] abzüglich der wundbedingten Verluste. Abgeleitete
@@ -172,6 +182,12 @@ HeroComputedSnapshot buildHeroComputedSnapshot({
     effectiveStartAttributes: effectiveStartAttributes,
     attributeMaximums: attributeMaximums,
     effectiveAttributes: effective,
+    permanentAttributes: inputs.permanent,
+    tragkraft: berechneTragkraft(
+      hero: hero,
+      permanent: inputs.permanent,
+      epicAdvantagesActive: epicAdvantagesActive,
+    ),
     probenEigenschaften: inputs.probenEigenschaften,
     derivedStats: derived,
     combatPreviewStats: combat,

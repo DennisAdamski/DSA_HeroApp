@@ -186,6 +186,79 @@ python tool/import_liber_cantiones.py \
   --review tool/generated/liber_cantiones_missing_spells.json
 ```
 
+## Ortsverzeichnis (Wiki Aventurica)
+
+`assets/catalogs/house_rules_v1/orte.json` ist das Verzeichnis für die Ortsauswahl
+(Standort und Reiseroute-Station): Siedlungen, Regionen, Staaten, Flüsse und
+Straßen mit Name, Art, Unterart und Region, rund 6400 Einträge. Es ist ein
+Snapshot der Wiki Aventurica (CC BY-SA; MediaWiki-API
+`https://de.wiki-aventurica.de/de/api.php`, anonym lesbar) und kein Teil des
+`RulesCatalog`: `lib/catalog/ort_loader.dart` lädt es wie die Feiertage über
+`ortKatalogProvider`; fehlt die Datei, bleibt der Ort Freitext.
+
+```bash
+python tool/import_wiki_orte.py            # schreibt orte.json neu
+python tool/import_wiki_orte.py --dry-run  # nur zählen
+python tool/import_wiki_orte.py --limit 40 # Stichprobe je Vorlage
+```
+
+- Seiten werden über ihre Infobox-Vorlage gefunden (`list=embeddedin` auf
+  `Infobox Siedlung`, `Region`, `Staat`, `Fluss`, `Straße`), nicht über
+  Kategorien: Regionen haben keine einheitliche Kategorie.
+- Ein Klammerzusatz des Wikis („Havena (Siedlung)“) fällt aus dem `name`; der
+  volle Seitenname bleibt als `seite`. Je Name und Art gibt es einen Eintrag.
+- Übernommen werden nur Kurzfakten, keine Beschreibungstexte; deshalb ist nichts
+  verschlüsselt. Die Quellenangabe steht in der Lizenzansicht der App
+  (`lib/data/wiki_aventurica_lizenz.dart`) und im Bereich „Rechtliches“.
+- **Ortsfakten:** `python tool/import_wiki_ortsfakten.py` schreibt
+  `assets/catalogs/house_rules_v1/ortsfakten.json`: je Siedlung (Schlüssel
+  ist der Wiki-Seitenname wie `seite`/`name` in `orte.json`) Einwohner
+  (Hauptzahl und Text), Oberhaupt, Herrschaftsform, Verkehrswege; dazu alle
+  Seiten mit `Infobox Bauwerk`, deren `Standort` auf eine Siedlung verlinkt
+  (Name, Art, Zugehörigkeit). Nur Infobox-Kurzfakten, keine Texte. Lädt
+  `ortsfaktenProvider` (`lib/catalog/ortsfakten_loader.dart`); angezeigt in
+  der Standort-Kachel und der Infotafel der Karte (`ortsfakten_rules.dart`:
+  Tempel getrennt, übrige Bauwerke nach Bedeutung). Prüfen mit
+  `flutter test test/catalog/ortsfakten_katalog_test.dart` und
+  `python -m unittest tool/test_import_wiki_ortsfakten.py`.
+- Nach einem neuen Import `flutter test test/catalog/ort_katalog_test.dart`
+  laufen lassen. Der Import ist höflich (eigener User-Agent, Pausen, `maxlag`)
+  und dauert einige Minuten.
+
+## Kräutertabellen (Wege des Entdeckers)
+
+`assets/catalogs/house_rules_v1/kraeuter.json` enthält die Heilkräuter der
+Landschaftstabellen aus Wege des Entdeckers S. 114–118: Name, Bestimmung,
+einzeilige Wirkung, Gebiet als Freitext und je Landschaft die Häufigkeit
+(`vorkommen`, mit optionalem `hinweis` wie „nur an Seeufern“). Es ist kein Teil
+des `RulesCatalog`: `lib/catalog/kraeuter_loader.dart` lädt es wie die Orte über
+`kraeuterKatalogProvider`; die Regeln liegen in
+`lib/rules/derived/kraeutersuche_rules.dart`.
+
+```bash
+python tool/import_kraeuter.py   # schreibt kraeuter.json neu
+```
+
+- Das Regelbuch hat keine maschinenlesbare Fassung: Die Daten stehen als
+  kuratierte Tabelle in `tool/import_kraeuter.py`. Jede Änderung dort gegen die
+  Buchseite prüfen (`dsa-rules`-MCP, Chunks 6310–6313).
+- Klartext sind nur Kurzfakten: Bestimmung, Häufigkeit, Wirkung, Gebiet,
+  Erntezeit, Grundmenge und die Fundstelle `quelle` („Zoo Botanica Aventurica
+  S. …“, gedruckte Seiten 227–276, Tabelle `QUELLE_SEITE`; die PDF-Seiten des
+  `dsa-rules`-Index liegen eine Seite höher).
+- `beschreibung` ist eine Kurzbeschreibung in eigenen Worten nach der Zoo
+  Botanica und deshalb v3-verschlüsselt (Harte Regel 13, `PROTECTED_FIELDS`,
+  `geschuetzte_langtexte_test.dart`). Sie steht **nicht** im Skript: Das
+  Skript übernimmt die vorhandenen (verschlüsselten) Werte nach Name. Neue oder
+  geänderte Beschreibungen im Klartext in die JSON schreiben und danach
+  `python tool/encrypt_catalog_fields.py --format v3` ausführen. Die App
+  entschlüsselt sie mit dem Katalogpasswort (`kraeuterKatalogProvider`); ohne
+  Passwort bleibt sie gesperrt, die Suche selbst braucht es nie.
+- Das Buch führt Egelschreck im Lichten Wald doppelt (gelegentlich und selten);
+  beide Vorkommen sind übernommen.
+- Nach einer Änderung `flutter test test/catalog/kraeuter_katalog_test.dart`
+  laufen lassen.
+
 ## Tooling
 
 ```bash

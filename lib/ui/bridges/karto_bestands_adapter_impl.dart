@@ -375,9 +375,14 @@ class KartoBestandsAdapterImpl
   Widget spielZustand({
     required String heroId,
     required HeroComputedSnapshot werte,
+    bool mitBelastung = true,
   }) {
     return _KartoCompatHost(
-      child: KartoZustandsblock(heroId: heroId, werte: werte),
+      child: KartoZustandsblock(
+        heroId: heroId,
+        werte: werte,
+        mitBelastung: mitBelastung,
+      ),
     );
   }
 

@@ -34,6 +34,7 @@ Future<void> zeigeGefechtsWirken({
   final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
   final s = ref.read(gefechtMitInitiativeProvider(heroId));
   if (snapshot == null || s == null || s.handlung != null) return;
+  final katalog = ref.read(heroRulesCatalogProvider(heroId)).asData?.value;
   final profil = await showDialog<(Gefechtshandlungsart, GefechtsWirkprofil)>(
     context: context,
     builder: (_) => GefechtWirkdialog(
@@ -41,9 +42,10 @@ Future<void> zeigeGefechtsWirken({
       zustand: s,
       zauber: zauber,
       talent: talent,
+      katalog: katalog,
       aufrechterhaltenVorschlag: aufrechterhaltungsBefund(
         snapshot.state,
-        ref.read(heroRulesCatalogProvider(heroId)).asData?.value,
+        katalog,
       ).anzahl,
       talentBeOverride: ref.read(talentBeOverrideProvider(heroId)),
       epicAdvantagesActive: ref.read(heroEpicAdvantagesActiveProvider(heroId)),
@@ -113,7 +115,10 @@ Future<void> starteGefechtsWirken({
   if (s == null || snapshot == null || s.handlung != null || profil.dauer < 1) {
     return;
   }
-  final w = gefechtswerteFuer(snapshot);
+  final w = gefechtswerteFuer(
+    snapshot,
+    katalog: ref.read(heroRulesCatalogProvider(heroId)).asData?.value,
+  );
   final p = pruefeManuelleGefechtsaktion(s, w, kosten: 1);
   if (p.status == Gefechtsfreigabe.gesperrt ||
       snapshot.wundEffekte.kampfunfaehig) {
@@ -212,7 +217,10 @@ Future<void> setzeGefechtsWirkenFort({
     );
     return;
   }
-  final w = gefechtswerteFuer(snapshot);
+  final w = gefechtswerteFuer(
+    snapshot,
+    katalog: ref.read(heroRulesCatalogProvider(heroId)).asData?.value,
+  );
   final p = pruefeManuelleGefechtsaktion(
     s,
     w,

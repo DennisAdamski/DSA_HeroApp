@@ -70,10 +70,10 @@ void main() {
       testCatalog,
       fixture.zielauftrag,
     );
-    s = bezahleGefechtsVorbereitung(s, snap);
+    s = bezahleGefechtsVorbereitung(s, snap, null);
     expect(s.paradenVerbraucht, 1);
     expect(s.kontext.situationsZuschlag, 0);
-    s = bezahleGefechtsVorbereitung(naechsteGefechtsrunde(s), snap);
+    s = bezahleGefechtsVorbereitung(naechsteGefechtsrunde(s), snap, null);
     s = naechsteGefechtsrunde(s).copyWith(
       dk: 'N',
       kontext: s.kontext.copyWith(situationsZuschlag: 2, getuemmel: true),
@@ -164,14 +164,15 @@ void main() {
         const Gefechtszustand(iniWurf: 6),
         be4,
         fixture.mittel,
+        null,
         anfangGeladen: false,
       );
-      s = bezahleGefechtsVorbereitung(s, be4);
-      final p = pruefeGefechtsVorbereitung(s, be5);
+      s = bezahleGefechtsVorbereitung(s, be4, null);
+      final p = pruefeGefechtsVorbereitung(s, be5, null);
       expect(p.bezahlt, 2);
       expect(p.dauer, 4);
       expect(p.rest, 2);
-      s = bezahleGefechtsVorbereitung(naechsteGefechtsrunde(s), be5);
+      s = bezahleGefechtsVorbereitung(naechsteGefechtsrunde(s), be5, null);
       expect(s.handlung!.vorbereitung!.bezahlteAktionen, 3);
       expect(
         gefechtsLadezustand(s, be5.hero.combatConfig.selectedWeapon),
@@ -179,7 +180,7 @@ void main() {
       );
       // RG stellt wirksame BE4 her; die bezahlten3Aktionen reichen ohne neue Marke.
       final rg = reviewLadeSnapshot(be: 5, training: 2);
-      final fertig = bezahleGefechtsVorbereitung(s, rg);
+      final fertig = bezahleGefechtsVorbereitung(s, rg, null);
       expect(fertig.handlung, isNull);
       expect(fertig.angriffeVerbraucht, s.angriffeVerbraucht);
       expect(fertig.paradenVerbraucht, s.paradenVerbraucht);

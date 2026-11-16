@@ -3,9 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/tragkraft_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spiel_dabei_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
@@ -22,12 +26,22 @@ const int kDabeiSichtbarWeit = 12;
 /// Kachelbreite, ab der die Verbrauchsgegenstände zweispaltig fließen.
 const double kDabeiZweispaltigAb = 560;
 
-/// Block „Dabei“ der Spielansicht (SPIEL-02): Geld und Verbrauchsgegenstände.
+/// Satz unter der Munition, solange ein Gefecht des Helden läuft.
+const String kDabeiMunitionImGefecht =
+    'Im laufenden Gefecht zählt das Gefecht die Munition.';
+
+/// Block „Dabei“ der Spielansicht (SPIEL-02): Geld, Munition und
+/// Verbrauchsgegenstände.
 ///
-/// Zeigt den Geldstand mit Münzschritten und die Verbrauchsgegenstände des
-/// Inventars mit +/−. Jeder Klick schreibt **frisch**: den gespeicherten Helden
-/// laden, nur den Geldstand oder die Menge dieses einen Eintrags ändern,
-/// speichern (`mitGeldSchritt`, `mitVerbrauchsmengenSchritt`). Die Schritte
+/// Zeigt den Geldstand mit Münzschritten, die Geschossbestände der
+/// Fernkampfwaffen und die Verbrauchsgegenstände des Inventars mit +/−. Jeder
+/// Klick schreibt **frisch**: den gespeicherten Helden laden, nur den
+/// Geldstand, den Bestand dieses Geschosses oder die Menge dieses einen
+/// Eintrags ändern, speichern (`mitDukatenSchritt`, `mitMunitionsSchritt`,
+/// `mitVerbrauchsmengenSchritt`). Munition zählt am Kampf-Slot; das Inventar
+/// gleicht `updateHero` beim Speichern selbst ab. Solange ein Gefecht des
+/// Helden läuft, gehört die Munition dem Gefecht (Ladezustand, Schuss) und
+/// ist hier gesperrt. Die Schritte
 /// reihen sich je Held ein, deshalb zählt auch ein schneller Doppelklick. Gesperrt
 /// ist alles während einer offenen Planung. Der Block rechnet nichts selbst.
 class KartoDabeiAbschnitt extends ConsumerStatefulWidget {
@@ -37,6 +51,11 @@ class KartoDabeiAbschnitt extends ConsumerStatefulWidget {
     required this.heroId,
     required this.dukaten,
     required this.verbrauch,
+    this.munition = const <DabeiMunition>[],
+    this.begleiterVerbrauch = const <DabeiBegleiterVerbrauch>[],
+    this.tragkraft,
+    this.erschoepfung = 0,
+    this.ueberanstrengung = 0,
     this.onBenutzen,
   });
 
@@ -48,6 +67,25 @@ class KartoDabeiAbschnitt extends ConsumerStatefulWidget {
 
   /// Verbrauchsgegenstände aus `dabeiVerbrauchsgegenstaende`.
   final List<HeroInventoryEntry> verbrauch;
+
+  /// Geschossbestände aus `dabeiMunition`; leer heißt kein Abschnitt.
+  final List<DabeiMunition> munition;
+
+  /// Verbrauchsgegenstände, die Begleiter tragen, nach Begleiter gruppiert
+  /// (`dabeiBegleiterVerbrauch`); leer heißt kein Abschnitt. Sie lassen sich
+  /// zählen, aber nicht benutzen: Der Held hat sie nicht bei sich.
+  final List<DabeiBegleiterVerbrauch> begleiterVerbrauch;
+
+  /// Last und Tragkraft aus dem Regelmodul; ohne Wert entfällt „Belastung“.
+  ///
+  /// Die Tragkraftquellen (etwa die Bärenrune) pflegt der Inventar-Tab.
+  final TragkraftErgebnis? tragkraft;
+
+  /// Gespeicherte Erschöpfung (Laufzeitzustand).
+  final int erschoepfung;
+
+  /// Gespeicherte Überanstrengung (Laufzeitzustand).
+  final int ueberanstrengung;
 
   /// Öffnet den Dialog zum Benutzen eines Tranks, Heilmittels oder Elixiers.
   ///
@@ -74,13 +112,31 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt>
   Future<void> _schreibe(HeroSheet Function(HeroSheet held) aenderung) =>
       schreibeHeld(aenderung, einzeln: false, fehlerPraefix: '');
 
+  // Erschöpfung und Überanstrengung liegen im Laufzeitzustand, nicht am
+  // Bogen: frisch laden, nur das eigene Feld ändern, nie unter 0. Eine offene
+  // Planung sperrt den Zustand nicht (wie im Zustandsblock).
+  Future<void> _schreibeZustand(
+    HeroState Function(HeroState aktuell) aenderung,
+  ) async {
+    setState(() => fehler = null);
+    try {
+      await ref
+          .read(heroActionsProvider)
+          .updateHeroState(widget.heroId, aenderung);
+    } catch (error) {
+      if (mounted) setState(() => fehler = schreibFehlerText(error));
+    }
+  }
+
+  static int _ab0(int wert) => wert < 0 ? 0 : wert;
+
   Future<void> _betragAendern() async {
     final ergebnis = await showDialog<int>(
       context: context,
       builder: (_) => _BetragDialog(dukaten: widget.dukaten),
     );
     if (ergebnis == null || ergebnis == 0) return;
-    await _schreibe((held) => mitGeldSchritt(held, ergebnis));
+    await _schreibe((held) => mitDukatenSchritt(held, ergebnis));
   }
 
   @override
@@ -99,9 +155,11 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt>
         ? widget.verbrauch
         : widget.verbrauch.take(grenze).toList();
     final verborgen = widget.verbrauch.length - sichtbar.length;
+    final imGefecht = ref.watch(gefechtProvider(widget.heroId)) != null;
 
     return KartoAbschnitt(
       titel: 'Dabei',
+      symbol: Icons.backpack_outlined,
       dicht: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -110,9 +168,40 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt>
             dukaten: widget.dukaten,
             gesperrt: gesperrt,
             onSchritt: (kreuzer) =>
-                _schreibe((held) => mitGeldSchritt(held, kreuzer)),
+                _schreibe((held) => mitDukatenSchritt(held, kreuzer)),
             onBetrag: _betragAendern,
           ),
+          if (widget.munition.isNotEmpty) ...[
+            const SizedBox(height: Abstand.weit),
+            Text(
+              'Munition',
+              style: texte.marke.copyWith(color: karto.schriftLeise),
+            ),
+            const SizedBox(height: Abstand.eng),
+            _Zeilen(
+              children: [
+                for (var i = 0; i < widget.munition.length; i++)
+                  _Munitionszeile(
+                    index: i,
+                    munition: widget.munition[i],
+                    gesperrt: gesperrt || imGefecht,
+                    onSchritt: (delta) => _schreibe(
+                      (held) =>
+                          mitMunitionsSchritt(held, widget.munition[i], delta),
+                    ),
+                  ),
+              ],
+            ),
+            if (imGefecht && !gesperrt)
+              Padding(
+                padding: const EdgeInsets.only(top: Abstand.eng),
+                child: Text(
+                  kDabeiMunitionImGefecht,
+                  key: const ValueKey<String>('karto-dabei-munition-gefecht'),
+                  style: texte.etikett.copyWith(color: karto.schriftLeise),
+                ),
+              ),
+          ],
           const SizedBox(height: Abstand.weit),
           Text(
             'Verbrauchsgegenstände',
@@ -126,44 +215,27 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt>
               style: texte.fliess.copyWith(color: karto.schriftLeise),
             )
           else
-            // Auf breiter Kachel fließen die Zeilen in zwei Spalten; sonst
-            // stünden Name und Knöpfe eine halbe Seite auseinander.
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final zweispaltig = constraints.maxWidth >= kDabeiZweispaltigAb;
-                final zeilenbreite = zweispaltig
-                    ? (constraints.maxWidth - Abstand.bahn) / 2
-                    : constraints.maxWidth;
-                return Wrap(
-                  spacing: Abstand.bahn,
-                  children: [
-                    for (var i = 0; i < sichtbar.length; i++)
-                      SizedBox(
-                        width: zeilenbreite,
-                        child: _Verbrauchszeile(
-                          index: i,
-                          eintrag: sichtbar[i],
-                          gesperrt: gesperrt,
-                          onSchritt: (delta) => _schreibe(
-                            (held) => mitVerbrauchsmengenSchritt(
-                              held,
-                              sichtbar[i],
-                              delta,
-                            ),
-                          ),
-                          onBenutzen:
-                              widget.onBenutzen != null &&
-                                  dabeiBenutzbar(
-                                    catalog: katalog,
-                                    eintrag: sichtbar[i],
-                                  )
-                              ? () => widget.onBenutzen!(sichtbar[i])
-                              : null,
-                        ),
-                      ),
-                  ],
-                );
-              },
+            _Zeilen(
+              children: [
+                for (var i = 0; i < sichtbar.length; i++)
+                  _Verbrauchszeile(
+                    index: i,
+                    eintrag: sichtbar[i],
+                    gesperrt: gesperrt,
+                    onSchritt: (delta) => _schreibe(
+                      (held) =>
+                          mitVerbrauchsmengenSchritt(held, sichtbar[i], delta),
+                    ),
+                    onBenutzen:
+                        widget.onBenutzen != null &&
+                            dabeiBenutzbar(
+                              catalog: katalog,
+                              eintrag: sichtbar[i],
+                            )
+                        ? () => widget.onBenutzen!(sichtbar[i])
+                        : null,
+                  ),
+              ],
             ),
           if (widget.verbrauch.length > grenze)
             Align(
@@ -176,6 +248,54 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt>
                 ),
               ),
             ),
+          for (var g = 0; g < widget.begleiterVerbrauch.length; g++) ...[
+            const SizedBox(height: Abstand.weit),
+            Text(
+              'Beim Begleiter: ${widget.begleiterVerbrauch[g].name}',
+              key: ValueKey<String>('karto-dabei-begleiter-$g'),
+              style: texte.marke.copyWith(color: karto.schriftLeise),
+            ),
+            const SizedBox(height: Abstand.eng),
+            _Zeilen(
+              children: [
+                for (
+                  var i = 0;
+                  i < widget.begleiterVerbrauch[g].eintraege.length;
+                  i++
+                )
+                  _Verbrauchszeile(
+                    index: i,
+                    schluessel: 'karto-dabei-begleiter-$g-$i',
+                    eintrag: widget.begleiterVerbrauch[g].eintraege[i],
+                    gesperrt: gesperrt,
+                    onSchritt: (delta) => _schreibe(
+                      (held) => mitVerbrauchsmengenSchritt(
+                        held,
+                        widget.begleiterVerbrauch[g].eintraege[i],
+                        delta,
+                      ),
+                    ),
+                    onBenutzen: null,
+                  ),
+              ],
+            ),
+          ],
+          if (widget.tragkraft != null) ...[
+            const SizedBox(height: Abstand.weit),
+            _Belastung(
+              tragkraft: widget.tragkraft!,
+              erschoepfung: widget.erschoepfung,
+              ueberanstrengung: widget.ueberanstrengung,
+              onErschoepfung: (delta) => _schreibeZustand(
+                (z) => z.copyWith(erschoepfung: _ab0(z.erschoepfung + delta)),
+              ),
+              onUeberanstrengung: (delta) => _schreibeZustand(
+                (z) => z.copyWith(
+                  ueberanstrengung: _ab0(z.ueberanstrengung + delta),
+                ),
+              ),
+            ),
+          ],
           if (gesperrt) ...[
             const SizedBox(height: Abstand.normal),
             Text(
@@ -305,10 +425,249 @@ class _Geld extends StatelessWidget {
   }
 }
 
+/// Mindestbreite einer Zelle für Erschöpfung oder Überanstrengung.
+const double kDabeiStufenZelleMin = 120;
+
+/// Abschnitt „Belastung“: eine Zeile Last gegen Tragkraft, darunter
+/// Erschöpfung und Überanstrengung, nebeneinander, sofern Platz ist.
+///
+/// Zeigt nur an, was das Regelmodul liefert (`berechneTragkraft`). Die
+/// Herleitung der Tragkraft, die volle Folge einer Überschreitung und der
+/// Hinweis auf Einträge ohne Gewicht stehen im Tooltip der Lastzeile; die
+/// Tragkraftquellen pflegt der Inventar-Tab. Die Schreibwege liegen beim
+/// Block.
+class _Belastung extends StatelessWidget {
+  const _Belastung({
+    required this.tragkraft,
+    required this.erschoepfung,
+    required this.ueberanstrengung,
+    required this.onErschoepfung,
+    required this.onUeberanstrengung,
+  });
+
+  final TragkraftErgebnis tragkraft;
+  final int erschoepfung;
+  final int ueberanstrengung;
+  final void Function(int delta) onErschoepfung;
+  final void Function(int delta) onUeberanstrengung;
+
+  @override
+  Widget build(BuildContext context) {
+    final karto = context.karto;
+    final texte = Theme.of(context).textTheme;
+    final ueber = tragkraft.stufe != TragkraftStufe.frei;
+    final hinweis = tragkraft.hinweis;
+    final mindestens = tragkraft.ohneGewicht > 0;
+    final tipp = [
+      'Tragkraft ${tragkraftFormel(tragkraft.tragkraft)}',
+      ?hinweis,
+      if (mindestens)
+        tragkraft.ohneGewicht == 1
+            ? '1 getragener Eintrag hat kein Gewicht: die Last ist '
+                  'mindestens so hoch.'
+            : '${tragkraft.ohneGewicht} getragene Einträge haben kein '
+                  'Gewicht: die Last ist mindestens so hoch.',
+    ].join('\n');
+
+    Widget stufe(
+      String schluessel,
+      String name,
+      int wert,
+      void Function(int delta) onSchritt,
+    ) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: texte.etikett.copyWith(color: karto.schriftLeise),
+          ),
+          _MengeSchritt(
+            schluessel: schluessel,
+            menge: '$wert',
+            name: name,
+            onMinus: wert > 0 ? () => onSchritt(-1) : null,
+            onPlus: () => onSchritt(1),
+          ),
+        ],
+      );
+    }
+
+    final stufen = <Widget>[
+      stufe(
+        'karto-dabei-erschoepfung',
+        'Erschöpfung',
+        erschoepfung,
+        onErschoepfung,
+      ),
+      stufe(
+        'karto-dabei-ueberanstrengung',
+        'Überanstrengung',
+        ueberanstrengung,
+        onUeberanstrengung,
+      ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Tooltip(
+          message: tipp,
+          child: Wrap(
+            spacing: Abstand.normal,
+            runSpacing: Abstand.eng,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(
+                'Belastung',
+                style: texte.marke.copyWith(color: karto.schriftLeise),
+              ),
+              Text(
+                '${mindestens ? '≥ ' : ''}'
+                '${formatiereStein(tragkraft.lastGramm)} / '
+                '${tragkraft.tragkraftStein} Stein',
+                key: const ValueKey<String>('karto-dabei-last'),
+                style: texte.wert.copyWith(
+                  color: ueber ? karto.siegel : karto.schrift,
+                ),
+              ),
+              if (ueber)
+                Text(
+                  'BE +${tragkraft.zusatzBe}',
+                  key: const ValueKey<String>('karto-dabei-last-hinweis'),
+                  style: texte.etikett.copyWith(color: karto.siegel),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: Abstand.eng),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final nebeneinander =
+                constraints.maxWidth >= 2 * kDabeiStufenZelleMin + Abstand.weit;
+            if (!nebeneinander) {
+              return Column(
+                key: const ValueKey<String>('karto-dabei-stufen'),
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  stufen[0],
+                  const SizedBox(height: Abstand.eng),
+                  stufen[1],
+                ],
+              );
+            }
+            return Row(
+              key: const ValueKey<String>('karto-dabei-stufen-nebeneinander'),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: stufen[0]),
+                const SizedBox(width: Abstand.weit),
+                Expanded(child: stufen[1]),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+/// Zeilen des Blocks; auf breiter Kachel fließen sie in zwei Spalten, sonst
+/// stünden Name und Knöpfe eine halbe Seite auseinander.
+class _Zeilen extends StatelessWidget {
+  const _Zeilen({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final zweispaltig = constraints.maxWidth >= kDabeiZweispaltigAb;
+        final zeilenbreite = zweispaltig
+            ? (constraints.maxWidth - Abstand.bahn) / 2
+            : constraints.maxWidth;
+        return Wrap(
+          spacing: Abstand.bahn,
+          children: [
+            for (final zeile in children)
+              SizedBox(width: zeilenbreite, child: zeile),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Zeile eines Geschossbestands: Geschoss, Waffe, Bestand, − und +.
+class _Munitionszeile extends StatelessWidget {
+  const _Munitionszeile({
+    required this.index,
+    required this.munition,
+    required this.gesperrt,
+    required this.onSchritt,
+  });
+
+  final int index;
+  final DabeiMunition munition;
+  final bool gesperrt;
+  final void Function(int delta) onSchritt;
+
+  @override
+  Widget build(BuildContext context) {
+    final karto = context.karto;
+    final texte = Theme.of(context).textTheme;
+    final leer = !munition.kannAbziehen;
+    return Padding(
+      key: ValueKey<String>('karto-dabei-munition-$index'),
+      padding: const EdgeInsets.only(top: Abstand.eng),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  munition.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: texte.fliess.copyWith(
+                    color: leer ? karto.schriftStumm : karto.schrift,
+                  ),
+                ),
+                Text(
+                  munition.aktiv
+                      ? '${munition.waffenName} · aktiv'
+                      : munition.waffenName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: texte.etikett.copyWith(color: karto.schriftLeise),
+                ),
+              ],
+            ),
+          ),
+          _MengeSchritt(
+            schluessel: 'karto-dabei-munition-$index',
+            menge: '${munition.anzahl}',
+            name: '${munition.name} (${munition.waffenName})',
+            onMinus: gesperrt || leer ? null : () => onSchritt(-1),
+            onPlus: gesperrt || !munition.kannHinzufuegen
+                ? null
+                : () => onSchritt(1),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Zeile eines Verbrauchsgegenstands: Name, Menge, − und +.
 class _Verbrauchszeile extends StatelessWidget {
   const _Verbrauchszeile({
     required this.index,
+    this.schluessel,
     required this.eintrag,
     required this.gesperrt,
     required this.onSchritt,
@@ -316,6 +675,9 @@ class _Verbrauchszeile extends StatelessWidget {
   });
 
   final int index;
+
+  /// Schlüssel-Präfix der Zeile; ohne Angabe `karto-dabei-<index>`.
+  final String? schluessel;
   final HeroInventoryEntry eintrag;
   final bool gesperrt;
   final void Function(int delta) onSchritt;
@@ -346,13 +708,15 @@ class _Verbrauchszeile extends StatelessWidget {
             Tooltip(
               message: '${dabeiName(eintrag)} benutzen',
               child: TextButton(
-                key: ValueKey<String>('karto-dabei-$index-benutzen'),
+                key: ValueKey<String>(
+                  '${schluessel ?? 'karto-dabei-$index'}-benutzen',
+                ),
                 onPressed: gesperrt || aufgebraucht ? null : onBenutzen,
                 child: const Text('Benutzen'),
               ),
             ),
           _MengeSchritt(
-            schluessel: 'karto-dabei-$index',
+            schluessel: schluessel ?? 'karto-dabei-$index',
             menge: menge,
             name: dabeiName(eintrag),
             onMinus: aenderbar && !aufgebraucht ? () => onSchritt(-1) : null,

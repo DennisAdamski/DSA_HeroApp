@@ -101,6 +101,13 @@ extension _KartoWorkspaceNavigation on _KartoWorkspaceState {
     final session = ref.read(provider);
     if (session == null) return true;
     if (session.isSaving) return false;
+    // Eine leere Planung enthält nichts, was verloren ginge: still beenden,
+    // wie in der Bestandsoberfläche (`_confirmLeaveAdvancement`).
+    if (session.entries.isEmpty) {
+      ref.read(provider.notifier).discard();
+      _setBereich(KartoArbeitsbereich.spielen);
+      return true;
+    }
     final entscheidung = await showDialog<_PlanEntscheidung>(
       context: context,
       builder: (context) => AlertDialog(

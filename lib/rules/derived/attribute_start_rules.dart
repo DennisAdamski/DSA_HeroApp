@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 
@@ -125,7 +126,6 @@ List<String> pendingAttributeTraitNotices(HeroSheet hero) {
     for (final code in AttributeCode.values)
       if (attributeModValue(mods, code.name) != 0)
         '${attributeCodeKey(code)} '
-            '${attributeModValue(mods, code.name) > 0 ? '+' : ''}'
-            '${attributeModValue(mods, code.name)}',
+            '${mitVorzeichen(attributeModValue(mods, code.name))}',
   ];
 }

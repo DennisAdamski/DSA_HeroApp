@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
 import 'maneuver_rules.dart';
@@ -48,7 +49,7 @@ bool gefechtsManoeverImFilter(
 }) =>
     (kategorie == GefechtsManoeverfilter.alle ||
         gefechtsManoeverkategorien(m).contains(kategorie)) &&
-    m.name.toLowerCase().contains(suche.toLowerCase()) &&
+    suchFaltung(m.name).contains(suchFaltung(suche)) &&
     (!ohneSperre || !gesperrt);
 
 /// Finte und Wuchtschlag darf jeder ansagen, ohne SF mit halber Wirkung

@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
 
-import 'package:dsa_heldenverwaltung/data/storage_directory_tools.dart';
 import 'package:dsa_heldenverwaltung/data/storage_exceptions.dart';
 
 import 'app_support_path_loader_stub.dart'
@@ -195,11 +194,6 @@ class AppStoragePaths {
       accountProfilesDirectoryName,
       Uri.encodeComponent(normalizedProfileId),
     );
-  }
-
-  /// Gibt zurueck, ob das Oeffnen eines Speicherordners moeglich ist.
-  bool canOpenDirectories() {
-    return canOpenStorageDirectory();
   }
 
   /// Gibt zurueck, ob diese Plattform reale lokale Verzeichnisse anbietet.

@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/catalog/reittier_ausbildung_katalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/reittier_ausbildungsstufe.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_kampfprofil_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_anzeige_rules.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -9,6 +10,9 @@ void main() {
     expect(mitVorzeichen(3), '+3');
     expect(mitVorzeichen(-1), '−1');
     expect(mitVorzeichen(0), '±0');
+    expect(mitVorzeichen(0, nullText: '+0'), '+0');
+    expect(mitVorzeichen(0, nullText: '0'), '0');
+    expect(mitVorzeichen(-12, nullText: '0'), '−12');
   });
 
   test('Modifikationen und Proben als Kurztext', () {

@@ -7,6 +7,8 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/proben_favoriten_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_magie_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_talent_rules.dart';
@@ -177,6 +179,40 @@ void main() {
       );
     },
   );
+
+  // Gefecht und Probensuche bauen ihre Auswahl aus denselben Kandidaten;
+  // Gefechtswürfe tragen damit einen stabilen Verweis (REV-23).
+  test('Gefechtskandidaten tragen stabile Verweise', () {
+    final s = _snapshot();
+    const katalog = RulesCatalog(
+      version: 'test',
+      source: 'test',
+      talents: [klettern, selbstbeherrschung],
+      spells: [],
+      weapons: [],
+    );
+    final kandidaten = gefechtsProbenkandidaten(
+      s,
+      katalog,
+      epicAdvantagesActive: false,
+    );
+
+    final talent = kandidaten.firstWhere((k) => k.name == 'Klettern');
+    expect(
+      talent.request.verweis,
+      probenVerweis(ProbenFavoritArt.talent, klettern.id),
+    );
+    final mut = kandidaten.firstWhere((k) => k.name == 'MU');
+    expect(
+      mut.request.verweis,
+      probenVerweis(ProbenFavoritArt.eigenschaft, 'MU'),
+    );
+    expect(mut.detail, startsWith('Eigenschaftsprobe · Wert '));
+    expect(
+      kandidaten.map((k) => k.name),
+      containsAllInOrder(<String>['Klettern', 'MU']),
+    );
+  });
 
   test('Gefecht und Suche verwenden dieselbe Talentprobe', () {
     final s = _snapshot();

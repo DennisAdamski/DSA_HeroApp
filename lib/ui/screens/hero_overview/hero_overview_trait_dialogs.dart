@@ -12,22 +12,7 @@ extension _HeroOverviewTraitDialogs on _HeroOverviewTabState {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            final query = searchController.text.trim().toLowerCase();
-            final filtered = traits
-                .where((trait) {
-                  if (query.isEmpty) {
-                    return true;
-                  }
-                  final haystack = [
-                    trait.name,
-                    trait.costText,
-                    trait.source,
-                    ...trait.markers,
-                  ].join(' ').toLowerCase();
-                  return haystack.contains(query);
-                })
-                .take(80)
-                .toList(growable: false);
+            final filtered = sucheMerkmale(traits, searchController.text);
 
             return AlertDialog(
               title: Text('$singularLabel auswählen'),

@@ -260,7 +260,10 @@ Future<bool> starteGefechtswaffenwechsel({
     teil: nebenhand,
     index: index,
   );
-  final w = gefechtswerteFuer(snapshot);
+  final w = gefechtswerteFuer(
+    snapshot,
+    katalog: ref.read(heroRulesCatalogProvider(heroId)).asData?.value,
+  );
   final p = freieMarke
       ? pruefeGefechtsaktion(s, w, Gefechtsaktion.freieAktion)
       : pruefeManuelleGefechtsaktion(s, w, kosten: dauer == 0 ? 0 : 1);
@@ -321,7 +324,11 @@ Future<void> setzeGefechtsausruestungFort({
   final h = s?.handlung;
   if (s == null || h == null || snapshot == null) return;
   if (h.vorbereitung != null) {
-    final p = pruefeGefechtsVorbereitung(s, snapshot);
+    final p = pruefeGefechtsVorbereitung(
+      s,
+      snapshot,
+      ref.read(heroRulesCatalogProvider(heroId)).asData?.value,
+    );
     if (h.art == Gefechtshandlungsart.zielen && p.rest == 0) {
       final k = ref.read(heroRulesCatalogProvider(heroId)).asData?.value;
       if (k == null) throw StateError('Regelkatalog wird geladen.');
@@ -366,7 +373,10 @@ Future<void> setzeGefechtsausruestungFort({
     );
     return;
   }
-  final w = gefechtswerteFuer(snapshot);
+  final w = gefechtswerteFuer(
+    snapshot,
+    katalog: ref.read(heroRulesCatalogProvider(heroId)).asData?.value,
+  );
   final p = pruefeManuelleGefechtsaktion(
     s,
     w,

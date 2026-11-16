@@ -44,9 +44,6 @@ const int kVertrautenMaxLoyalitaet = 25;
 /// Übertragene AP je Loyalitätspunkt (WdZ S. 124).
 const int kVertrautenApJeLoyalitaet = 50;
 
-/// Startwert der Ritualkenntnis Vertrautenmagie (WdZ S. 123).
-const int kVertrautenStartRk = 3;
-
 /// Anteil der Abenteuer-AP der Hexe, den der Vertraute erhält: ein Viertel
 /// (WdZ S. 125, ohne Abzug bei der Hexe).
 const int kVertrautenApAnteilNenner = 4;

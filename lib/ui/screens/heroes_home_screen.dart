@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/feedback/feedback_submission.dart';
@@ -26,6 +25,8 @@ import 'package:dsa_heldenverwaltung/ui/widgets/codex_page_scaffold.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_split_view.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui_shared/feedback/open_feedback.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/unlesbare_helden_hinweis.dart';
+import 'package:dsa_heldenverwaltung/state/warte_auf_wert.dart';
 
 /// Startscreen fuer die Heldenauswahl mit iPad-tauglicher Vorschau.
 class HeroesHomeScreen extends ConsumerStatefulWidget {
@@ -69,48 +70,17 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
     return _catalogPrewarmFuture ??= _awaitCatalogReady();
   }
 
-  /// Wartet, bis der Regelkatalog einen Wert **oder** einen Fehler hat.
-  ///
-  /// Bewusst ueber `listenManual` statt ueber `rulesCatalogProvider.future`.
-  /// In Riverpod 3.2 hat `.future` zwei Eigenschaften, die zusammen genau den
-  /// beobachteten Dauer-Ladebalken erzeugen:
-  ///
-  /// - Scheitert der Provider, geht er in `AsyncLoading` **mit** angehaengtem
-  ///   Fehler, und die Future wird nie erfuellt — auch ihr `onError` feuert
-  ///   nie. Der alte Code konnte den Fehler deshalb gar nicht bemerken.
-  /// - Ohne aktiven Listener wird ein Provider nach einer Aenderung seiner
-  ///   Abhaengigkeiten nicht neu gebaut. Ein `read(...future)` allein haelt
-  ///   die Kette nicht am Leben.
-  ///
-  /// Das Abo loest beides: Es liefert Wert und Fehler, und es haelt die
-  /// Katalogkette so lange aktiv, bis eines von beidem da ist.
+  /// Wartet, bis der Regelkatalog einen Wert **oder** einen Fehler hat
+  /// (`warteAufWertImWidget`, Regel 9).
   ///
   /// [includeCurrentState] muss beim Neuversuch `false` sein: Direkt nach
-  /// `invalidate` traegt der Provider noch den Fehler des Vorlaufs, ein
-  /// sofortiges Auswerten wuerde den Neuversuch also augenblicklich wieder
-  /// als gescheitert melden.
-  Future<void> _awaitCatalogReady({bool includeCurrentState = true}) {
-    final completer = Completer<void>();
-
-    void settle(AsyncValue<RulesCatalog> value) {
-      if (completer.isCompleted) {
-        return;
-      }
-      final error = value.error;
-      if (error != null) {
-        completer.completeError(error, value.stackTrace ?? StackTrace.current);
-      } else if (value.hasValue) {
-        completer.complete();
-      }
-    }
-
-    final subscription = ref.listenManual<AsyncValue<RulesCatalog>>(
-      rulesCatalogProvider,
-      (_, next) => settle(next),
-      fireImmediately: includeCurrentState,
-    );
-    return completer.future.whenComplete(subscription.close);
-  }
+  /// `invalidate` traegt der Provider noch den Fehler des Vorlaufs.
+  Future<void> _awaitCatalogReady({bool includeCurrentState = true}) =>
+      warteAufWertImWidget(
+        ref,
+        rulesCatalogProvider,
+        aktuellenStandEinbeziehen: includeCurrentState,
+      );
 
   // Verwirft den gemerkten Ladeversuch, damit `Erneut versuchen` tatsaechlich
   // neu laedt, statt derselben gescheiterten Future erneut zuzuhoeren.
@@ -302,119 +272,154 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
               label: const Text('Neuer Held'),
             )
           : null,
-      body: heroesAsync.when(
-        data: (heroes) {
-          _scheduleCatalogPrewarmAfterFrame();
-          if (heroes.isEmpty) {
-            final authService = ref.watch(authServiceProvider);
-            final authUser = ref.watch(authUserProvider).asData?.value;
-            final showAccountPrompt = authService != null && authUser == null;
-            return CodexPageScaffold(
-              padding: EdgeInsets.all(layout.contentPadding),
-              child: Center(
-                child: SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 560),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (showAccountPrompt) ...[
-                          HeroHomeAccountPrompt(
-                            onSignIn: () =>
-                                openSignInScreen(context, authService),
-                            onRegister: () => openSignInScreen(
-                              context,
-                              authService,
-                              register: true,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                        CodexEmptyState(
-                          title: 'Dein Heldenarchiv ist noch leer',
-                          message: 'Lege deinen ersten Helden an oder importiere einen bestehenden Bogen, um auf dem iPad mit einem digitalen Heldenbogen zu arbeiten.',
-                          assetPath: 'assets/ui/codex/empty_ledger.png',
-                          // Mit Konto-Karte bleibt Anmelden die Primaeraktion.
-                          action: showAccountPrompt
-                              ? FilledButton.tonalIcon(
-                                  onPressed: createHero,
-                                  icon: const Icon(Icons.add),
-                                  label: const Text('Ersten Helden anlegen'),
-                                )
-                              : FilledButton.icon(
-                                  onPressed: createHero,
-                                  icon: const Icon(Icons.add),
-                                  label: const Text('Ersten Helden anlegen'),
+      body: Column(
+        children: [
+          // Ohne übersprungene Einträge nimmt der Hinweis keinen Platz ein.
+          UnlesbareHeldenHinweis(
+            rahmen: (inhalt) => Padding(
+              padding: EdgeInsets.fromLTRB(
+                layout.contentPadding,
+                layout.contentPadding,
+                layout.contentPadding,
+                0,
+              ),
+              child: Card(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: inhalt,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: heroesAsync.when(
+              data: (heroes) {
+                _scheduleCatalogPrewarmAfterFrame();
+                if (heroes.isEmpty) {
+                  final authService = ref.watch(authServiceProvider);
+                  final authUser = ref.watch(authUserProvider).asData?.value;
+                  final showAccountPrompt =
+                      authService != null && authUser == null;
+                  return CodexPageScaffold(
+                    padding: EdgeInsets.all(layout.contentPadding),
+                    child: Center(
+                      child: SingleChildScrollView(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 560),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (showAccountPrompt) ...[
+                                HeroHomeAccountPrompt(
+                                  onSignIn: () =>
+                                      openSignInScreen(context, authService),
+                                  onRegister: () => openSignInScreen(
+                                    context,
+                                    authService,
+                                    register: true,
+                                  ),
                                 ),
+                                const SizedBox(height: 16),
+                              ],
+                              CodexEmptyState(
+                                title: 'Dein Heldenarchiv ist noch leer',
+                                message: 'Lege deinen ersten Helden an oder importiere einen bestehenden Bogen, um auf dem iPad mit einem digitalen Heldenbogen zu arbeiten.',
+                                assetPath: 'assets/ui/codex/empty_ledger.png',
+                                // Mit Konto-Karte bleibt Anmelden die Primaeraktion.
+                                action: showAccountPrompt
+                                    ? FilledButton.tonalIcon(
+                                        onPressed: createHero,
+                                        icon: const Icon(Icons.add),
+                                        label: const Text(
+                                          'Ersten Helden anlegen',
+                                        ),
+                                      )
+                                    : FilledButton.icon(
+                                        onPressed: createHero,
+                                        icon: const Icon(Icons.add),
+                                        label: const Text(
+                                          'Ersten Helden anlegen',
+                                        ),
+                                      ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
+                      ),
+                    ),
+                  );
+                }
+
+                final selectedHero = _resolveSelectedHero(
+                  heroes: heroes,
+                  selectedHeroId: selectedHeroId,
+                );
+                final archivePane = HeroHomeArchivePane(
+                  heroes: heroes,
+                  selectedHeroId: selectedHero?.id,
+                  layout: layout,
+                  onSelectHero: (hero) {
+                    if (layout.hasPersistentDetailPane) {
+                      ref
+                          .read(selectedHeroSelectionActionsProvider)
+                          .selectHero(hero.id);
+                      return;
+                    }
+                    if (layout == AppLayoutClass.tabletPortrait) {
+                      showHeroPreviewSheet(hero);
+                      return;
+                    }
+                    openHeroWorkspace(hero.id);
+                  },
+                  onExportHero: (hero) => _exportSelectedHero(
+                    context: context,
+                    ref: ref,
+                    hero: hero,
+                    importExportActions: importExportActions,
+                  ),
+                  onDeleteHero: (hero) => _deleteSelectedHero(
+                    context: context,
+                    ref: ref,
+                    hero: hero,
+                  ),
+                );
+
+                if (!layout.hasPersistentDetailPane) {
+                  return archivePane;
+                }
+
+                return CodexSplitView(
+                  primaryWidth: layout == AppLayoutClass.desktopWide
+                      ? 420
+                      : 360,
+                  primary: archivePane,
+                  secondary: CodexPageScaffold(
+                    padding: EdgeInsets.all(layout.contentPadding),
+                    child: HeroHomePreviewPanel(
+                      hero: selectedHero!,
+                      onOpenWorkspace: () => openHeroWorkspace(selectedHero.id),
+                      onExportHero: () => _exportSelectedHero(
+                        context: context,
+                        ref: ref,
+                        hero: selectedHero,
+                        importExportActions: importExportActions,
+                      ),
+                      onDeleteHero: () => _deleteSelectedHero(
+                        context: context,
+                        ref: ref,
+                        hero: selectedHero,
+                      ),
                     ),
                   ),
-                ),
-              ),
-            );
-          }
-
-          final selectedHero = _resolveSelectedHero(
-            heroes: heroes,
-            selectedHeroId: selectedHeroId,
-          );
-          final archivePane = HeroHomeArchivePane(
-            heroes: heroes,
-            selectedHeroId: selectedHero?.id,
-            layout: layout,
-            onSelectHero: (hero) {
-              if (layout.hasPersistentDetailPane) {
-                ref
-                    .read(selectedHeroSelectionActionsProvider)
-                    .selectHero(hero.id);
-                return;
-              }
-              if (layout == AppLayoutClass.tabletPortrait) {
-                showHeroPreviewSheet(hero);
-                return;
-              }
-              openHeroWorkspace(hero.id);
-            },
-            onExportHero: (hero) => _exportSelectedHero(
-              context: context,
-              ref: ref,
-              hero: hero,
-              importExportActions: importExportActions,
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stackTrace) =>
+                  Center(child: Text('Fehler: $error')),
             ),
-            onDeleteHero: (hero) =>
-                _deleteSelectedHero(context: context, ref: ref, hero: hero),
-          );
-
-          if (!layout.hasPersistentDetailPane) {
-            return archivePane;
-          }
-
-          return CodexSplitView(
-            primaryWidth: layout == AppLayoutClass.desktopWide ? 420 : 360,
-            primary: archivePane,
-            secondary: CodexPageScaffold(
-              padding: EdgeInsets.all(layout.contentPadding),
-              child: HeroHomePreviewPanel(
-                hero: selectedHero!,
-                onOpenWorkspace: () => openHeroWorkspace(selectedHero.id),
-                onExportHero: () => _exportSelectedHero(
-                  context: context,
-                  ref: ref,
-                  hero: selectedHero,
-                  importExportActions: importExportActions,
-                ),
-                onDeleteHero: () => _deleteSelectedHero(
-                  context: context,
-                  ref: ref,
-                  hero: selectedHero,
-                ),
-              ),
-            ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(child: Text('Fehler: $error')),
+          ),
+        ],
       ),
     );
   }
@@ -520,7 +525,7 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
   }) async {
     final result = await showAdaptiveConfirmDialog(
       context: context,
-      title: 'Held löschen',
+      title: 'Held löschen?',
       content: 'Soll "${hero.name}" wirklich gelöscht werden?',
       confirmLabel: 'Löschen',
       cancelLabel: 'Abbrechen',

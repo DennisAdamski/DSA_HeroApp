@@ -11,9 +11,7 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
     final isEditing = _editController.isEditing;
     final groupedManeuvers = _groupCatalogManeuvers(catalog);
     final activeManeuverIds = _effectiveActiveManeuverIds(catalog);
-    final fkTalents = catalog.talents
-        .where((t) => t.type.toLowerCase() == 'fernkampf')
-        .toList();
+    final fkTalents = catalog.talents.where((t) => t.istFernkampf).toList();
 
     final maneuverIdSet = catalog.maneuvers
         .map((m) => m.id.trim())
@@ -271,7 +269,7 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete),
+                              icon: const Icon(Icons.delete_outline),
                               tooltip: 'Entfernen',
                               onPressed: () {
                                 final next = List<WaffenmeisterConfig>.from(

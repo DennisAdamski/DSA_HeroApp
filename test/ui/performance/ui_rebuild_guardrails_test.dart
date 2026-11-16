@@ -384,31 +384,6 @@ void main() {
     expect(UiRebuildObserver.count('hero_magic_tab'), 0);
   });
 
-  testWidgets('hero name changes do not fan out to combat quick stats', (
-    tester,
-  ) async {
-    final baseHero = buildHero();
-    final repo = FakeRepository(
-      heroes: [baseHero],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 0,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
-
-    await openCombatTab(tester, repo);
-
-    UiRebuildObserver.reset('combat_quick_stats');
-    await repo.saveHero(baseHero.copyWith(name: 'Rondrigo'));
-    await tester.pumpAndSettle();
-
-    expect(UiRebuildObserver.count('combat_quick_stats'), lessThanOrEqualTo(1));
-  });
-
   testWidgets('manual mod changes do not fan out to combat weapons section', (
     tester,
   ) async {

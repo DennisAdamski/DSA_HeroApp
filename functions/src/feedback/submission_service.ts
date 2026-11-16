@@ -14,6 +14,8 @@ export interface StoredSubmission {
   marker: string;
   status: FeedbackStatus;
   claimedAt: Date;
+  /** Zeitpunkt der letzten ergebnislosen GitHub-Suche zu dieser Meldung. */
+  checkedAt?: Date;
   issueNumber?: number;
   issueUrl?: string;
   code?: string;
@@ -29,7 +31,8 @@ export interface FeedbackSubmissionStore {
   ): Promise<{ isNew: boolean; submission: StoredSubmission }>;
   get(uid: string, requestId: string): Promise<StoredSubmission | null>;
   markCreated(uid: string, requestId: string, issueNumber: number, issueUrl: string): Promise<void>;
-  markUncertain(uid: string, requestId: string): Promise<void>;
+  /** Records the ambiguous outcome; `checkedAt` marks a fruitless search. */
+  markUncertain(uid: string, requestId: string, checkedAt?: Date): Promise<void>;
   markFailed(uid: string, requestId: string, code: string): Promise<void>;
 }
 
@@ -52,6 +55,7 @@ export class FeedbackSubmissionService {
       testMode: boolean;
       now?: () => Date;
       processingGraceMs?: number;
+      recheckIntervalMs?: number;
     },
   ) {}
 
@@ -105,14 +109,23 @@ export class FeedbackSubmissionService {
     if (stored.status === "processing" && isFresh) {
       return result(stored.requestId, "processing");
     }
+    // Die Statusabfrage hat kein eigenes Kontingent. Ohne diese Sperre löste
+    // jeder Aufruf eine GitHub-Suche aus, und ein einzelnes Konto könnte das
+    // Suchlimit des gemeinsamen Tokens aufbrauchen.
+    const recheck = this.options.recheckIntervalMs ?? 60_000;
+    if (
+      stored.status === "uncertain"
+      && stored.checkedAt != null
+      && now.getTime() - stored.checkedAt.getTime() < recheck
+    ) {
+      return result(stored.requestId, "uncertain");
+    }
     const found = await this.github.findByMarker(stored.marker);
     if (found != null) {
       await this.store.markCreated(stored.uid, stored.requestId, found.number, found.url);
       return result(stored.requestId, "created", found);
     }
-    if (stored.status !== "uncertain") {
-      await this.store.markUncertain(stored.uid, stored.requestId);
-    }
+    await this.store.markUncertain(stored.uid, stored.requestId, now);
     return result(stored.requestId, "uncertain");
   }
 }

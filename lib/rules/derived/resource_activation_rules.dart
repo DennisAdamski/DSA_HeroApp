@@ -1,7 +1,6 @@
 import 'package:dsa_heldenverwaltung/rules/derived/hero_herkunft_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
-import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 
@@ -165,15 +164,4 @@ HeroSheet mitRessourcenSchaltern(
     config = config.copyWith(divineEnabledOverride: goettlich);
   }
   return held.copyWith(resourceActivationConfig: config);
-}
-
-/// Baut eine Persistenz-Konfiguration aus den uebergebenen Override-Werten.
-HeroResourceActivationConfig buildResourceActivationConfig({
-  bool? magicEnabledOverride,
-  bool? divineEnabledOverride,
-}) {
-  return HeroResourceActivationConfig(
-    magicEnabledOverride: magicEnabledOverride,
-    divineEnabledOverride: divineEnabledOverride,
-  );
 }

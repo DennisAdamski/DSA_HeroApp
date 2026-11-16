@@ -18,12 +18,14 @@ Future<HeroAdventureEntry?> _showAdventureCreateDialog({
 
 Future<HeroAdventureEntry?> _showAdventureCompletionDialog({
   required BuildContext context,
+  required String heroId,
   required HeroAdventureEntry initial,
   required _AdventureRewardTargetOptions rewardTargetOptions,
 }) {
   return showAdaptiveDetailSheet<HeroAdventureEntry>(
     context: context,
     builder: (_) => _AdventureCompletionDialog(
+      heroId: heroId,
       initial: initial,
       rewardTargetOptions: rewardTargetOptions,
     ),
@@ -98,12 +100,17 @@ class _AdventureDateDraft {
 
 Future<HeroAdventureLootEntry?> _showAdventureLootItemDialog({
   required BuildContext context,
+  required String heroId,
   required HeroAdventureLootEntry initial,
   required bool isNew,
 }) {
   return showAdaptiveDetailSheet<HeroAdventureLootEntry>(
     context: context,
-    builder: (_) => _AdventureLootItemDialog(initial: initial, isNew: isNew),
+    builder: (_) => _AdventureLootItemDialog(
+      heroId: heroId,
+      initial: initial,
+      isNew: isNew,
+    ),
   );
 }
 
@@ -267,10 +274,13 @@ class _AdventureCreateDialogState extends State<_AdventureCreateDialog> {
 
 class _AdventureCompletionDialog extends StatefulWidget {
   const _AdventureCompletionDialog({
+    required this.heroId,
     required this.initial,
     required this.rewardTargetOptions,
   });
 
+  /// Held, für den abgeschlossen wird; reicht ihn an die Beutedialoge weiter.
+  final String heroId;
   final HeroAdventureEntry initial;
   final _AdventureRewardTargetOptions rewardTargetOptions;
 
@@ -320,6 +330,7 @@ class _AdventureCompletionDialogState
   Future<void> _addLootEntry() async {
     final result = await _showAdventureLootItemDialog(
       context: context,
+      heroId: widget.heroId,
       initial: HeroAdventureLootEntry(id: _uuid.v4()),
       isNew: true,
     );
@@ -337,6 +348,7 @@ class _AdventureCompletionDialogState
     }
     final result = await _showAdventureLootItemDialog(
       context: context,
+      heroId: widget.heroId,
       initial: _loot[index],
       isNew: false,
     );
@@ -690,8 +702,14 @@ class _AdventureLootEditorCard extends StatelessWidget {
 }
 
 class _AdventureLootItemDialog extends StatefulWidget {
-  const _AdventureLootItemDialog({required this.initial, required this.isNew});
+  const _AdventureLootItemDialog({
+    required this.heroId,
+    required this.initial,
+    required this.isNew,
+  });
 
+  /// Held, dessen Katalog (Regelprofil) die Modifikatorziele liefert.
+  final String heroId;
   final HeroAdventureLootEntry initial;
   final bool isNew;
 
@@ -943,6 +961,7 @@ class _AdventureLootItemDialogState extends State<_AdventureLootItemDialog> {
                 _AdventureSubsectionHeader(title: 'Modifikatoren'),
                 const SizedBox(height: 4),
                 InventoryModifierEditor(
+                  heroId: widget.heroId,
                   modifiers: _draft.modifiers,
                   onChanged: (mods) =>
                       setState(() => _draft = _draft.copyWith(modifiers: mods)),
@@ -967,6 +986,78 @@ class _AdventureLootItemDialogState extends State<_AdventureLootItemDialog> {
   }
 }
 
+// Datum ohne Randleerzeichen; unbekannte Felder bleiben erhalten.
+HeroAdventureDateValue _sanitizeDatum(HeroAdventureDateValue value) {
+  return value.copyWith(
+    day: value.day.trim(),
+    month: value.month.trim(),
+    year: value.year.trim(),
+  );
+}
+
+/// Ort und aventurisches Datum einer Notiz oder Person (SPIEL-06).
+///
+/// Bearbeitbar als Textfeld und Datumsfelder, sonst nur als Text, und nur,
+/// wenn etwas belegt ist.
+class _OrtDatumFelder extends StatelessWidget {
+  const _OrtDatumFelder({
+    required this.kennung,
+    required this.isEditing,
+    required this.ortController,
+    required this.datum,
+    required this.onDatumChanged,
+  });
+
+  final String kennung;
+  final bool isEditing;
+  final TextEditingController ortController;
+  final HeroAdventureDateValue datum;
+  final ValueChanged<HeroAdventureDateValue> onDatumChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!isEditing) {
+      final ort = ortController.text.trim();
+      final datumText = datum.anzeigeText;
+      if (ort.isEmpty && datumText.isEmpty) {
+        return const SizedBox.shrink();
+      }
+      return Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: Text(
+          [
+            if (ort.isNotEmpty) 'Ort: $ort',
+            if (datumText.isNotEmpty) 'Datum: $datumText',
+          ].join('  |  '),
+          key: ValueKey<String>('$kennung-ort-datum-text'),
+        ),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 12),
+        TextField(
+          key: ValueKey<String>('$kennung-ort'),
+          controller: ortController,
+          decoration: const InputDecoration(
+            labelText: 'Ort',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _AdventureDateEditor(
+          title: 'Datum (aventurisch)',
+          keyPrefix: '$kennung-datum',
+          value: datum,
+          usesAventurianMonthPicker: true,
+          onChanged: onDatumChanged,
+        ),
+      ],
+    );
+  }
+}
+
 class _AdventureNoteDialog extends StatefulWidget {
   const _AdventureNoteDialog({required this.isEditing, this.existing});
 
@@ -980,6 +1071,8 @@ class _AdventureNoteDialog extends StatefulWidget {
 class _AdventureNoteDialogState extends State<_AdventureNoteDialog> {
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
+  late final TextEditingController _ortController;
+  late HeroAdventureDateValue _datum;
   String? _errorText;
 
   @override
@@ -991,12 +1084,15 @@ class _AdventureNoteDialogState extends State<_AdventureNoteDialog> {
     _descriptionController = TextEditingController(
       text: widget.existing?.description ?? '',
     );
+    _ortController = TextEditingController(text: widget.existing?.ort ?? '');
+    _datum = widget.existing?.datum ?? const HeroAdventureDateValue();
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _ortController.dispose();
     super.dispose();
   }
 
@@ -1010,12 +1106,16 @@ class _AdventureNoteDialogState extends State<_AdventureNoteDialog> {
       return;
     }
 
+    final ort = _ortController.text.trim();
+    final datum = _sanitizeDatum(_datum);
     final existing = widget.existing;
     // Nur eine echte Aenderung zaehlt fuer „Zuletzt bearbeitet“.
     final unveraendert =
         existing != null &&
         existing.title == title &&
-        existing.description == description;
+        existing.description == description &&
+        existing.ort == ort &&
+        existing.datum.gleicheAngabe(datum);
     final jetzt = DateTime.now().toUtc();
     Navigator.of(context).pop(
       _AdventureNoteDialogResult(
@@ -1025,11 +1125,15 @@ class _AdventureNoteDialogState extends State<_AdventureNoteDialog> {
             : existing?.copyWith(
                     title: title,
                     description: description,
+                    ort: ort,
+                    datum: datum,
                     lastModified: jetzt,
                   ) ??
                   HeroNoteEntry(
                     title: title,
                     description: description,
+                    ort: ort,
+                    datum: datum,
                     lastModified: jetzt,
                   ),
       ),
@@ -1079,6 +1183,13 @@ class _AdventureNoteDialogState extends State<_AdventureNoteDialog> {
                   alignLabelWithHint: true,
                   border: OutlineInputBorder(),
                 ),
+              ),
+              _OrtDatumFelder(
+                kennung: 'notes-adventure-note-dialog',
+                isEditing: widget.isEditing,
+                ortController: _ortController,
+                datum: _datum,
+                onDatumChanged: (value) => setState(() => _datum = value),
               ),
               if (_errorText != null) ...[
                 const SizedBox(height: 12),
@@ -1137,6 +1248,8 @@ class _AdventurePersonDialog extends StatefulWidget {
 class _AdventurePersonDialogState extends State<_AdventurePersonDialog> {
   late final TextEditingController _nameController;
   late final TextEditingController _descriptionController;
+  late final TextEditingController _ortController;
+  late HeroAdventureDateValue _datum;
   String? _errorText;
 
   @override
@@ -1146,12 +1259,15 @@ class _AdventurePersonDialogState extends State<_AdventurePersonDialog> {
     _descriptionController = TextEditingController(
       text: widget.initial.description,
     );
+    _ortController = TextEditingController(text: widget.initial.ort);
+    _datum = widget.initial.datum;
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _ortController.dispose();
     super.dispose();
   }
 
@@ -1165,10 +1281,15 @@ class _AdventurePersonDialogState extends State<_AdventurePersonDialog> {
     }
 
     final description = _descriptionController.text.trim();
+    final ort = _ortController.text.trim();
+    final datum = _sanitizeDatum(_datum);
     final initial = widget.initial;
     // Nur eine echte Aenderung zaehlt fuer „Zuletzt bearbeitet“.
     final unveraendert =
-        initial.name == name && initial.description == description;
+        initial.name == name &&
+        initial.description == description &&
+        initial.ort == ort &&
+        initial.datum.gleicheAngabe(datum);
     Navigator.of(context).pop(
       _AdventurePersonDialogResult(
         entry: unveraendert
@@ -1176,6 +1297,8 @@ class _AdventurePersonDialogState extends State<_AdventurePersonDialog> {
             : initial.copyWith(
                 name: name,
                 description: description,
+                ort: ort,
+                datum: datum,
                 lastModified: DateTime.now().toUtc(),
               ),
       ),
@@ -1225,6 +1348,13 @@ class _AdventurePersonDialogState extends State<_AdventurePersonDialog> {
                   alignLabelWithHint: true,
                   border: OutlineInputBorder(),
                 ),
+              ),
+              _OrtDatumFelder(
+                kennung: 'notes-adventure-person-dialog',
+                isEditing: widget.isEditing,
+                ortController: _ortController,
+                datum: _datum,
+                onDatumChanged: (value) => setState(() => _datum = value),
               ),
               if (_errorText != null) ...[
                 const SizedBox(height: 12),
@@ -1430,35 +1560,17 @@ String _normalizeAventurianMonthValue(String rawValue) {
   return normalizeAventurianMonth(rawValue);
 }
 
-String _aventurianMonthLabel(String rawValue) {
-  return aventurianMonthLabel(rawValue);
-}
-
 String _adventureCompletionTitle(HeroAdventureEntry entry) {
   final title = entry.title.trim();
   return title.isEmpty ? 'Abenteuer' : title;
 }
 
-String _formatAdventureDukatenDraft(double value) {
-  if (value <= 0) {
-    return '';
-  }
-  final isWhole = value == value.roundToDouble();
-  if (isWhole) {
-    return value.round().toString();
-  }
-  final trimmed = value
-      .toStringAsFixed(2)
-      .replaceFirst(RegExp(r'0+$'), '')
-      .replaceFirst(RegExp(r'\.$'), '');
-  return trimmed.replaceAll('.', ',');
-}
+// Leer für „keine Dukaten“, sonst das kanonische Dukatenformat.
+String _formatAdventureDukatenDraft(double value) =>
+    value <= 0 ? '' : formatDsaCurrencyDukaten(dukatenToDsaKreuzer(value));
 
+/// Liest Dukaten wie `12,5` oder `12 D 5 S`; leer ist 0, Unlesbares `null`.
 double? _parseAdventureDukatenDraft(String rawValue) {
-  final normalized = rawValue.trim();
-  if (normalized.isEmpty) {
-    return 0;
-  }
-  final compact = normalized.replaceAll(' ', '');
-  return double.tryParse(compact.replaceAll(',', '.'));
+  final kreuzer = parseDsaCurrencyToKreuzer(rawValue);
+  return kreuzer == null ? null : kreuzer / dsaKreuzerPerDukat;
 }

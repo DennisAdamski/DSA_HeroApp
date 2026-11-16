@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_meisterparade_rules.dart';
@@ -8,12 +9,13 @@ Future<void> zeigeMeisterparadeFehlschlag(
   BuildContext context,
   GefechtAuftrag a,
   HeroComputedSnapshot snap,
+  RulesCatalog? k,
 ) => showDialog<void>(
   context: context,
   builder: (context) => AlertDialog(
     title: const Text('Meisterparade misslungen'),
     content: SingleChildScrollView(
-      child: Text(gefechtsMeisterparadeFehlschlag(a, snap)),
+      child: Text(gefechtsMeisterparadeFehlschlag(a, snap, k)),
     ),
     actions: [
       TextButton(

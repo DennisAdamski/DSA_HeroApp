@@ -132,6 +132,22 @@ int readAttributeValue(Attributes attributes, AttributeCode code) {
   }
 }
 
+/// Setzt den Wert einer Eigenschaft; alle anderen bleiben unverändert.
+Attributes withAttributeValue(
+  Attributes attributes,
+  AttributeCode code,
+  int value,
+) => switch (code) {
+  AttributeCode.mu => attributes.copyWith(mu: value),
+  AttributeCode.kl => attributes.copyWith(kl: value),
+  AttributeCode.inn => attributes.copyWith(inn: value),
+  AttributeCode.ch => attributes.copyWith(ch: value),
+  AttributeCode.ff => attributes.copyWith(ff: value),
+  AttributeCode.ge => attributes.copyWith(ge: value),
+  AttributeCode.ko => attributes.copyWith(ko: value),
+  AttributeCode.kk => attributes.copyWith(kk: value),
+};
+
 /// Liefert den Modifikator fuer einen kanonischen Code.
 int readAttributeModifierValue(AttributeModifiers mods, AttributeCode code) {
   return switch (code) {

@@ -393,7 +393,7 @@ void main() {
       expect(p.zielwert, nutzt ? 16 : 12);
       final gebucht = verbraucheGefechtsaktion(
         s.copyWith(meisterparadeBonus: 4),
-        gefechtswerteFuer(snap),
+        gefechtswerteFuer(snap, katalog: null),
         p,
         erfolg: false,
       );
@@ -470,12 +470,14 @@ void main() {
       s.copyWith(meisterparadeBonus: 4),
       snap,
       fk.mittel,
+      null,
       anfangGeladen: false,
     );
     while ((zustand.handlung?.verbleibend ?? 0) > 0) {
       zustand = bezahleGefechtsVorbereitung(
         naechsteGefechtsrunde(zustand),
         snap,
+        null,
       );
     }
     expect(zustand.meisterparadeBonus, 4);
@@ -485,6 +487,7 @@ void main() {
       zustand = bezahleGefechtsVorbereitung(
         naechsteGefechtsrunde(zustand),
         snap,
+        null,
       );
     }
     expect(zustand.meisterparadeBonus, 4);
@@ -506,7 +509,7 @@ void main() {
     );
     final gebucht = verbraucheGefechtsaktion(
       zustand.copyWith(ohneHandlung: true),
-      gefechtswerteFuer(snap),
+      gefechtswerteFuer(snap, katalog: null),
       p,
       erfolg: true,
     );
@@ -517,7 +520,7 @@ void main() {
     () {
       final snap = mpSnapshot();
       expect(
-        gefechtsMeisterparadeFehlschlag(mpAuftrag(ansage: 3), snap),
+        gefechtsMeisterparadeFehlschlag(mpAuftrag(ansage: 3), snap, null),
         contains('Folgemalus +3'),
       );
       final kt = buildHeroComputedSnapshot(
@@ -533,7 +536,7 @@ void main() {
         epicAdvantagesActive: false,
       );
       expect(
-        gefechtsMeisterparadeFehlschlag(mpAuftrag(ansage: 3), kt),
+        gefechtsMeisterparadeFehlschlag(mpAuftrag(ansage: 3), kt, null),
         contains('Folgemalus +2'),
       );
     },
@@ -655,7 +658,7 @@ void main() {
     for (final erfolg in [true, false]) {
       final result = verbraucheGefechtsaktion(
         alt,
-        gefechtswerteFuer(snap),
+        gefechtswerteFuer(snap, katalog: null),
         p,
         erfolg: erfolg,
       );

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
@@ -40,6 +41,59 @@ String readSyncRevision(
   }
   return 'legacy-$fallbackHash';
 }
+
+/// Art eines Sync-Dokuments; bestimmt den Inhalts-Hash alter Dokumente.
+enum SyncDokumentArt {
+  /// Heldenbogen unter `heroes/`.
+  held,
+
+  /// Laufzeitzustand unter `hero_states/`.
+  zustand,
+}
+
+/// Liest die Revision eines gespeicherten Dokuments so, wie die Decoder sie
+/// melden.
+///
+/// Die Vorbedingung beim Schreiben vergleicht mit der Revision, die der
+/// Client beim Lesen bekommen hat. Für alte Dokumente ohne Revision und ohne
+/// Zeitstempel muss deshalb derselbe Rückfall-Hash entstehen wie in
+/// [decodeRemoteHeroRecord] und [decodeRemoteHeroStateRecord]; sonst schlägt
+/// jeder Push dauerhaft mit einer Vorbedingungsverletzung fehl.
+String revisionAusDokument(
+  Map<String, dynamic> data,
+  DateTime? updatedAt, {
+  required SyncDokumentArt art,
+}) {
+  final gespeichert = data[HeroSyncRecordFields.revision] as String?;
+  final geloescht = data[HeroSyncRecordFields.deleted] as bool? ?? false;
+  if ((gespeichert != null && gespeichert.isNotEmpty) ||
+      updatedAt != null ||
+      geloescht) {
+    return readSyncRevision(data, updatedAt);
+  }
+  final payload = data[HeroSyncRecordFields.payload];
+  if (payload is! Map) {
+    return readSyncRevision(data, updatedAt);
+  }
+  return readSyncRevision(
+    data,
+    updatedAt,
+    fallbackHash: _inhaltsHash(data, _castMap(payload), art),
+  );
+}
+
+String _inhaltsHash(
+  Map<String, dynamic> data,
+  Map<String, dynamic> payload,
+  SyncDokumentArt art,
+) =>
+    data[HeroSyncRecordFields.contentHash] as String? ??
+    switch (art) {
+      SyncDokumentArt.held => heroContentHash(HeroSheet.fromJson(payload)),
+      SyncDokumentArt.zustand => heroStateContentHash(
+        HeroState.fromJson(payload),
+      ),
+    };
 
 /// Schreib-Felder für einen Helden- oder Zustands-Payload.
 ///
@@ -104,6 +158,7 @@ RemoteHeroRecord? decodeRemoteHeroRecord({
   final contentHash =
       data[HeroSyncRecordFields.contentHash] as String? ??
       heroContentHash(hero);
+  // Dieselbe Formel wie `revisionAusDokument` (Schreibvorbedingung).
   return RemoteHeroRecord(
     id: id,
     hero: hero,
@@ -147,6 +202,50 @@ RemoteHeroStateRecord? decodeRemoteHeroStateRecord({
     contentHash: contentHash,
     isDeleted: false,
     updatedAt: updatedAt,
+  );
+}
+
+/// Dekodiert [dokumente] einzeln und überspringt, was sich nicht lesen lässt.
+///
+/// Ein einzelnes unlesbares Online-Dokument (etwa aus einer neueren
+/// App-Version) darf weder den Abgleich der übrigen Helden noch die
+/// Beobachtung abbrechen. Jedes übersprungene Dokument geht an [melde].
+List<R> dekodiereEinzeln<D, R extends Object>(
+  Iterable<D> dokumente,
+  R? Function(D dokument) dekodiere, {
+  required void Function(D dokument, Object fehler, StackTrace stackTrace)
+  melde,
+}) {
+  final ergebnis = <R>[];
+  for (final dokument in dokumente) {
+    try {
+      final record = dekodiere(dokument);
+      if (record != null) {
+        ergebnis.add(record);
+      }
+    } on Object catch (fehler, stackTrace) {
+      melde(dokument, fehler, stackTrace);
+    }
+  }
+  return List<R>.unmodifiable(ergebnis);
+}
+
+/// Meldet ein übersprungenes Online-Dokument an die Fehlerberichte.
+void meldeUnlesbaresSyncDokument(
+  String art,
+  String id,
+  Object fehler,
+  StackTrace stackTrace,
+) {
+  FlutterError.reportError(
+    FlutterErrorDetails(
+      exception: fehler,
+      stack: stackTrace,
+      library: 'hero_sync_record_codec',
+      context: ErrorDescription(
+        'Online-Dokument ($art) $id ist nicht lesbar und wird übersprungen',
+      ),
+    ),
   );
 }
 

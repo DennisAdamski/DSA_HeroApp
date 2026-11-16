@@ -212,7 +212,7 @@ void main() {
           katalog,
           auftrag,
         );
-        s = bezahleGefechtsVorbereitung(s, snap);
+        s = bezahleGefechtsVorbereitung(s, snap, null);
         s = naechsteGefechtsrunde(s).copyWith(ohneHandlung: true);
         return pruefeGefechtAuftrag(s, snap, katalog, auftrag);
       }

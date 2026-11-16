@@ -78,7 +78,9 @@ class LocalAvatarFileStorage implements AvatarFileStorage {
     required String heroStoragePath,
     required String fileName,
   }) async {
-    if (fileName.isEmpty) return;
+    // Ein Name mit Pfadangabe (etwa aus einer importierten Heldendatei) zeigt
+    // nie auf ein eigenes Bild: nichts löschen.
+    if (!istSichererAvatarDateiname(fileName)) return;
     final file = File(p.join(heroStoragePath, _avatarDir, fileName));
     if (file.existsSync()) {
       await file.delete();
@@ -90,7 +92,7 @@ class LocalAvatarFileStorage implements AvatarFileStorage {
     required String heroStoragePath,
     required String fileName,
   }) async {
-    if (fileName.isEmpty) return null;
+    if (!istSichererAvatarDateiname(fileName)) return null;
     final file = File(p.join(heroStoragePath, _avatarDir, fileName));
     if (!file.existsSync()) return null;
     return file.readAsBytes();
@@ -101,6 +103,11 @@ class LocalAvatarFileStorage implements AvatarFileStorage {
     String fileName,
     List<int> pngBytes,
   ) async {
+    if (!istSichererAvatarDateiname(fileName)) {
+      throw FormatException(
+        'Der Bildname "$fileName" darf keine Pfadangaben enthalten.',
+      );
+    }
     final dir = Directory(p.join(heroStoragePath, _avatarDir));
     if (!dir.existsSync()) {
       await dir.create(recursive: true);

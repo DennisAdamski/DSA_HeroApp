@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_zonen_rules.dart';
 
@@ -15,7 +16,7 @@ List<String> beschreibeWundAbzuege(WundEffekte effekte) {
   final teile = <String>[];
   void wert(String label, int betrag) {
     if (betrag != 0) {
-      teile.add('$label ${_mitVorzeichen(betrag)}');
+      teile.add('$label ${mitVorzeichen(betrag, nullText: '+0')}');
     }
   }
 
@@ -60,7 +61,7 @@ String sbUnterdrueckungHerleitung({
     gesamtWunden: gesamtWunden,
     neueWunden: neueWunden,
   );
-  final wunden = gesamtWunden == 1 ? '1 Wunde' : '$gesamtWunden Wunden';
+  final wunden = wundenText(gesamtWunden);
   final basis = neueWunden == 1
       ? '4 × $wunden insgesamt = $voll'
       : '$voll ($neueWunden Wunden aus einem Treffer)';
@@ -89,9 +90,11 @@ List<String> _eigenschaftsTexte(AttributeModifiers mods) {
   ];
   return <String>[
     for (final (label, betrag) in werte)
-      if (betrag != 0) '$label ${_mitVorzeichen(betrag)}',
+      if (betrag != 0) '$label ${mitVorzeichen(betrag, nullText: '+0')}',
   ];
 }
 
 // Betrag mit echtem Minuszeichen bzw. Plus.
-String _mitVorzeichen(int betrag) => betrag < 0 ? '−${-betrag}' : '+$betrag';
+
+/// „1 Wunde“ oder „n Wunden“.
+String wundenText(int anzahl) => anzahl == 1 ? '1 Wunde' : '$anzahl Wunden';

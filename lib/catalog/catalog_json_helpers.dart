@@ -36,6 +36,21 @@ int readCatalogInt(
   return fallback;
 }
 
+/// Liest einen optionalen int-Wert tolerant aus JSON.
+///
+/// Wie [readCatalogInt], aber ohne Fallback: fehlende oder nicht numerische
+/// Werte ergeben `null`.
+int? readCatalogNullableInt(Map<String, dynamic> json, String key) {
+  final value = json[key];
+  if (value is int) {
+    return value;
+  }
+  if (value is num) {
+    return value.toInt();
+  }
+  return null;
+}
+
 /// Liest einen bool-Wert; jeder Nicht-Bool-Wert ergibt den Fallback.
 bool readCatalogBool(
   Map<String, dynamic> json,

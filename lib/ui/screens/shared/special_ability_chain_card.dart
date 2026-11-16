@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/catalog/special_ability_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/roemische_zahl_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/special_ability_chain_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/requirement_checklist.dart';
 
@@ -78,8 +79,8 @@ class SpecialAbilityChainCard<T extends SpecialAbilityEntry>
                 ),
                 if (erworbeneStufe > 0)
                   Text(
-                    'Stufe ${_roemisch(erworbeneStufe)} von '
-                    '${_roemisch(kette.stufen.length)}',
+                    'Stufe ${roemischeZahl(erworbeneStufe)} von '
+                    '${roemischeZahl(kette.stufen.length)}',
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: theme.colorScheme.primary,
                       fontWeight: FontWeight.w600,
@@ -176,7 +177,7 @@ class _StufenReihe<T extends SpecialAbilityEntry> extends StatelessWidget {
       }
       kinder.add(
         _StufenMarke(
-          label: _roemisch(stufe),
+          label: roemischeZahl(stufe),
           tooltip: '${def.name}${_apSuffix(def)}',
           erworben: erworben,
           istNaechste: istNaechste,
@@ -267,7 +268,7 @@ String _kurzName(SpecialAbilityEntry def) {
   if (stufe == null) {
     return def.name;
   }
-  return 'Stufe ${_roemisch(stufe)}';
+  return 'Stufe ${roemischeZahl(stufe)}';
 }
 
 /// `  ·  200 AP`, sofern sich aus dem Kostentext ein Betrag lesen laesst.
@@ -275,18 +276,3 @@ String _apSuffix(SpecialAbilityEntry def) {
   final ap = parseLeadingApAmount(def.kosten);
   return ap == null ? '' : ' · $ap AP';
 }
-
-const List<String> _roemischeZahlen = <String>[
-  '',
-  'I',
-  'II',
-  'III',
-  'IV',
-  'V',
-  'VI',
-  'VII',
-];
-
-String _roemisch(int wert) => wert > 0 && wert < _roemischeZahlen.length
-    ? _roemischeZahlen[wert]
-    : '$wert';

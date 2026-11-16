@@ -9,6 +9,7 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Art eines Befunds der Slotprüfung.
 enum KampfSlotFehlerArt {
@@ -230,20 +231,7 @@ KampfSlotFehler? neuerKampfSlotFehler({
 
 /// Leitet den Kampftyp eines Talents aus seinem `type`-Feld ab.
 WeaponCombatType combatTypeFromTalent(TalentDef talent) {
-  return talent.type.trim().toLowerCase() == 'fernkampf'
-      ? WeaponCombatType.ranged
-      : WeaponCombatType.melee;
-}
-
-/// Normalisiert einen String-Token fuer case-insensitiven Vergleich.
-String normalizeToken(String raw) {
-  var value = raw.trim().toLowerCase();
-  value = value
-      .replaceAll(String.fromCharCode(228), 'ae')
-      .replaceAll(String.fromCharCode(246), 'oe')
-      .replaceAll(String.fromCharCode(252), 'ue')
-      .replaceAll(String.fromCharCode(223), 'ss');
-  return value.replaceAll(RegExp(r'[^a-z0-9]+'), '');
+  return talent.istFernkampf ? WeaponCombatType.ranged : WeaponCombatType.melee;
 }
 
 /// Parst Waffen-Kategorien aus einem mehrzeiligen String.
@@ -272,12 +260,12 @@ List<String> weaponTypeOptionsForTalent({
   }
   final seen = <String>{};
   final options = <String>[];
-  final talentNameToken = normalizeToken(talent.name);
+  final talentNameToken = normalizeCombatToken(talent.name);
   for (final weapon in catalog.weapons) {
     if (weaponCombatTypeFromJson(weapon.type) != combatType) {
       continue;
     }
-    if (normalizeToken(weapon.combatSkill) != talentNameToken) {
+    if (normalizeCombatToken(weapon.combatSkill) != talentNameToken) {
       continue;
     }
     final name = weapon.name.trim();

@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 
 import 'dart:math' as math;
 
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart' show ArmorPiece;
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -269,7 +270,7 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
     if (index < 0) return;
     final result = await showAdaptiveConfirmDialog(
       context: context,
-      title: 'Begleiter löschen',
+      title: 'Begleiter löschen?',
       content:
           'Möchtest du "${_draftCompanions[index].name}" wirklich löschen?',
       confirmLabel: 'Löschen',

@@ -342,7 +342,7 @@ Future<void> fuehreGefechtsAuftragAus({
   if (gewuerfelt?.success == false &&
       aktuellerAuftrag.manoever?.id == 'man_meisterparade' &&
       context.mounted) {
-    await zeigeMeisterparadeFehlschlag(context, aktuellerAuftrag, frisch);
+    await zeigeMeisterparadeFehlschlag(context, aktuellerAuftrag, frisch, k);
   }
   if (ref.read(gefechtMitInitiativeProvider(heroId))?.handlung?.art ==
           Gefechtshandlungsart.fernkampf &&
