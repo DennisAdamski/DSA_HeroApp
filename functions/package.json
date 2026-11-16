@@ -14,7 +14,7 @@
     "accounts:verify-existing": "tsx scripts/verify_existing_accounts.ts"
   },
   "dependencies": {
-    "firebase-admin": "^14.5.0",
+    "firebase-admin": "^14.5.1",
     "firebase-functions": "^7.0.0"
   },
   "devDependencies": {
