@@ -34,7 +34,7 @@ GefechtsKampfmittelprofil? _profilOderWaffenlos(
 /// Ersetzt Vorschau-INI durch Sitzungswerte und übernimmt aktuelle Heldendaten.
 Gefechtswerte gefechtswerteFuer(
   HeroComputedSnapshot snapshot, {
-  RulesCatalog? katalog,
+  required RulesCatalog? katalog,
   GefechtsKampfmittelwahl? kampfmittel,
 }) {
   final c = snapshot.combatPreviewStats;

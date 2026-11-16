@@ -316,8 +316,12 @@ void main() {
         var s = c.read(gefechtProvider('rondra'))!;
         final original = s.handlung!.vorbereitung!.schussauftrag!;
         expect(original.dk, 'S');
-        s = bezahleGefechtsVorbereitung(s, b.aktuell);
-        s = bezahleGefechtsVorbereitung(naechsteGefechtsrunde(s), b.aktuell);
+        s = bezahleGefechtsVorbereitung(s, b.aktuell, null);
+        s = bezahleGefechtsVorbereitung(
+          naechsteGefechtsrunde(s),
+          b.aktuell,
+          null,
+        );
         ctl.setzen(naechsteGefechtsrunde(s));
         await t.pumpAndSettle();
         // Erreichbarer Live-DK-Wechsel während der vorbereiteten Handlung.
@@ -364,8 +368,12 @@ void main() {
         testCatalog,
         fixture.zielauftrag,
       );
-      s = bezahleGefechtsVorbereitung(s, b.aktuell);
-      s = bezahleGefechtsVorbereitung(naechsteGefechtsrunde(s), b.aktuell);
+      s = bezahleGefechtsVorbereitung(s, b.aktuell, null);
+      s = bezahleGefechtsVorbereitung(
+        naechsteGefechtsrunde(s),
+        b.aktuell,
+        null,
+      );
       ctl.setzen(s);
       await t.pumpAndSettle();
       await t.ensureVisible(find.text('2 AT'));
@@ -397,8 +405,12 @@ void main() {
         testCatalog,
         fixture.zielauftrag,
       );
-      s = bezahleGefechtsVorbereitung(s, b.aktuell);
-      s = bezahleGefechtsVorbereitung(naechsteGefechtsrunde(s), b.aktuell);
+      s = bezahleGefechtsVorbereitung(s, b.aktuell, null);
+      s = bezahleGefechtsVorbereitung(
+        naechsteGefechtsrunde(s),
+        b.aktuell,
+        null,
+      );
       ctl.setzen(naechsteGefechtsrunde(s));
       await t.pumpAndSettle();
       await t.ensureVisible(find.text('Schuss ausführen'));

@@ -595,8 +595,8 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
 
   Widget _handlung(Gefechtszustand s, HeroComputedSnapshot snapshot) {
     final vorbereitet = s.handlung!.vorbereitung != null;
-    final p = vorbereitet ? pruefeGefechtsVorbereitung(s, snapshot) : null;
     final k = ref.watch(heroRulesCatalogProvider(widget.heroId)).asData?.value;
+    final p = vorbereitet ? pruefeGefechtsVorbereitung(s, snapshot, k) : null;
     final schuss =
         s.handlung!.art == Gefechtshandlungsart.zielen && p?.rest == 0;
     final schusspruefung = schuss && k != null

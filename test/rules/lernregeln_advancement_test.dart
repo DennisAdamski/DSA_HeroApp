@@ -181,13 +181,20 @@ void main() {
 
     test('Eidetisches Gedächtnis halbiert und geht vor Gutem Gedächtnis', () {
       final hero = held(vorteile: 'Eidetisches Gedächtnis; Gutes Gedächtnis I');
-      final faktoren = lernkostenFaktoren(hero, LernzielArt.wissenstalent);
+      final faktoren = lernkostenFaktoren(
+        hero,
+        LernzielArt.wissenstalent,
+        catalog: null,
+      );
       expect(faktoren, hasLength(1));
       expect((faktoren.single.zaehler, faktoren.single.nenner), (1, 2));
     });
 
     test('ohne den Vorteil gibt es keinen Faktor', () {
-      expect(lernkostenFaktoren(held(), LernzielArt.wissenstalent), isEmpty);
+      expect(
+        lernkostenFaktoren(held(), LernzielArt.wissenstalent, catalog: null),
+        isEmpty,
+      );
     });
   });
 

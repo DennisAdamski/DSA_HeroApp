@@ -60,3 +60,12 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   sichtbar neu laden. Aus demselben Grund reagiert der Settings-Listener des
   Gates nur auf `heroStoragePath` — jede andere Einstellung (etwa eine
   gespeicherte Spaltenbreite) darf dort kein `setState` ausloesen.
+
+- `HiveHeroRepository` überspringt Einträge, die `HeroSheet.fromJson` nicht
+  lesen kann (`unlesbareHelden`), statt das Öffnen des Profils scheitern zu
+  lassen. Der Roheintrag bleibt unverändert in der Box. Test:
+  `test/data/hive_hero_repository_unlesbar_test.dart`.
+- Geteilte Gruppeneinträge (`shared_heroes`) werden per `update` geschrieben,
+  damit unbekannte Felder und der Ersteller online stehen bleiben. Felder, die
+  `HeldVisitenkarte` nur bei Belegung schreibt (`notizen`,
+  `avatarThumbnailBase64`), entfernt `pushGeteilterHeld` deshalb ausdrücklich.

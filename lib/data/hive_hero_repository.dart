@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:hive_ce/hive.dart';
 
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
@@ -30,6 +31,39 @@ class HiveHeroRepository implements HeroRepository {
 
   StreamSubscription<BoxEvent>? _heroEventSubscription;
 
+  /// Schlüssel der Einträge, die sich nicht als Held lesen lassen.
+  ///
+  /// Sie bleiben unverändert in der Box liegen (eine spätere Version kann sie
+  /// vielleicht lesen) und erscheinen in keiner Liste.
+  List<String> get unlesbareHelden =>
+      List<String>.unmodifiable(_unlesbar.toList()..sort());
+
+  final Set<String> _unlesbar = <String>{};
+
+  // Liest einen Helden; `null` und ein Vermerk, wenn der Eintrag unlesbar ist.
+  // Ein einzelner beschädigter Eintrag darf weder das Öffnen des Profils noch
+  // die Anzeige der übrigen Helden verhindern.
+  HeroSheet? _liesHeld(String key, Map<dynamic, dynamic> raw) {
+    try {
+      final hero = HeroSheet.fromJson(raw.cast<String, dynamic>());
+      _unlesbar.remove(key);
+      return hero;
+    } on Object catch (error, stackTrace) {
+      _unlesbar.add(key);
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stackTrace,
+          library: 'hive_hero_repository',
+          context: ErrorDescription(
+            'Held "$key" ist nicht lesbar und wird übersprungen',
+          ),
+        ),
+      );
+      return null;
+    }
+  }
+
   /// Erstellt und initialisiert das Repository asynchron.
   ///
   /// Oeffnet die Boxen im angegebenen [storagePath], baut den In-Memory-Index
@@ -55,8 +89,10 @@ class HiveHeroRepository implements HeroRepository {
       if (raw is! Map) {
         continue;
       }
-      final hero = HeroSheet.fromJson(raw.cast<String, dynamic>());
-      _heroIndex[hero.id] = hero;
+      final hero = _liesHeld(key.toString(), raw);
+      if (hero != null) {
+        _heroIndex[hero.id] = hero;
+      }
     }
   }
 
@@ -71,12 +107,17 @@ class HiveHeroRepository implements HeroRepository {
     }
     final raw = event.value;
     if (raw is Map) {
-      final hero = HeroSheet.fromJson(raw.cast<String, dynamic>());
-      _heroIndex[hero.id] = hero;
-      if (hero.id != key) {
+      final hero = _liesHeld(key, raw);
+      if (hero == null) {
         _heroIndex.remove(key);
+      } else {
+        _heroIndex[hero.id] = hero;
+        if (hero.id != key) {
+          _heroIndex.remove(key);
+        }
       }
     } else {
+      _unlesbar.remove(key);
       _heroIndex.remove(key);
     }
     _heroIndexController.add(_buildHeroIndexSnapshot());
@@ -119,8 +160,10 @@ class HiveHeroRepository implements HeroRepository {
     if (raw is! Map) {
       return null;
     }
-    final hero = HeroSheet.fromJson(raw.cast<String, dynamic>());
-    _heroIndex[hero.id] = hero;
+    final hero = _liesHeld(heroId, raw);
+    if (hero != null) {
+      _heroIndex[hero.id] = hero;
+    }
     return hero;
   }
 

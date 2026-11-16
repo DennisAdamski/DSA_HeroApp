@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -80,6 +81,29 @@ void main() {
     final entry = hero.appearance.avatarGallery.single;
     expect(entry.quelle, 'upload');
     expect(cloud.objects[entry.fileName], bytes);
+  });
+
+  test('Bild anlegen überschreibt nichts, was währenddessen gespeichert wird '
+      '(STATE-01)', () async {
+    final container = buildContainer(buildHero());
+    final actions = container.read(heroActionsProvider);
+    final tor = Completer<void>();
+    cloud.vorUpload = () => tor.future;
+
+    // Der Upload des Bilds hängt in der Leitung ...
+    final hochladen = actions.uploadHeroImage(
+      heroId: 'demo',
+      imageBytes: bytes,
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    // ... währenddessen speichert der Nutzer eine andere Änderung.
+    await actions.updateHero('demo', (held) => held.copyWith(dukaten: '42'));
+    tor.complete();
+    await hochladen;
+
+    final hero = (await repo.loadHeroById('demo'))!;
+    expect(hero.dukaten, '42');
+    expect(hero.appearance.avatarGallery, hasLength(1));
   });
 
   test('schreibt kein Legacy-Hauptbild mehr', () async {

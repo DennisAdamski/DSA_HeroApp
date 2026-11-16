@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
@@ -9,8 +10,12 @@ import 'gefecht_kampfmittel_rules.dart';
 import 'excel_rounding.dart';
 
 /// WdS 60: freiwillige und eindeutig geforderte Nahkampfansage, ohne Umfeldmali.
-int gefechtsAnsageFehlmalus(HeroComputedSnapshot snap, GefechtAuftrag a) {
-  final w = gefechtswerteFuer(snap, kampfmittel: a.kampfmittel);
+int gefechtsAnsageFehlmalus(
+  HeroComputedSnapshot snap,
+  GefechtAuftrag a,
+  RulesCatalog? k,
+) {
+  final w = gefechtswerteFuer(snap, katalog: k, kampfmittel: a.kampfmittel);
   if (w.fernkampf || a.manuell || a.probe != null) return 0;
   final m = a.manoever;
   var gesamt = a.finte + a.wuchtschlag + a.meisterparadeAnsage;
@@ -45,6 +50,7 @@ Gefechtspruefung ergaenzeGefechtsAnsagefolge(
   Gefechtszustand s,
   HeroComputedSnapshot snap,
   GefechtAuftrag a,
+  RulesCatalog? k,
 ) {
   final art = a.manuell ? a.manuelleKampfaktion : p.probenart ?? p.aktion;
   final freigestellt =
@@ -91,7 +97,7 @@ Gefechtspruefung ergaenzeGefechtsAnsagefolge(
     probenart: p.probenart,
     meisterparadeAnsage: p.meisterparadeAnsage,
     verbrauchterMeisterparadeBonus: p.verbrauchterMeisterparadeBonus,
-    ansageFehlmalus: kampf ? gefechtsAnsageFehlmalus(snap, a) : 0,
+    ansageFehlmalus: kampf ? gefechtsAnsageFehlmalus(snap, a, k) : 0,
     beendetAnsageFolgemalus: ende,
   );
 }

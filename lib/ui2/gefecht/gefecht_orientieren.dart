@@ -21,8 +21,9 @@ Future<void> zeigeOrientieren({
   final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
   final s = ref.read(gefechtMitInitiativeProvider(heroId));
   if (snapshot == null || s == null) return;
-  final plan = orientierungFuer(snapshot, position: position);
-  final werte = gefechtswerteFuer(snapshot);
+  final k = ref.read(heroRulesCatalogProvider(heroId)).asData?.value;
+  final plan = orientierungFuer(snapshot, katalog: k, position: position);
+  final werte = gefechtswerteFuer(snapshot, katalog: k);
   final danach = uebernimmOrientierung(
     s,
     maximum: orientierungsmaximum(snapshot),
@@ -31,7 +32,7 @@ Future<void> zeigeOrientieren({
   );
   final p = pruefeOrientierung(
     s,
-    gefechtswerteFuer(snapshot),
+    gefechtswerteFuer(snapshot, katalog: k),
     position: position,
   );
   final ok = await showDialog<bool>(
@@ -98,7 +99,8 @@ Future<void> fuehreOrientierungFort({
   final h = s?.handlung;
   if (s == null || snapshot == null || h == null) return;
   final position = h.art == Gefechtshandlungsart.positionOrientieren;
-  final w = gefechtswerteFuer(snapshot);
+  final k = ref.read(heroRulesCatalogProvider(heroId)).asData?.value;
+  final w = gefechtswerteFuer(snapshot, katalog: k);
   final p = pruefeOrientierung(s, w, position: position, fortsetzen: true);
   if (p.status == Gefechtsfreigabe.gesperrt) {
     throw StateError(p.gruende.join(' '));
@@ -106,7 +108,7 @@ Future<void> fuehreOrientierungFort({
   final controller = ref.read(gefechtProvider(heroId).notifier);
   final id = UniqueKey().toString();
   if (!controller.reservieren(id)) return;
-  final plan = orientierungFuer(snapshot, position: position);
+  final plan = orientierungFuer(snapshot, katalog: k, position: position);
   void buchen(bool erfolg) {
     if (!controller.abschliessen(id, w, p)) return;
     var neu = ref.read(gefechtMitInitiativeProvider(heroId))!;

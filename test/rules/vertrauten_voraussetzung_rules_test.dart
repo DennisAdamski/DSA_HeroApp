@@ -73,6 +73,35 @@ HeroCompanion _vertrauter({
 );
 
 void main() {
+  group('Machtvoller Vertrauter (REGEL-02)', () {
+    test('zählt über die Katalog-ID', () {
+      final held = _hexe().copyWith(
+        vorteilEintraege: const [
+          HeroMerkmal(
+            katalogId: 'adv_machtvoller_vertrauter',
+            text: 'Machtvoller Vertrauter',
+          ),
+        ],
+      );
+      expect(hatVorteilMachtvollerVertrauter(held), isTrue);
+    });
+
+    test('zählt auch als frei eingetragener Vorteil und aus dem Alttext', () {
+      final frei = _hexe().copyWith(
+        vorteilEintraege: const [HeroMerkmal(text: 'Machtvoller Vertrauter')],
+      );
+      final alttext = _hexe().copyWith(
+        vorteileText: 'Zäher Hund, Machtvoller Vertrauter',
+      );
+      expect(hatVorteilMachtvollerVertrauter(frei), isTrue);
+      expect(hatVorteilMachtvollerVertrauter(alttext), isTrue);
+    });
+
+    test('ohne den Vorteil nicht', () {
+      expect(hatVorteilMachtvollerVertrauter(_hexe()), isFalse);
+    });
+  });
+
   group('Voraussetzungen der Bindung (A1)', () {
     test('mit SF und ohne Nachteil gibt es keine Hinweise', () {
       final held = _hexe(

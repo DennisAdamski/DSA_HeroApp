@@ -22,6 +22,9 @@ class FirestoreRestClient {
     http.Client? httpClient,
   }) : _http = httpClient ?? http.Client();
 
+  /// Größte Seite, die Firestore je Listenabruf liefert.
+  static const int _seitengroesse = 300;
+
   /// Firebase/Google-Cloud-Projekt-ID.
   final String projectId;
 
@@ -62,25 +65,40 @@ class FirestoreRestClient {
   }
 
   /// Listet alle Dokumente einer Collection mit dekodierten Feldern.
+  ///
+  /// Firestore liefert Listen seitenweise; ohne das Blättern fehlten alle
+  /// Dokumente jenseits der ersten Seite (Tombstones zählen mit).
   Future<List<FirestoreRestDocument>> listDocuments(
     String collectionPath,
   ) async {
-    final headers = await _authHeaders();
-    final response = await _send(
-      () => _http.get(_documentUri(collectionPath), headers: headers),
-    );
-    if (response.statusCode == 404) {
-      return const <FirestoreRestDocument>[];
-    }
-    final body = _decodeSuccess(response);
-    final rawDocuments = body['documents'];
-    if (rawDocuments is! List) {
-      return const <FirestoreRestDocument>[];
-    }
-    return rawDocuments
-        .whereType<Map>()
-        .map((entry) => FirestoreRestDocument.fromJson(_castMap(entry)))
-        .toList(growable: false);
+    final dokumente = <FirestoreRestDocument>[];
+    String? seitenmarke;
+    do {
+      final headers = await _authHeaders();
+      final uri = _documentUri(
+        collectionPath,
+        queryParameters: <String, String>{
+          'pageSize': '$_seitengroesse',
+          'pageToken': ?seitenmarke,
+        },
+      );
+      final response = await _send(() => _http.get(uri, headers: headers));
+      if (response.statusCode == 404) {
+        break;
+      }
+      final body = _decodeSuccess(response);
+      final rawDocuments = body['documents'];
+      if (rawDocuments is List) {
+        dokumente.addAll(
+          rawDocuments.whereType<Map>().map(
+            (entry) => FirestoreRestDocument.fromJson(_castMap(entry)),
+          ),
+        );
+      }
+      final naechste = body['nextPageToken'];
+      seitenmarke = naechste is String && naechste.isNotEmpty ? naechste : null;
+    } while (seitenmarke != null);
+    return List<FirestoreRestDocument>.unmodifiable(dokumente);
   }
 
   /// Schreibt ein Dokument per PATCH und gibt die dekodierten Antwortfelder zurück.

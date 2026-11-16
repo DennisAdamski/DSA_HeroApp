@@ -97,7 +97,7 @@ void main() {
           : 0;
       expect(
         bestand.anfragen.single.targets.single.value,
-        gefechtswerteFuer(snap).at - zuschlag,
+        gefechtswerteFuer(snap, katalog: null).at - zuschlag,
       );
       expect(result.angriffsergebnisse.every((e) => e.tpBonus == 0), true);
       expect(

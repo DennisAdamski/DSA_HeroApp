@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
@@ -12,10 +13,14 @@ class GefechtLadedialog extends StatefulWidget {
     required this.zustand,
     required this.snapshot,
     required this.kampfmittel,
+    required this.katalog,
   });
   final Gefechtszustand zustand;
   final HeroComputedSnapshot snapshot;
   final GefechtsKampfmittelwahl kampfmittel;
+
+  /// Regelkatalog des Helden; `null`, solange er lädt.
+  final RulesCatalog? katalog;
 
   /// Erhält die ausdrückliche Anfangswahl während der Profil- und Budgetprüfung.
   @override
@@ -39,6 +44,7 @@ class _LadedialogState extends State<GefechtLadedialog> {
         widget.zustand,
         widget.snapshot,
         widget.kampfmittel,
+        widget.katalog,
         anfangGeladen: geladen,
       );
     } on StateError catch (e) {

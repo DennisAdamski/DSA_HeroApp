@@ -205,6 +205,19 @@ void main() {
     });
   });
 
+  test('dekodiereEinzeln überspringt unlesbare Dokumente und meldet sie '
+      '(SYNC-08)', () {
+    final gemeldet = <String>[];
+    final ergebnis = dekodiereEinzeln<String, int>(
+      <String>['1', 'x', '3', ''],
+      (text) => text.isEmpty ? null : int.parse(text),
+      melde: (dokument, _, _) => gemeldet.add(dokument),
+    );
+
+    expect(ergebnis, <int>[1, 3]);
+    expect(gemeldet, <String>['x']);
+  });
+
   // Die Schreibvorbedingung muss dieselbe Revision sehen wie der Decoder,
   // auch bei Altdokumenten ohne Revision und Zeitstempel (REV-19).
   group('revisionAusDokument', () {

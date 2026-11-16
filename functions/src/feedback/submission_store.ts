@@ -95,8 +95,11 @@ export class FirestoreFeedbackSubmissionStore implements FeedbackSubmissionStore
   }
 
   /** Records that a POST may have succeeded and must not be repeated. */
-  async markUncertain(uid: string, requestId: string): Promise<void> {
-    await this.update(uid, requestId, { status: "uncertain" });
+  async markUncertain(uid: string, requestId: string, checkedAt?: Date): Promise<void> {
+    await this.update(uid, requestId, {
+      status: "uncertain",
+      ...(checkedAt == null ? {} : { checkedAt }),
+    });
   }
 
   /** Stores a stable failure code without upstream response or user text. */
@@ -134,6 +137,7 @@ function decodeStored(data: DocumentData): StoredSubmission {
     marker: String(data.marker ?? ""),
     status: String(data.status ?? "failed") as FeedbackStatus,
     claimedAt: decodeDate(data.claimedAt) ?? new Date(0),
+    ...(decodeDate(data.checkedAt) == null ? {} : { checkedAt: decodeDate(data.checkedAt)! }),
     ...(typeof data.issueNumber === "number" ? { issueNumber: data.issueNumber } : {}),
     ...(typeof data.issueUrl === "string" ? { issueUrl: data.issueUrl } : {}),
     ...(typeof data.code === "string" ? { code: data.code } : {}),

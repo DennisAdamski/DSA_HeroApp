@@ -10,7 +10,9 @@
 /// nur bei der Heldenerschaffung und taucht deshalb hier nicht auf.
 library;
 
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 
 /// Katalog-ID des Vorteils Gutes Gedächtnis.
 const String kGutesGedaechtnisId = 'adv_gutes_gedaechtnis';
@@ -60,9 +62,18 @@ class LernkostenFaktor {
 }
 
 /// Kostenfaktoren, die für ein Lernziel der Art [art] beim Helden gelten.
-List<LernkostenFaktor> lernkostenFaktoren(HeroSheet hero, LernzielArt art) {
+///
+/// Die Vorteile kommen aus [werteMerkmaleAus]: Mit [catalog] wird auch ein
+/// Held erkannt, dessen Vorteile noch als Alttext vorliegen.
+List<LernkostenFaktor> lernkostenFaktoren(
+  HeroSheet hero,
+  LernzielArt art, {
+  required RulesCatalog? catalog,
+}) {
   if (art == LernzielArt.sonstiges) return const <LernkostenFaktor>[];
-  if (_hatVorteil(hero, kEidetischesGedaechtnisId, 'eidetisches gedächtnis')) {
+  bool hat(String katalogId, String name) =>
+      _hatVorteil(hero, catalog, katalogId, name);
+  if (hat(kEidetischesGedaechtnisId, 'eidetisches gedächtnis')) {
     return const <LernkostenFaktor>[
       LernkostenFaktor(
         bezeichnung: 'Eidetisches Gedächtnis (½)',
@@ -72,7 +83,7 @@ List<LernkostenFaktor> lernkostenFaktoren(HeroSheet hero, LernzielArt art) {
       ),
     ];
   }
-  if (_hatVorteil(hero, kGutesGedaechtnisId, 'gutes gedächtnis')) {
+  if (hat(kGutesGedaechtnisId, 'gutes gedächtnis')) {
     // Das Buch nennt für Gutes Gedächtnis keine Wissenstalente.
     if (art == LernzielArt.wissenstalent) return const <LernkostenFaktor>[];
     return const <LernkostenFaktor>[
@@ -88,12 +99,16 @@ List<LernkostenFaktor> lernkostenFaktoren(HeroSheet hero, LernzielArt art) {
 }
 
 // Katalogisierte Eintraege wirken ueber ihre ID, freie ueber ihren Text.
-bool _hatVorteil(HeroSheet hero, String katalogId, String name) {
-  if (hero.vorteilEintraege.isEmpty &&
-      hero.vorteileText.toLowerCase().contains(name)) {
-    return true;
-  }
-  for (final eintrag in hero.vorteilEintraege) {
+// Gelesen werden die wirksamen Vorteile der zentralen Auswertung, nie die
+// gespeicherte Liste oder der Alttext selbst.
+bool _hatVorteil(
+  HeroSheet hero,
+  RulesCatalog? catalog,
+  String katalogId,
+  String name,
+) {
+  final vorteile = werteMerkmaleAus(hero, catalog: catalog).abgleich.vorteile;
+  for (final eintrag in vorteile) {
     if (eintrag.katalogId == katalogId) return true;
     if (eintrag.katalogId.isEmpty &&
         eintrag.text.toLowerCase().trim().startsWith(name)) {

@@ -39,7 +39,7 @@ void main() {
       geschuetzterIniVerlust: 1,
       ungeklaerterIniVerlust: 2,
     );
-    final w = gefechtswerteFuer(snapshot);
+    final w = gefechtswerteFuer(snapshot, katalog: null);
     final liste = gefechtsKampfwerte(s, snapshot, null);
     final ini = _wert(liste, 'ini');
     expect(ini.wert, gefechtsInitiative(s, w));

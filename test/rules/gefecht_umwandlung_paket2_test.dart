@@ -30,7 +30,7 @@ void main() {
           catalog: testCatalog,
           epicAdvantagesActive: false,
         );
-        final w = gefechtswerteFuer(snap);
+        final w = gefechtswerteFuer(snap, katalog: null);
         expect(w.klingentaenzerAktiv, be <= 2);
         expect(
           gefechtUmwandlungMoeglich(
@@ -55,7 +55,7 @@ void main() {
         gefechtUmwandlungMoeglich(
           const Gefechtszustand(iniWurf: 6, angriffeVerbraucht: 1),
           Gefechtsumwandlung.zweiteParade,
-          werte: gefechtswerteFuer(inkonsistent),
+          werte: gefechtswerteFuer(inkonsistent, katalog: null),
         ),
         isFalse,
       );

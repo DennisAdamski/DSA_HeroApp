@@ -217,3 +217,12 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   kein verschluesseltes Feld lesen.
 - Die App besitzt dafuer eine eigene In-App-Verwaltung unter
   `Einstellungen > Hausregeln > Hausregelverwaltung`.
+
+- Importierte Hausregel-Pakete liegen in einem Ordner, der aus der Paket-ID
+  gebaut wird. `HouseRulePackRepository` lehnt deshalb IDs mit Pfadangaben ab
+  (`istSichererPaketOrdner`: keine Trenner, kein `..`, kein Laufwerk) und
+  bietet abgelegte Manifeste mit solcher ID nicht an; sonst schriebe ein
+  Import außerhalb des Paketordners und ein Löschen entfernte fremde Ordner.
+- Ein einzelnes unlesbares Paketmanifest oder eine unlesbare eigene
+  Katalogdatei (auch mit falschen Feldtypen) wird als Hinweis gemeldet und
+  übersprungen; der Katalog lädt trotzdem.

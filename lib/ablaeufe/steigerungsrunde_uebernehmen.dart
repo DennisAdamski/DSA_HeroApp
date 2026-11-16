@@ -31,7 +31,11 @@ class SteigerungsrundeUebernehmen {
   const SteigerungsrundeUebernehmen({
     required this.repository,
     required this.speichere,
+    this.uhr = DateTime.now,
   });
+
+  /// Zeitquelle für den Änderungsstempel der Einstellungen.
+  final DateTime Function() uhr;
 
   /// Speicher, aus dem frisch geladen wird.
   final HeroRepository repository;
@@ -143,7 +147,10 @@ class SteigerungsrundeUebernehmen {
                 heroContentHash(aktuell) != heroContentHash(basis))) {
           throw StateError('Der Held wurde inzwischen geändert.');
         }
-        final geaendert = aenderung(aktuell);
+        // Frischer Stempel wie bei jeder Nutzeränderung: Ohne Konto ergänzt
+        // der Speicher ihn nur, wenn er fehlt, und der alte bliebe stehen.
+        final geaendert = aenderung(aktuell)
+            .copyWith(lastModified: uhr().toUtc());
         await repository.saveHero(geaendert);
         return geaendert;
       },

@@ -33,9 +33,13 @@ class InMemoryCloudAvatarStorage implements CloudAvatarStorage {
   @override
   bool get isAvailable => available;
 
+  /// Läuft vor jedem Upload; hält ihn auf, solange die Zukunft offen ist.
+  Future<void> Function()? vorUpload;
+
   @override
   Future<void> upload(String fileName, List<int> pngBytes) async {
     uploadCalls++;
+    await vorUpload?.call();
     if (failUploads) {
       throw StateError('Upload fehlgeschlagen: $fileName');
     }

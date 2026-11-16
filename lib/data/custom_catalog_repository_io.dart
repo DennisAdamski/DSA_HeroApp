@@ -79,6 +79,16 @@ class CustomCatalogRepository {
               message: 'Datei konnte nicht gelesen werden: ${error.message}',
             ),
           );
+        } on Object catch (error) {
+          // Etwa ein Feld falschen Typs: Eine einzelne beschädigte Datei darf
+          // den Katalog nicht scheitern lassen.
+          issues.add(
+            CatalogIssue(
+              section: section,
+              filePath: file.path,
+              message: 'Datei ist nicht lesbar: $error',
+            ),
+          );
         }
       }
     }

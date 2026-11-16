@@ -241,6 +241,22 @@ void main() {
       expect(gespeichert.name, 'Geändert');
     });
 
+    test('stempelt den Änderungszeitpunkt frisch (STATE-04)', () async {
+      final alt = DateTime.utc(2020, 1, 1);
+      final jetzt = DateTime.utc(2026, 11, 15, 10);
+      final repo = FakeRepository(heroes: [_held.copyWith(lastModified: alt)]);
+      final ablauf = SteigerungsrundeUebernehmen(
+        repository: repo,
+        speichere: (_, {expectedContentHash, validationCatalog}) =>
+            throw StateError('Die Anzeige wird nie normalisiert.'),
+        uhr: () => jetzt,
+      );
+
+      await ablauf.speichereSfAnzeige(heroId: 'held', anzeigen: true);
+
+      expect((await repo.loadHeroById('held'))!.lastModified, jetzt);
+    });
+
     test('mit offener Runde nur auf unveränderter Basis', () async {
       final repo = FakeRepository(heroes: [_held]);
       final ablauf = ablaufFuer(repo);

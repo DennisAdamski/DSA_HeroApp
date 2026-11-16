@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -199,5 +200,28 @@ void main() {
     ]);
 
     expect(report.failed, 2);
+  });
+
+  test('ein hängender Cloud-Zugriff zählt als Fehlschlag statt den Lauf '
+      'aufzuhalten (PLAT-02)', () async {
+    const entry = AvatarGalleryEntry(id: 'e1', fileName: 'demo_e1.png');
+    storage.files['demo_e1.png'] = bytes;
+    cloud.vorUpload = () => Completer<void>().future;
+    final ungeduldig = AvatarBackfillService(
+      storage: storage,
+      cloud: cloud,
+      markers: markers,
+      cloudZeitlimit: const Duration(milliseconds: 20),
+    );
+
+    final report = await ungeduldig.run(
+      heroes: <HeroSheet>[
+        heroWithGallery(<AvatarGalleryEntry>[entry]),
+      ],
+      heroStoragePath: '/helden',
+    );
+
+    expect(report.failed, 1);
+    expect(markers.load('demo_e1.png'), isNull);
   });
 }

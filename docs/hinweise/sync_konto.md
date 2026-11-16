@@ -80,6 +80,20 @@ harten Regeln und den Themenindex.
   hiesigen Darstellung des Online-Stands gleicht, gilt als identisch. Ein
   Abgleich allein schreibt nie. Getestet wird das mit
   `speichereFremdenStand` in `test/data/sync_app_versionen_test.dart`.
+- Bewertungen eines Dokuments laufen nacheinander (`_abgleichReihenfolge` in
+  `SyncingHeroRepository`): Listener, `syncNow` und Uploads lesen sonst
+  denselben Ausgangsstand und melden einen Konflikt mit sich selbst. Ein
+  Upload überträgt immer den **frisch geladenen** lokalen Stand, nie eine beim
+  Aufruf erfasste Fassung. Datensätze mit einer Revision, die dieses Gerät
+  schon hinter sich gelassen hat (`_ueberholteRevisionen`), werden ignoriert.
+- Die stille Zusammenführung lädt hoch und schreibt erst danach lokal. Wer in
+  dieser Zeit speichert, wird nicht überschrieben: `_schreibeHeld` /
+  `_schreibeZustand` übertragen seine Änderung auf die zusammengeführte
+  Fassung; widerspricht sie dem Online-Stand, bleibt lokal alles stehen, die
+  Basis entfällt und ein Konflikt entscheidet. Getestet in
+  `test/data/sync_gleichzeitige_abgleiche_test.dart`.
+- Ein Übertragungsfehler lässt `saveHero` nie scheitern, gleich welchen Typs:
+  Der lokale Stand ist dann schon gespeichert, der Fehler steht im Sync-Status.
 - Entscheidungen zu Offline-Helden (`Offline-Held: …`-Konflikte beim Wechsel in
   ein Konto) müssen persistiert werden, sonst wiederholt sich die Frage bei
   jedem Start: die Konfliktliste lebt nur im Speicher und keiner der drei
@@ -154,7 +168,19 @@ harten Regeln und den Themenindex.
   vor „Gefecht beginnen“ (`syncGruppenVorGefecht` in `GefechtEinstieg`, acht
   Sekunden Zeitlimit; ein Fehler zeigt nur eine Meldung, das Gefecht startet
   mit dem lokalen Stand).
+  Mitglied ist laut Regeln nur, wer einen Mitgliedseintrag in einer
+  **bestehenden** Gruppe hat (`isGroupMember` prüft auch das Gruppendokument);
+  ein Eintrag, der das Löschen überlebt, gibt keinen Zugriff mehr. Lesen und
+  Aufräumen darf zusätzlich der Besitzer ohne eigenen Eintrag (`canReadGroup`),
+  damit `loescheGruppe` nach einem Abbruch wiederholbar bleibt. Es entwertet
+  zuerst den Beitrittscode; `entferneMitglied` erneuert ihn ebenfalls.
   Regeln: `functions/test/firestore_rules.rules.ts` (`npm run test:rules`,
   Java 21). Offen: Mitglieder entfernen (Dienst `entferneMitglied` vorhanden,
   keine Oberfläche), Live-Listener statt manuellem „Synchronisieren“, Gruppen
   unter Windows (REST-Transport ohne Firestore-SDK).
+- Unlesbare Online-Dokumente werden einzeln übersprungen (`dekodiereEinzeln`
+  in beiden Gateways), und `syncNow` gleicht jeden Helden für sich ab: Ein
+  einzelner Fehlschlag (kein Fehler der Leitung) steht danach im Sync-Status,
+  die übrigen Helden gleichen trotzdem ab. Fehlt der Online-Stand eines laut
+  Metadaten abgeglichenen Helden spurlos, meldet der Status das, statt den
+  Upload still zu überspringen.

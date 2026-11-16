@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
@@ -59,11 +60,12 @@ Orientierungsplan orientierungsplan({
 /// Liest die aktuelle effektive IN und den unveränderten Kriegskunst-TaW.
 Orientierungsplan orientierungFuer(
   HeroComputedSnapshot snapshot, {
+  required RulesCatalog? katalog,
   bool position = false,
 }) => orientierungsplan(
   intuition: snapshot.probenEigenschaften.inn,
   kriegskunst: snapshot.hero.talents['tal_kriegskunst']?.talentValue ?? 0,
-  aufmerksamkeit: gefechtswerteFuer(snapshot).aufmerksamkeit,
+  aufmerksamkeit: gefechtswerteFuer(snapshot, katalog: katalog).aufmerksamkeit,
   position: position,
 );
 
