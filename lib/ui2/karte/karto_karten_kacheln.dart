@@ -58,17 +58,30 @@ KartenRechteck kachelFlaeche(KachelNummer k) {
 /// einmal angefragt.
 class KartenKachelSpeicher extends ChangeNotifier {
   /// Erstellt den Speicher für höchstens [grenze] Kacheln.
-  KartenKachelSpeicher({this.grenze = 160});
+  ///
+  /// Eine Kachel, die nicht lädt, wird nach [wartezeit] beim nächsten Bedarf
+  /// erneut angefragt. [uhr] gibt die Zeit vor (in Tests ersetzbar).
+  KartenKachelSpeicher({
+    this.grenze = 160,
+    this.wartezeit = const Duration(seconds: 30),
+    DateTime Function()? uhr,
+  }) : _uhr = uhr ?? DateTime.now;
 
   /// Höchstzahl gehaltener Kacheln.
   final int grenze;
+
+  /// Mindestabstand zwischen zwei Versuchen für dieselbe Kachel.
+  final Duration wartezeit;
+
+  final DateTime Function() _uhr;
 
   KartenKachelManifest? _manifest;
   final LinkedHashMap<KachelNummer, ui.Image> _bilder =
       LinkedHashMap<KachelNummer, ui.Image>();
   final Map<KachelNummer, (ImageStream, ImageStreamListener)> _laufend =
       <KachelNummer, (ImageStream, ImageStreamListener)>{};
-  final Set<KachelNummer> _fehlgeschlagen = <KachelNummer>{};
+  final Map<KachelNummer, DateTime> _fehlgeschlagen =
+      <KachelNummer, DateTime>{};
   bool _entsorgt = false;
 
   /// Das Manifest der Kacheln; `null` heißt: ohne Kartenbild.
@@ -98,7 +111,14 @@ class KartenKachelSpeicher extends ChangeNotifier {
         _bilder[k] = vorhanden; // zuletzt genutzt
         continue;
       }
-      if (_laufend.containsKey(k) || _fehlgeschlagen.contains(k)) continue;
+      if (_laufend.containsKey(k)) continue;
+      final gescheitert = _fehlgeschlagen[k];
+      if (gescheitert != null) {
+        // Nach einem Netzabriss soll die Kachel zurückkommen, ohne dass jeder
+        // Frame neu anfragt: erst nach der Wartezeit ein neuer Versuch.
+        if (_uhr().difference(gescheitert) < wartezeit) continue;
+        _fehlgeschlagen.remove(k);
+      }
       final (z, x, y) = k;
       final stream = NetworkImage(manifest.kachel(z, x, y).toString())
           .resolve(ImageConfiguration.empty);
@@ -119,7 +139,7 @@ class KartenKachelSpeicher extends ChangeNotifier {
         onError: (_, _) {
           _laufend.remove(k);
           stream.removeListener(hoerer);
-          _fehlgeschlagen.add(k);
+          _fehlgeschlagen[k] = _uhr();
         },
       );
       _laufend[k] = (stream, hoerer);

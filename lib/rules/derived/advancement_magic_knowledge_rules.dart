@@ -7,7 +7,9 @@ import 'advancement_options.dart';
 import 'hero_begabung_rules.dart';
 import 'learning_rules.dart';
 import 'magic_acquisition_rules.dart';
+import 'lernkosten_faktor_rules.dart';
 import 'magic_status_rules.dart';
+import 'steigerung_herleitung_rules.dart';
 import 'tradition_rules.dart';
 
 /// Erstellt Erwerbs- und Steigerungsziele ohne bestehende Ritualgruppen zu ändern.
@@ -171,16 +173,26 @@ AdvancementOption? resolveMagicKnowledge(
   );
   final target = int.tryParse(options['targetValue'] ?? '');
   final learnCost = learnCostFromKomplexitaet(complexity);
+  // Ritualkenntnis gehört zu den Gedächtnis-Sonderfertigkeiten (WdH S. 251
+  // und 253): Erwerb und Steigerung kosten ½ bzw. ¾, vor einem Lehrmeister.
+  final faktoren = lernkostenFaktoren(
+    context.hero,
+    LernzielArt.sonderfertigkeit,
+    catalog: context.catalog,
+  );
   int? raiseCost;
   if (knowledge != null &&
       target != null &&
       target > knowledge.value &&
       learnCost != null) {
-    raiseCost = berechneSteigerungskosten(
-      vonWert: knowledge.value,
-      aufWert: target,
-      effektiveKomplexitaet: learnCost,
-    ).apKosten;
+    raiseCost = wendeLernkostenFaktorenAn(
+      berechneSteigerungskosten(
+        vonWert: knowledge.value,
+        aufWert: target,
+        effektiveKomplexitaet: learnCost,
+      ).apKosten,
+      faktoren,
+    );
     if (options['learningMethod'] == 'teacher') {
       raiseCost = apMitLehrmeister(raiseCost);
     }
@@ -193,10 +205,14 @@ AdvancementOption? resolveMagicKnowledge(
     maxValue: maximum,
     isOwned: knowledge != null,
     learnCost: learnCost,
+    lernregeln: Lernregeln(faktoren: faktoren),
     apCost: knowledge == null
         ? _isRecording(options)
               ? 0
-              : kRitualkenntnisFremdeTraditionAp
+              : wendeLernkostenFaktorenAn(
+                  kRitualkenntnisFremdeTraditionAp,
+                  faktoren,
+                )
         : raiseCost,
     complexityHint: 'Lernkomplexität $complexity',
     options: {

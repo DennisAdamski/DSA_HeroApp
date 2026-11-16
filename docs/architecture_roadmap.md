@@ -563,8 +563,11 @@ im [Archiv](archiv/arch-04.md):
 - [x] Eigenschaftsprobe als Ausweichen (Zuschlag ≥ 7, WdS S. 15): entfällt
   (Nutzerentscheidung 18.10.2026), bleibt Meisterentscheid am Tisch.
 - [ ] Bewusst offen aus den Lernregeln: zweite Repräsentation desselben Zaubers,
-  Hexalogien für eigene Katalogzauber, Gedächtnis-Vorteile bei SF/Ritualen,
-  Selbststudium und Lehrmeister-Gebühren.
+  Hexalogien für eigene Katalogzauber, Selbststudium und Lehrmeister-Gebühren.
+- [x] Gedächtnis-Vorteile bei Sonderfertigkeiten (16.11.2026): SF-Erwerb,
+  Ritualkenntnis und Spezialisierungen von Wissenstalenten rechnen ¾ bzw. ½
+  ein (`kGedaechtnisSonderfertigkeitIds`, Objektrituale über „(OR)“). Noch
+  nicht: Einzelrituale außerhalb der Steigerungssitzung (Magie-Tab).
 - [x] Gegenelement: Erwerbsdialog (Hinweis) und Magie-Tab (Symbol mit
   Erklärung) nennen den Grund für die schwerere Spalte (16.10.2026).
 - [x] Zauberspezialisierung, Merkmalskenntnis- und Repräsentationsboni sowie

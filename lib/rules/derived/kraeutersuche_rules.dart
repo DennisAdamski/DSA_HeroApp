@@ -784,7 +784,7 @@ KraeuterSucheErgebnis _beliebigeSuche(
   var rest = tap;
   while (true) {
     final passend = kandidaten
-        .where((k) => 2 * _mindestens1(k.suchschwierigkeit) <= rest)
+        .where((k) => kraeuterMindestTapFuerFund(k.suchschwierigkeit) <= rest)
         .toList();
     if (passend.isEmpty) break;
     final gesamt = passend.fold<int>(
@@ -822,6 +822,16 @@ KraeuterSucheErgebnis _beliebigeSuche(
 }
 
 int _mindestens1(int wert) => wert < 1 ? 1 : wert;
+
+/// Kleinste Zahl verbleibender TaP*, mit der die beliebige Suche ein Kraut mit
+/// [suchschwierigkeit] findet.
+///
+/// Zoo Botanica Aventurica S. 225: Gefunden wird ein Kraut, dessen Zuschlag
+/// „maximal TaP*/2“ beträgt, im Beispiel „die aufgerundete Hälfte“ (17 TaP*
+/// erlauben Suchschwierigkeit 9). Abgezogen wird dann die Suchschwierigkeit
+/// selbst, nicht das Doppelte. Suchschwierigkeiten unter 1 zählen als 1.
+int kraeuterMindestTapFuerFund(int suchschwierigkeit) =>
+    2 * _mindestens1(suchschwierigkeit) - 1;
 
 /// Verteilung der TaP* einer Kräutersuche über alle 8000 Wurfkombinationen.
 ///
@@ -907,7 +917,7 @@ KraeuterVorschauZeile _vorschauZeile(
   Map<int, double> verteilung, {
   required bool findbar,
 }) {
-  final noetig = 2 * _mindestens1(kandidat.suchschwierigkeit);
+  final noetig = kraeuterMindestTapFuerFund(kandidat.suchschwierigkeit);
   var wahrscheinlichkeit = 0.0;
   var erwartet = 0.0;
   // Kräuter außerhalb der Erntezeit sind nicht zu finden: Chance 0.

@@ -27,8 +27,14 @@ class HeroTragkraftBonus {
   /// Anzeigename, z. B. „Bärenrune (RkP* 7)“.
   final String name;
 
-  /// Zusätzliche Tragkraft in Stein (1 Stein = 1 kg); nie negativ.
+  /// Zusätzliche Tragkraft in Stein (1 Stein = 1 kg), wie gespeichert.
+  ///
+  /// Der Leser verändert den Wert nicht; die Regelrechnung zählt über
+  /// [wirksamerStein], das negative Werte als 0 behandelt.
   final int stein;
+
+  /// Stein, der in die Tragkraft eingeht: nie negativ.
+  int get wirksamerStein => stein < 0 ? 0 : stein;
 
   /// KK-Erhöhung, die nur die Tragkraft betrifft (Hausregel zur Bärenrune:
   /// KK +1). Die Eigenschaft im Bogen ändert sich dadurch nicht. Nur bei
@@ -57,22 +63,35 @@ class HeroTragkraftBonus {
     int? kk,
     Map<String, Object?>? unbekannteFelder,
   }) {
+    // Ein neu gesetztes Feld ersetzt den Rohwert eines unlesbaren Vorgängers.
+    final felder = unbekannteFelder ?? this.unbekannteFelder;
+    final ohneErsetzte = <String, Object?>{
+      for (final eintrag in felder.entries)
+        if (!(name != null && eintrag.key == 'name') &&
+            !(stein != null && eintrag.key == 'stein') &&
+            !(kk != null && eintrag.key == 'kk'))
+          eintrag.key: eintrag.value,
+    };
     return HeroTragkraftBonus(
       id: id ?? this.id,
       name: name ?? this.name,
       stein: stein ?? this.stein,
       kk: kk ?? this.kk,
-      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+      unbekannteFelder: ohneErsetzte.length == felder.length
+          ? felder
+          : Map<String, Object?>.unmodifiable(ohneErsetzte),
     );
   }
 
   Map<String, dynamic> toJson() {
+    // Ein Feld mit unlesbarem Rohwert steht in [unbekannteFelder] und wird
+    // unverändert zurückgeschrieben, statt durch den Ersatzwert zu ersetzen.
     return mitUnbekanntenFeldern(<String, dynamic>{
       'id': id,
-      'name': name,
-      'stein': stein,
+      if (!unbekannteFelder.containsKey('name')) 'name': name,
+      if (!unbekannteFelder.containsKey('stein')) 'stein': stein,
       // Nur bei Belegung, damit der Eintrag ohne KK-Erhöhung schlank bleibt.
-      if (kk != 0) 'kk': kk,
+      if (kk != 0 && !unbekannteFelder.containsKey('kk')) 'kk': kk,
     }, unbekannteFelder);
   }
 
@@ -80,13 +99,28 @@ class HeroTragkraftBonus {
   static HeroTragkraftBonus? fromJson(Map<String, dynamic> json) {
     final id = json['id'];
     if (id is! String || id.trim().isEmpty) return null;
-    final stein = (json['stein'] as num?)?.toInt() ?? 0;
+    // Unlesbare Rohwerte (etwa Text statt Zahl) bleiben unverändert erhalten;
+    // gerechnet wird mit dem Ersatzwert. Negative Zahlen bleiben stehen.
+    final unlesbar = <String, Object?>{};
+    final name = json['name'];
+    final stein = json['stein'];
+    final kk = json['kk'];
+    if (name != null && name is! String) unlesbar['name'] = name;
+    if (stein != null && stein is! num) unlesbar['stein'] = stein;
+    if (kk != null && kk is! num) unlesbar['kk'] = kk;
+    final unbekannt = <String, Object?>{
+      ...sammleUnbekannteFelder(json, jsonSchluessel),
+      for (final eintrag in unlesbar.entries)
+        eintrag.key: kopiereJsonRohwert(eintrag.value),
+    };
     return HeroTragkraftBonus(
       id: id,
-      name: (json['name'] as String?) ?? '',
-      stein: stein < 0 ? 0 : stein,
-      kk: (json['kk'] as num?)?.toInt() ?? 0,
-      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+      name: name is String ? name : '',
+      stein: stein is num ? stein.toInt() : 0,
+      kk: kk is num ? kk.toInt() : 0,
+      unbekannteFelder: unbekannt.isEmpty
+          ? const <String, Object?>{}
+          : Map<String, Object?>.unmodifiable(unbekannt),
     );
   }
 }

@@ -213,8 +213,21 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `.gitignore`; alternativ Umgebungsvariable oder `--password`). Das Tool
   prueft das Passwort vorab an einem vorhandenen `enc:3:`-Wert und bricht bei
   Abweichung ohne Aenderung ab. Angezeigt wird ein Feld in der UI nur ueber
-  `resolveProtectedValue` (Locked-Hinweis ohne Passwort); Regelrechnung darf
+  `resolveProtectedValue` (Locked-Hinweis ohne Passwort; v3-Werte brauchen
+  den `catalogKeyV3Provider`-Schluessel); Regelrechnung darf
   kein verschluesseltes Feld lesen.
+- **Geschuetzte Texte ausserhalb der Sektionen (KAT-01, 16.11.2026):**
+  `alchimika.json` (`wirkung`, `qualitaeten[].wirkung`; der Bulk-Decrypt
+  entschluesselt auch `CatalogSourceData.alchimika`, Anzeigen lesen
+  `wirkungText`/`wirkungGesperrt`), `vertrautenmagie_rituale.json` (`wirkung`,
+  `technik`) und die eingebauten Paket-Manifeste (`PROTECTED_PACK_FIELDS` in
+  `patches[].addEntries[]`/`setFields`). Pakete greifen erst nach dem
+  Bulk-Decrypt, deshalb entschluesselt `houseRulePackCatalogProvider` sie
+  vorab (`entschluesseleHausregelPakete`). Das Dart-Preset
+  `vertrautenmagie_preset.dart` traegt denselben Chiffretext; nach dem Tool
+  `python tool/sync_vertrautenmagie_preset.py` ausfuehren. Ins Heldendokument
+  kopierte Vertrautenrituale bleiben verschluesselt und werden erst in der
+  Anzeige entschluesselt.
 - Die App besitzt dafuer eine eigene In-App-Verwaltung unter
   `Einstellungen > Hausregeln > Hausregelverwaltung`.
 

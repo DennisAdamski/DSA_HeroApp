@@ -45,6 +45,7 @@ Future<CatalogSourceData> decryptAllCatalogValues({
         entry.key.name: entry.value,
     },
     reisebericht: encrypted.reisebericht,
+    alchimika: encrypted.alchimika,
     password: password,
     globalSaltV3: globalSaltV3,
     v3KeyBytes: v3Key?.bytes,
@@ -66,10 +67,22 @@ Future<CatalogSourceData> decryptAllCatalogValues({
     reisebericht: result.reisebericht,
     // Zauberprofile tragen keine verschluesselten Werte.
     spellEffects: encrypted.spellEffects,
-    // Alchimika tragen ebenfalls keine verschluesselten Werte.
-    alchimika: encrypted.alchimika,
+    // Alchimika tragen geschuetzte Wirkungstexte (KAT-01).
+    alchimika: result.alchimika,
   );
 }
+
+/// Entschluesselt alle `enc:3:`-Werte einer einzelnen Katalog-Map mit dem
+/// abgeleiteten [v3Key], etwa Eintraege eines Hausregel-Pakets (KAT-01).
+///
+/// Nicht entschluesselbare Werte bleiben unveraendert, wie im Bulk-Decrypt.
+Map<String, dynamic> entschluesseleKatalogMap(
+  Map<String, dynamic> eintrag, {
+  required CatalogKey v3Key,
+}) => _walkMap(eintrag, password: '', v3Key: v3Key);
+
+/// Ob [wert] (rekursiv) mindestens einen `enc:`-Wert enthaelt.
+bool enthaeltVerschluesselteWerte(Object? wert) => _countEncInValue(wert) > 0;
 
 /// Top-Level-Funktion fuer [compute]: identisch zu [_decryptPayload].
 _DecryptPayload _decryptPayloadIsolateEntry(_DecryptPayload payload) {
@@ -103,9 +116,15 @@ _DecryptPayload _decryptPayload(_DecryptPayload payload) {
       _walkMap(item, password: payload.password, v3Key: v3Key),
   ];
 
+  final newAlchimika = <Map<String, dynamic>>[
+    for (final item in payload.alchimika)
+      _walkMap(item, password: payload.password, v3Key: v3Key),
+  ];
+
   return _DecryptPayload(
     sectionsRaw: newSections,
     reisebericht: newReisebericht,
+    alchimika: newAlchimika,
     password: payload.password,
     globalSaltV3: payload.globalSaltV3,
   );
@@ -212,6 +231,9 @@ int _countEncValues(CatalogSourceData source) {
   for (final entry in source.reisebericht) {
     count += _countEncInValue(entry);
   }
+  for (final entry in source.alchimika) {
+    count += _countEncInValue(entry);
+  }
   return count;
 }
 
@@ -245,6 +267,7 @@ class _DecryptPayload {
   const _DecryptPayload({
     required this.sectionsRaw,
     required this.reisebericht,
+    required this.alchimika,
     required this.password,
     required this.globalSaltV3,
     this.v3KeyBytes,
@@ -252,6 +275,7 @@ class _DecryptPayload {
 
   final Map<String, List<Map<String, dynamic>>> sectionsRaw;
   final List<Map<String, dynamic>> reisebericht;
+  final List<Map<String, dynamic>> alchimika;
   final String password;
   final Uint8List? globalSaltV3;
   final Uint8List? v3KeyBytes;

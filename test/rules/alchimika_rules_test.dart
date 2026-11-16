@@ -131,4 +131,23 @@ void main() {
       expect(wirkung.lep, 0);
     });
   });
+
+  test(
+    'gesperrte Wirkungstexte landen nie als Chiffre in der Beschreibung',
+    () {
+      const gesperrt = AlchimikumDef(
+        id: 'alch_x',
+        name: 'X',
+        wirkung: 'enc:3:abc',
+        qualitaeten: <AlchimikumQualitaet>[
+          AlchimikumQualitaet(stufe: 'A', lepWurf: '1W6', wirkung: 'enc:3:def'),
+        ],
+      );
+      expect(gesperrt.wirkungGesperrt, isTrue);
+      expect(gesperrt.qualitaeten.single.wirkungText, isEmpty);
+      final text = alchimikumBeschreibung(gesperrt, 'A');
+      expect(text, isNot(contains('enc:')));
+      expect(text, contains('1W6'));
+    },
+  );
 }

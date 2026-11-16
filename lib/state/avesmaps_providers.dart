@@ -34,7 +34,12 @@ final avesmapsOrteSpeicherProvider = FutureProvider<AvesmapsOrteSpeicher?>((
 ) async {
   if (!ref.watch(avesmapsAktivProvider)) return null;
   final speicherort = await ref.watch(heroStorageLocationProvider.future);
-  return HiveAvesmapsOrteSpeicher(speicherPfad: speicherort.effectivePath);
+  final speicher = HiveAvesmapsOrteSpeicher(
+    speicherPfad: speicherort.effectivePath,
+  );
+  // Ohne Schließen blieb die Box nach einem Ordnerwechsel am alten Pfad offen.
+  ref.onDispose(speicher.close);
+  return speicher;
 });
 
 /// Hält das Ortsverzeichnis von Avesmaps lokal vor; `null`, solange der Abruf

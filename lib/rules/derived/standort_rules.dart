@@ -47,16 +47,17 @@ Uri? avesmapsLink(String standort) {
 
 /// Der Eintrag des Ortsverzeichnisses zu [standort] oder `null`.
 ///
-/// Verglichen wird über [suchFaltung], also ohne Rücksicht auf Groß- und
-/// Kleinschreibung und Umlaut-Schreibung. Tragen mehrere Einträge den Namen
+/// Verglichen wird über [vergleichsSchluessel], also ohne Rücksicht auf Groß-
+/// und Kleinschreibung und mit `ä`/`ae` als gleich; `Mauer` und `Maur` bleiben
+/// verschieden (die tolerante [suchFaltung] gehört nur in die Suche). Tragen mehrere Einträge den Namen
 /// (etwa Siedlung, Region und Staat „Thorwal“), gilt die Siedlung vor der
 /// Region vor dem Staat usw.
 OrtEintrag? findeOrt(String standort, List<OrtEintrag> orte) {
-  final name = suchFaltung(bereinigeStandort(standort));
+  final name = vergleichsSchluessel(bereinigeStandort(standort));
   if (name.isEmpty) return null;
   OrtEintrag? bester;
   for (final ort in orte) {
-    if (suchFaltung(ort.name) != name) continue;
+    if (vergleichsSchluessel(ort.name) != name) continue;
     if (bester == null || ort.art.index < bester.art.index) bester = ort;
   }
   return bester;
@@ -87,11 +88,11 @@ const int kOrtVorschlaegeMax = 8;
 /// Leere und entfällt. Unbekannte Namen (Freitext) behalten den Link, weil das
 /// Verzeichnis nicht vollständig sein muss.
 bool kartenlinkSinnvoll(String standort, List<OrtEintrag> orte) {
-  final name = suchFaltung(bereinigeStandort(standort));
+  final name = vergleichsSchluessel(bereinigeStandort(standort));
   if (name.isEmpty) return false;
   var bekannt = false;
   for (final ort in orte) {
-    if (suchFaltung(ort.name) != name) continue;
+    if (vergleichsSchluessel(ort.name) != name) continue;
     if (ort.hatKartenlink) return true;
     bekannt = true;
   }

@@ -192,6 +192,33 @@ void main() {
       expect(await hive.lade(), isNull);
     });
 
+    test(
+      'ein neuer Speicherordner öffnet die Box dort, nicht am alten Pfad',
+      () async {
+        await hive.merke(
+          AvesmapsOrtsliste(
+            orte: const <AvesmapsOrt>[
+              AvesmapsOrt(id: 'a', name: 'Gareth', x: 1, y: 2),
+            ],
+            abgerufen: DateTime.utc(2026, 11, 13),
+          ),
+        );
+        final neuerOrdner = await Directory.systemTemp.createTemp(
+          'dsa_avesmaps_orte_neu_',
+        );
+        final neu = HiveAvesmapsOrteSpeicher(speicherPfad: neuerOrdner.path);
+        addTearDown(() async {
+          await neu.close();
+          if (await neuerOrdner.exists()) {
+            await neuerOrdner.delete(recursive: true);
+          }
+        });
+        // Der alte Speicher wurde nicht geschlossen; der neue liest trotzdem
+        // aus seinem eigenen, leeren Ordner.
+        expect(await neu.lade(), isNull);
+      },
+    );
+
     test('legt die Liste ab und liest sie nach dem Schließen wieder', () async {
       await hive.merke(
         AvesmapsOrtsliste(

@@ -47,7 +47,7 @@ Future<HeroAdvancementEntry?> showAdvancementSpecializationDialog({
     context: context,
     bezeichnung: option.label,
     vorgeschlageneApKosten: option.apCost,
-    kostenHinweis: option.complexityHint,
+    kostenHinweis: option.erwerbsHinweis(option.complexityHint),
     verfuegbareAp: session.preview.apAvailable,
     episch: session.preview.isEpisch,
     lehrmeisterUeblich: true,

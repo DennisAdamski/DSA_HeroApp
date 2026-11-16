@@ -488,6 +488,26 @@ void main() {
       isEmpty,
     );
   });
+  test('Gutes und Eidetisches Gedächtnis verbilligen die Ritualkenntnis '
+      '(WdH S. 251 und 253)', () {
+    int kosten(String vorteile) => resolveMagicKnowledge(
+      AdvancementContext(
+        hero: magical.copyWith(
+          vorteileText: vorteile,
+          ritualKnowledge: {
+            'gildenmagier': const HeroRitualKnowledge(name: 'Gildenmagie'),
+          },
+        ),
+        catalog: catalog,
+      ),
+      AdvancementKind.ritualKnowledge,
+      'gildenmagier',
+      {'targetValue': '8'},
+    )!.apCost!;
+    final voll = kosten('Vollzauberer');
+    expect(kosten('Vollzauberer; Gutes Gedächtnis I'), (voll * 3 / 4).round());
+    expect(kosten('Vollzauberer; Eidetisches Gedächtnis'), (voll / 2).round());
+  });
   test('book confirmation alone cannot claim a teacher discount', () {
     final base = magical.copyWith(
       ritualKnowledge: {

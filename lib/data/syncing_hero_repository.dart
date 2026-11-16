@@ -25,6 +25,11 @@ import 'package:dsa_heldenverwaltung/domain/sync_zusammenfuehrung.dart';
 part 'syncing_hero_repository_vorgang.dart';
 part 'syncing_hero_repository_zusammenfuehrung.dart';
 
+/// Wie lange ein Tombstone online bleibt, bevor der Abgleich ihn entfernt
+/// (SYNC-11). Ein Gerät, das länger offline war, lädt einen dort noch
+/// vorhandenen Helden danach wieder hoch.
+const Duration kTombstoneAufbewahrung = Duration(days: 180);
+
 /// HeroRepository-Dekorator mit accountgebundenem Remote-Sync.
 ///
 /// Die UI liest und schreibt weiterhin gegen die lokale Repository-Abstraktion.
@@ -47,7 +52,9 @@ class SyncingHeroRepository
     SyncBasisStore? basisStore,
     Vorgangsjournal? journal,
     bool startRemoteListener = true,
-  }) : offlineReviewStore =
+    DateTime Function()? uhr,
+  }) : _uhr = uhr ?? DateTime.now,
+       offlineReviewStore =
            offlineReviewStore ?? InMemoryOfflineHeroReviewStore(),
        basisStore = basisStore ?? SpeicherSyncBasisStore(),
        journal = journal ?? SpeicherVorgangsjournal() {
@@ -69,6 +76,9 @@ class SyncingHeroRepository
 
   /// Lokales, offline-faehiges Repository.
   final HeroRepository local;
+
+  // Uhr für die Aufbewahrungsfrist der Tombstones; in Tests ersetzbar.
+  final DateTime Function() _uhr;
 
   /// Remote-Gateway fuer private Kontodaten.
   final RemoteHeroSyncGateway remote;
@@ -649,7 +659,51 @@ class SyncingHeroRepository
       }
     }
     _reportApplyFailures('Helden', gescheitert);
+    await _entferneAlteTombstones(<(String, String, DateTime?, bool)>[
+      for (final r in records) (r.id, r.revision, r.updatedAt, r.isDeleted),
+    ], zustand: false);
     return applyFailures + gescheitert.length;
+  }
+
+  /// Entfernt online Tombstones, die älter als [kTombstoneAufbewahrung] sind
+  /// (SYNC-11), samt ihren lokalen Sync-Metadaten.
+  ///
+  /// Nur, wenn hier kein Held mit der ID liegt und keine Entscheidung offen
+  /// ist; das Gateway löscht nur den unveränderten Tombstone. Ein Gerät, das
+  /// länger offline war und den Helden noch hat, lädt ihn danach wieder hoch.
+  /// Ein Fehlschlag stört den Abgleich nicht: Der nächste versucht es erneut.
+  Future<void> _entferneAlteTombstones(
+    List<(String, String, DateTime?, bool)> eintraege, {
+    required bool zustand,
+  }) async {
+    final bereinigung = remote;
+    if (bereinigung is! RemoteTombstoneBereinigung) return;
+    final grenze = _uhr().toUtc().subtract(kTombstoneAufbewahrung);
+    for (final (id, revision, geaendert, geloescht) in eintraege) {
+      if (!geloescht || geaendert == null || !geaendert.isBefore(grenze)) {
+        continue;
+      }
+      if (_istGesperrt(id) || _hasOpenHeroConflict(id)) continue;
+      try {
+        if (await local.loadHeroById(id) != null) continue;
+        final tombstones = bereinigung as RemoteTombstoneBereinigung;
+        if (zustand) {
+          await tombstones.entferneZustandsTombstone(id, revision: revision);
+        } else {
+          await tombstones.entferneHeldenTombstone(id, revision: revision);
+        }
+        final key = zustand ? _stateKey(id) : _heroKey(id);
+        await metadataStore.delete(key);
+        await basisStore.vergiss(key);
+      } on Object catch (error, stackTrace) {
+        _meldeEinzelfehler(
+          zustand ? 'Zustands-Tombstone' : 'Helden-Tombstone',
+          id,
+          error,
+          stackTrace,
+        );
+      }
+    }
   }
 
   Future<int> _syncHeroStates() async {
@@ -695,6 +749,9 @@ class SyncingHeroRepository
       }
     }
     _reportApplyFailures('Zustands', gescheitert);
+    await _entferneAlteTombstones(<(String, String, DateTime?, bool)>[
+      for (final r in records) (r.heroId, r.revision, r.updatedAt, r.isDeleted),
+    ], zustand: true);
     return applyFailures + gescheitert.length;
   }
 

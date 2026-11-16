@@ -74,7 +74,13 @@ class TestBestand implements KartoBestandsAdapter {
     required String heroId,
     required HeroComputedSnapshot werte,
     bool mitBelastung = true,
-  }) => Text('Zustand $heroId');
+  }) {
+    zustandMitBelastung.add(mitBelastung);
+    return Text('Zustand $heroId');
+  }
+
+  /// Wert von `mitBelastung` je Bau der Zustandskachel.
+  final List<bool> zustandMitBelastung = <bool>[];
 
   @override
   Widget spielEffekte({

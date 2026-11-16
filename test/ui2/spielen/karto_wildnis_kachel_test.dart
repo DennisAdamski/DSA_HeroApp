@@ -115,6 +115,7 @@ HeroSheet _held({
 
 void main() {
   Finder k(String schluessel) => find.byKey(ValueKey<String>(schluessel));
+  late FakeRepository repository;
 
   Future<void> zeige(
     WidgetTester tester, {
@@ -124,22 +125,29 @@ void main() {
     double breite = 480,
     double skalierung = 1,
     KraeuterKatalog kraeuter = _kraeuter,
+    int asp = 30,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(breite, 3200);
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
+    final zustand = const HeroState.empty().copyWith(
+      standort: standort,
+      currentAsp: asp,
+    );
     final werte = buildHeroComputedSnapshot(
       hero: held,
-      state: const HeroState.empty().copyWith(standort: standort),
+      state: zustand,
       catalog: testCatalog,
       epicAdvantagesActive: false,
     );
+    repository = FakeRepository(
+      heroes: [held],
+      states: <String, HeroState>{held.id: zustand},
+    );
     final container = ProviderContainer(
       overrides: [
-        heroRepositoryProvider.overrideWithValue(
-          FakeRepository(heroes: [held]),
-        ),
+        heroRepositoryProvider.overrideWithValue(repository),
         rulesCatalogProvider.overrideWith((ref) async => testCatalog),
         ortKatalogProvider.overrideWith((ref) async => _orte),
         kraeuterKatalogProvider.overrideWith((ref) async => kraeuter),
@@ -286,6 +294,51 @@ void main() {
       await tester.tap(k('karto-wildnis-situativ-plus'));
       await tester.pumpAndSettle();
       expect(zusammenfassung(), 'TaW 9 · Erschwernis −3');
+    });
+
+    testWidgets('ohne AsP gibt es keinen AsP-Einsatz', (tester) async {
+      await zeige(tester, held: _held(), asp: 0);
+      expect(k('karto-wildnis-asp-plus'), findsNothing);
+      expect(zusammenfassung(), 'TaW 9 · Erschwernis −2');
+    });
+
+    testWidgets('der AsP-Einsatz endet bei den vorhandenen AsP', (
+      tester,
+    ) async {
+      await zeige(tester, held: _held(), asp: 2);
+      for (var i = 0; i < 5; i++) {
+        await tester.tap(k('karto-wildnis-asp-plus'));
+        await tester.pump();
+      }
+      await tester.pumpAndSettle();
+      // 2 AsP senken die Erschwernis nicht (je 3 um 1).
+      expect(zusammenfassung(), 'TaW 9 · Erschwernis −2');
+      expect(find.textContaining('von 2 AsP'), findsOneWidget);
+    });
+
+    testWidgets('eingesetzte AsP werden beim Würfeln abgebucht', (
+      tester,
+    ) async {
+      final bestand = GefechtsTestBestand()..w20Wert = 5;
+      await zeige(tester, held: _held(), bestand: bestand, asp: 10);
+      for (var i = 0; i < 6; i++) {
+        await tester.tap(k('karto-wildnis-asp-plus'));
+        await tester.pump();
+      }
+      await tester.tap(k('karto-wildnis-wuerfeln'));
+      await tester.pumpAndSettle();
+      expect(bestand.anfragen, hasLength(1));
+      expect((await repository.loadHeroState(_id))!.currentAsp, 4);
+    });
+
+    testWidgets('ohne eingesetzte AsP bleiben die AsP unverändert', (
+      tester,
+    ) async {
+      final bestand = GefechtsTestBestand()..w20Wert = 5;
+      await zeige(tester, held: _held(), bestand: bestand, asp: 10);
+      await tester.tap(k('karto-wildnis-wuerfeln'));
+      await tester.pumpAndSettle();
+      expect((await repository.loadHeroState(_id))!.currentAsp, 10);
     });
 
     testWidgets('zwei Stunden steigern den TaW um die Hälfte', (tester) async {

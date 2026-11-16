@@ -116,10 +116,30 @@ PROTECTED_FIELDS: dict[str, dict[str, str]] = {
     'kraeuter.json': {
         'beschreibung': 'string',
     },
-    # vertrautenmagie_rituale.json wird BEWUSST nicht verschluesselt:
-    # der gleiche Inhalt liegt als Klartext-Preset in
-    # lib/catalog/vertrautenmagie_preset.dart und wird per
-    # vertrautenmagie_preset_test.dart gegen die JSON-Datei abgeglichen.
+    # Alchimika (Wege der Alchimie): Wirkungstexte je Mittel und je
+    # Qualitaetsstufe. Strukturierte Werte (Wuerfel, Eigenschaften) bleiben
+    # Klartext. `a[].b` meint das Feld b in jedem Element der Liste a.
+    'alchimika.json': {
+        'wirkung': 'string',
+        'qualitaeten[].wirkung': 'string',
+    },
+    # Vertrautenmagie (Liber Cantiones Deluxe S. 325 ff.): Wirkung und Technik.
+    # lib/catalog/vertrautenmagie_preset.dart spiegelt die JSON-Datei samt
+    # Chiffretext (vertrautenmagie_preset_test.dart gleicht beide ab); nach
+    # einer Aenderung tool/sync_vertrautenmagie_preset.py ausfuehren.
+    'vertrautenmagie_rituale.json': {
+        'wirkung': 'string',
+        'technik': 'string',
+    },
+}
+
+# Eingebaute Hausregel-Pakete (`packs/<id>/manifest.json`): geschuetzte Felder
+# in `patches[].addEntries[]` und `patches[].setFields`.
+PACK_MANIFEST_GLOB = 'packs/*/manifest.json'
+PROTECTED_PACK_FIELDS: dict[str, str] = {
+    'erklarung_lang': 'string',
+    'wirkung': 'string',
+    'variants': 'list',
 }
 
 
@@ -360,10 +380,37 @@ def verify_password_v3(catalog_dir: Path, key: bytes) -> bool:
             if not isinstance(entry, dict):
                 continue
             for field_name in fields:
-                value = entry.get(field_name)
-                if is_encrypted(value) and value.startswith(ENCRYPTED_PREFIX + V3_MARKER):
-                    return decrypt_value_v3(value, key) is not None
+                for container, name in _field_targets(entry, field_name):
+                    value = container.get(name)
+                    if is_encrypted(value) and value.startswith(ENCRYPTED_PREFIX + V3_MARKER):
+                        return decrypt_value_v3(value, key) is not None
     return True
+
+
+def _field_targets(entry: dict, field_name: str) -> list[tuple[dict, str]]:
+    """(Container, Feldname)-Paare fuer [field_name], auch `liste[].feld`."""
+    if '[].' not in field_name:
+        return [(entry, field_name)]
+    list_key, rest = field_name.split('[].', 1)
+    targets: list[tuple[dict, str]] = []
+    for item in entry.get(list_key) or []:
+        if isinstance(item, dict):
+            targets.extend(_field_targets(item, rest))
+    return targets
+
+
+def pack_entries(data) -> list | None:
+    """Eintraege eines Paket-Manifests: addEntries und setFields aller Patches."""
+    if not isinstance(data, dict) or not isinstance(data.get('patches'), list):
+        return None
+    entries: list = []
+    for patch in data['patches']:
+        if not isinstance(patch, dict):
+            continue
+        entries.extend(e for e in patch.get('addEntries') or [] if isinstance(e, dict))
+        if isinstance(patch.get('setFields'), dict):
+            entries.append(patch['setFields'])
+    return entries
 
 
 # --- Datei-Verarbeitung ---
@@ -390,6 +437,7 @@ def process_file(
     decrypt_mode: bool,
     fmt: str,
     migrate_password: str | None = None,
+    entries_of=None,
 ) -> int:
     """Verarbeitet eine einzelne JSON-Datei. Gibt die Anzahl geaenderter Felder zurueck.
 
@@ -400,89 +448,96 @@ def process_file(
         data = json.load(f)
 
     # Eintraege ermitteln: Top-Level-Array oder verschachtelte Liste.
-    entries = catalog_entries(data)
+    entries = (entries_of or catalog_entries)(data)
     if entries is None:
         print(f'  Warnung: {file_path.name} hat kein bekanntes Format, uebersprungen.', file=sys.stderr)
         return 0
 
-    changed = 0
-    for entry in entries:
-        if not isinstance(entry, dict):
-            continue
-        for field_name, field_type in fields.items():
-            value = entry.get(field_name)
-            if value is None:
-                continue
+    targets = [
+        (container, name, field_type)
+        for entry in entries
+        if isinstance(entry, dict)
+        for field_name, field_type in fields.items()
+        for container, name in _field_targets(entry, field_name)
+    ]
 
-            if decrypt_mode:
-                if field_type == 'string' and is_encrypted(value):
-                    result = decrypt_value(value, key)
-                    if result is not None:
-                        entry[field_name] = result
+    changed = 0
+    for entry, field_name, field_type in targets:
+        value = entry.get(field_name)
+        if value is None:
+            continue
+
+        if decrypt_mode:
+            if field_type == 'string' and is_encrypted(value):
+                result = decrypt_value(value, key)
+                if result is not None:
+                    entry[field_name] = result
+                    changed += 1
+                else:
+                    print(
+                        f'  Warnung: Entschluesselung fehlgeschlagen fuer '
+                        f'{entry.get("id", entry.get("name", "?"))}:{field_name}',
+                        file=sys.stderr,
+                    )
+            elif field_type == 'list' and is_encrypted(value):
+                result = decrypt_value(value, key)
+                if result is not None:
+                    try:
+                        entry[field_name] = json.loads(result)
                         changed += 1
-                    else:
+                    except json.JSONDecodeError:
                         print(
-                            f'  Warnung: Entschluesselung fehlgeschlagen fuer '
+                            f'  Warnung: JSON-Parse fehlgeschlagen fuer '
                             f'{entry.get("id", entry.get("name", "?"))}:{field_name}',
                             file=sys.stderr,
                         )
-                elif field_type == 'list' and is_encrypted(value):
-                    result = decrypt_value(value, key)
-                    if result is not None:
-                        try:
-                            entry[field_name] = json.loads(result)
-                            changed += 1
-                        except json.JSONDecodeError:
-                            print(
-                                f'  Warnung: JSON-Parse fehlgeschlagen fuer '
-                                f'{entry.get("id", entry.get("name", "?"))}:{field_name}',
-                                file=sys.stderr,
-                            )
-                    else:
+                else:
+                    print(
+                        f'  Warnung: Entschluesselung fehlgeschlagen fuer '
+                        f'{entry.get("id", entry.get("name", "?"))}:{field_name}',
+                        file=sys.stderr,
+                    )
+        else:
+            # Migrationspfad: bestehenden enc:-Wert mit altem Format
+            # entschluesseln, dann im Zielformat re-encrypten.
+            if migrate_password and is_encrypted(value):
+                plain = decrypt_value(value, key, password=migrate_password)
+                if plain is None:
+                    print(
+                        f'  Warnung: Migration fehlgeschlagen fuer '
+                        f'{entry.get("id", entry.get("name", "?"))}:{field_name}',
+                        file=sys.stderr,
+                    )
+                    continue
+                if field_type == 'list':
+                    try:
+                        json.loads(plain)  # validate JSON
+                    except json.JSONDecodeError:
                         print(
-                            f'  Warnung: Entschluesselung fehlgeschlagen fuer '
-                            f'{entry.get("id", entry.get("name", "?"))}:{field_name}',
-                            file=sys.stderr,
-                        )
-            else:
-                # Migrationspfad: bestehenden enc:-Wert mit altem Format
-                # entschluesseln, dann im Zielformat re-encrypten.
-                if migrate_password and is_encrypted(value):
-                    plain = decrypt_value(value, key, password=migrate_password)
-                    if plain is None:
-                        print(
-                            f'  Warnung: Migration fehlgeschlagen fuer '
+                            f'  Warnung: Re-Encrypt-JSON ungueltig fuer '
                             f'{entry.get("id", entry.get("name", "?"))}:{field_name}',
                             file=sys.stderr,
                         )
                         continue
-                    if field_type == 'list':
-                        try:
-                            json.loads(plain)  # validate JSON
-                        except json.JSONDecodeError:
-                            print(
-                                f'  Warnung: Re-Encrypt-JSON ungueltig fuer '
-                                f'{entry.get("id", entry.get("name", "?"))}:{field_name}',
-                                file=sys.stderr,
-                            )
-                            continue
-                    entry[field_name] = encrypt_value(plain, key, fmt)
+                entry[field_name] = encrypt_value(plain, key, fmt)
+                changed += 1
+                continue
+
+            if field_type == 'string' and isinstance(value, str) and not is_encrypted(value):
+                if value.strip():
+                    entry[field_name] = encrypt_value(value, key, fmt)
                     changed += 1
-                    continue
+            elif field_type == 'list' and isinstance(value, list):
+                if value:
+                    json_str = json.dumps(value, ensure_ascii=False)
+                    entry[field_name] = encrypt_value(json_str, key, fmt)
+                    changed += 1
 
-                if field_type == 'string' and isinstance(value, str) and not is_encrypted(value):
-                    if value.strip():
-                        entry[field_name] = encrypt_value(value, key, fmt)
-                        changed += 1
-                elif field_type == 'list' and isinstance(value, list):
-                    if value:
-                        json_str = json.dumps(value, ensure_ascii=False)
-                        entry[field_name] = encrypt_value(json_str, key, fmt)
-                        changed += 1
-
-    with open(file_path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-        f.write('\n')
+    # Unveraenderte Dateien behalten ihre Formatierung.
+    if changed:
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+            f.write('\n')
 
     return changed
 
@@ -577,6 +632,20 @@ def main():
             migrate_password=args.password if args.migrate else None,
         )
         print(f'  {filename}: {count} Felder geaendert.')
+        total_changed += count
+
+    for file_path in sorted(catalog_dir.glob(PACK_MANIFEST_GLOB)):
+        count = process_file(
+            file_path,
+            PROTECTED_PACK_FIELDS,
+            key,
+            args.decrypt,
+            args.format,
+            migrate_password=args.password if args.migrate else None,
+            entries_of=pack_entries,
+        )
+        relative = file_path.relative_to(catalog_dir).as_posix()
+        print(f'  {relative}: {count} Felder geaendert.')
         total_changed += count
 
     print(f'Fertig. {total_changed} Felder insgesamt geaendert.')

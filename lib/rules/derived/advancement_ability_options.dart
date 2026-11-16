@@ -77,7 +77,20 @@ AdvancementOption? _abilityOption(
       eigeneKultur: def.name == 'Kulturkunde' ? hero.background.kultur : '',
     );
   }
+  // Gutes/Eidetisches Gedächtnis verbilligen eine feste Liste von SF
+  // (WdH S. 251 und 253); der Vorschlag rechnet den Faktor schon ein.
+  final faktoren = istGedaechtnisSonderfertigkeit(id: def.id, name: def.name)
+      ? lernkostenFaktoren(
+          hero,
+          LernzielArt.sonderfertigkeit,
+          catalog: context.catalog,
+        )
+      : const <LernkostenFaktor>[];
+  if (cost != null && cost > 0) {
+    cost = wendeLernkostenFaktorenAn(cost, faktoren);
+  }
   return AdvancementOption(
+    lernregeln: Lernregeln(faktoren: faktoren),
     kind: kind,
     targetId: id,
     label: name,

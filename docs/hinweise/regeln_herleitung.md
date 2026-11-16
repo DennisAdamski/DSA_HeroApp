@@ -51,7 +51,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Zaubern: `zauber_lernspalte_rules.dart` (Hauszauber, Merkmalskenntnis,
   Begabung, Unfähigkeit, fremde Repräsentation je Paar, Gegenelement,
   Hexalogie nach `hexalogie_katalog.dart`); Gedächtnis-Vorteile als
-  Kostenfaktor in `lernkosten_faktor_rules.dart`; beides reist als `Lernregeln`
+  Kostenfaktor in `lernkosten_faktor_rules.dart` (auch für die SF-Liste aus
+  WdH S. 251/253 über `istGedaechtnisSonderfertigkeit`; feste SF-Kosten
+  stehen dann schon verbilligt in `apCost`); beides reist als `Lernregeln`
   an der `AdvancementOption`. Ein Lehrmeister gilt nur für Talente und Zauber,
   bis Stufe + 3. Die Oberfläche
   zeigt sie an und rechnet **nie** selbst Modifikatoren

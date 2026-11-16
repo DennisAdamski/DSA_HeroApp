@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -41,6 +42,123 @@ void main() {
       idTokenProvider: tokenProvider ?? () async => 'token-1',
     );
   }
+
+  group('Beobachtung per Abfrage (SYNC-11)', () {
+    String antwort(String lesezeit) => jsonEncode(<Map<String, dynamic>>[
+      <String, dynamic>{'readTime': lesezeit},
+    ]);
+
+    test(
+      'erst alles, dann nur Geändertes seit der Serverzeit minus Rand',
+      () async {
+        final abfragen = <Map<String, dynamic>>[];
+        final client = MockClient((request) async {
+          expect(request.method, 'POST');
+          expect(
+            request.url.path,
+            '/v1/projects/test-project/databases/(default)/documents/'
+            'users/user-1:runQuery',
+          );
+          abfragen.add(jsonDecode(request.body) as Map<String, dynamic>);
+          return http.Response(antwort('2026-11-16T10:00:00Z'), 200);
+        });
+        final abo = RestFirestoreHeroSyncGateway(
+          userId: 'user-1',
+          projectId: 'test-project',
+          httpClient: client,
+          idTokenProvider: () async => 'token-1',
+          pollInterval: const Duration(milliseconds: 5),
+          vollabgleichAlle: const Duration(hours: 1),
+          ueberlappung: const Duration(minutes: 5),
+        ).watchHeroes().listen((_) {});
+        await Future<void>.delayed(const Duration(milliseconds: 40));
+        await abo.cancel();
+
+        expect(abfragen.length, greaterThan(1));
+        final erste = abfragen.first['structuredQuery'] as Map<String, dynamic>;
+        expect(erste.containsKey('where'), isFalse);
+        expect(erste['from'], [
+          {'collectionId': 'heroes'},
+        ]);
+        final zweite = abfragen[1]['structuredQuery'] as Map<String, dynamic>;
+        final filter = (zweite['where'] as Map)['fieldFilter'] as Map;
+        expect(filter['field'], {'fieldPath': 'lastModified'});
+        expect(filter['op'], 'GREATER_THAN_OR_EQUAL');
+        expect(
+          DateTime.parse((filter['value'] as Map)['timestampValue']),
+          DateTime.utc(2026, 11, 16, 9, 55),
+        );
+      },
+    );
+
+    test('ruht, solange die App nicht sichtbar ist', () async {
+      var abfragen = 0;
+      final client = MockClient((request) async {
+        abfragen++;
+        return http.Response(antwort('2026-11-16T10:00:00Z'), 200);
+      });
+      final sichtbar = ValueNotifier<bool>(false);
+      final abo = RestFirestoreHeroSyncGateway(
+        userId: 'user-1',
+        projectId: 'test-project',
+        httpClient: client,
+        idTokenProvider: () async => 'token-1',
+        pollInterval: const Duration(milliseconds: 5),
+        aktiv: sichtbar,
+      ).watchHeroStates().listen((_) {});
+      await Future<void>.delayed(const Duration(milliseconds: 40));
+      expect(abfragen, 1);
+
+      sichtbar.value = true;
+      await Future<void>.delayed(const Duration(milliseconds: 40));
+      await abo.cancel();
+      expect(abfragen, greaterThan(1));
+    });
+
+    Map<String, dynamic> tombstoneDokument(String revision) =>
+        <String, dynamic>{
+          'name':
+              'projects/test-project/databases/(default)/documents/'
+              'users/user-1/heroes/h-1',
+          'updateTime': '2026-01-01T12:00:00Z',
+          'fields': <String, dynamic>{
+            'deleted': {'booleanValue': true},
+            'revision': {'stringValue': revision},
+            'lastModified': {'timestampValue': '2026-01-01T12:00:00Z'},
+          },
+        };
+
+    test('entfernt einen unveränderten Tombstone mit Vorbedingung', () async {
+      final requests = <http.Request>[];
+      final client = MockClient((request) async {
+        requests.add(request);
+        if (request.method == 'GET') {
+          return http.Response(jsonEncode(tombstoneDokument('r-7')), 200);
+        }
+        return http.Response('{}', 200);
+      });
+      await gateway(client: client)
+          .entferneHeldenTombstone('h-1', revision: 'r-7');
+
+      final loeschen = requests.singleWhere((r) => r.method == 'DELETE');
+      expect(
+        loeschen.url.queryParameters['currentDocument.updateTime'],
+        '2026-01-01T12:00:00.000Z',
+      );
+    });
+
+    test('lässt einen geänderten Tombstone stehen', () async {
+      final requests = <http.Request>[];
+      final client = MockClient((request) async {
+        requests.add(request);
+        return http.Response(jsonEncode(tombstoneDokument('r-8')), 200);
+      });
+      await gateway(client: client)
+          .entferneHeldenTombstone('h-1', revision: 'r-7');
+
+      expect(requests.where((r) => r.method == 'DELETE'), isEmpty);
+    });
+  });
 
   group('RestFirestoreHeroSyncGateway', () {
     test('watchHeroes überlebt einen Fehlschlag des ersten Abrufs '

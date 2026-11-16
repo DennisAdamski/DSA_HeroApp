@@ -37,6 +37,12 @@ class HiveAvesmapsOrteSpeicher implements AvesmapsOrteSpeicher {
       final box = await vorhanden;
       if (box.isOpen) return box;
     }
+    // Der Boxname ist fest: Hive gäbe sonst die noch am alten Pfad geöffnete
+    // Box eines früheren Speichers zurück (etwa nach einem Wechsel des
+    // Speicherordners) und Lesen wie Schreiben liefen weiter im alten Ordner.
+    if (Hive.isBoxOpen(_boxName)) {
+      await Hive.box<String>(_boxName).close();
+    }
     final neu = Hive.openBox<String>(_boxName, path: speicherPfad);
     _boxFuture = neu;
     return neu;

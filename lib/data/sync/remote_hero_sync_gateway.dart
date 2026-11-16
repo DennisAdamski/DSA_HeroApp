@@ -87,6 +87,25 @@ abstract class RemoteHeroSyncGateway {
   Stream<List<RemoteHeroRecord>> watchHeroes();
 }
 
+/// Optionaler Remote-Vertrag: alte Tombstones endgueltig entfernen (SYNC-11).
+///
+/// Ein Tombstone wird nur entfernt, wenn das Dokument online noch genau der
+/// Tombstone mit [revision] ist; hat ein anderes Geraet den Helden inzwischen
+/// neu angelegt, bleibt alles unveraendert.
+abstract interface class RemoteTombstoneBereinigung {
+  /// Entfernt den Helden-Tombstone [heroId] in Revision [revision].
+  Future<void> entferneHeldenTombstone(
+    String heroId, {
+    required String revision,
+  });
+
+  /// Entfernt den Zustands-Tombstone [heroId] in Revision [revision].
+  Future<void> entferneZustandsTombstone(
+    String heroId, {
+    required String revision,
+  });
+}
+
 /// Optionaler Remote-Vertrag fuer Heldenzustands-Sync.
 abstract class RemoteHeroStateSyncGateway {
   /// Laedt alle Remote-Zustaende inklusive Tombstones.

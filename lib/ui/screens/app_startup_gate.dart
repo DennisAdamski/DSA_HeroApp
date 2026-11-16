@@ -103,9 +103,21 @@ class _AppStartupGateState extends State<AppStartupGate> {
   String? _currentAuthUid;
   int _loadGeneration = 0;
 
+  /// Ob die App sichtbar ist; die REST-Abfrage (Windows) ruht sonst
+  /// (SYNC-11). Bewusst nie `dispose`d: Eine ruhende Abfrage kann noch an
+  /// ihm lauschen, wenn das Gate schon weg ist.
+  final ValueNotifier<bool> _imVordergrund = ValueNotifier<bool>(true);
+  AppLifecycleListener? _lebenszyklus;
+
   @override
   void initState() {
     super.initState();
+    _lebenszyklus = AppLifecycleListener(
+      onStateChange: (zustand) => _imVordergrund.value =
+          zustand != AppLifecycleState.hidden &&
+          zustand != AppLifecycleState.paused &&
+          zustand != AppLifecycleState.detached,
+    );
     _settings = widget.settingsRepository.load();
     _settingsSubscription = widget.settingsRepository.watch().listen((
       settings,
@@ -137,6 +149,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
 
   @override
   void dispose() {
+    _lebenszyklus?.dispose();
     unawaited(_settingsSubscription?.cancel());
     final syncingRepository = _activeSyncingRepository;
     if (syncingRepository != null) {
@@ -528,6 +541,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
         userId: authUid,
         projectId: _firebaseProjectId,
         idTokenProvider: _currentFirebaseIdToken,
+        aktiv: _imVordergrund,
       );
     }
     return FirestoreHeroSyncGateway(userId: authUid);

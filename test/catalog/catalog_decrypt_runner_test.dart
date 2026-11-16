@@ -7,6 +7,9 @@ import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_decrypt_runner.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
+import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
+import 'package:dsa_heldenverwaltung/catalog/house_rule_pack_decrypt.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
 
 Uint8List _randomSalt([int length = 32]) {
   final rng = Random.secure();
@@ -276,6 +279,106 @@ void main() {
       expect(result.version, 'v42');
       expect(result.source, 'unit-test');
       expect(result.metadata, const <String, dynamic>{'note': 'hello'});
+    });
+  });
+
+  // KAT-01: geschützte Texte außerhalb der Katalogsektionen.
+  group('Alchimika, Pakete und Einzelwerte', () {
+    final salt = _randomSalt();
+    final key = deriveCatalogKey(password: password, salt: salt);
+    String verschluessele(String text) =>
+        encryptCatalogValueV3(plaintext: text, derivedKey: key);
+
+    test('Alchimika-Wirkungen werden im Bulk-Decrypt entschlüsselt', () async {
+      final source = CatalogSourceData(
+        version: 'test',
+        source: 'test',
+        metadata: const <String, dynamic>{},
+        sections: const <CatalogSectionId, List<Map<String, dynamic>>>{},
+        reisebericht: const <Map<String, dynamic>>[],
+        alchimika: <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 'alch_x',
+            'wirkung': verschluessele('Heilt'),
+            'qualitaeten': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'stufe': 'A',
+                'wirkung': verschluessele('Wenig'),
+              },
+            ],
+          },
+        ],
+      );
+
+      final result = await decryptAllCatalogValues(
+        encrypted: source,
+        password: password,
+        globalSaltV3: salt,
+      );
+
+      final mittel = result.alchimika.single;
+      expect(mittel['wirkung'], 'Heilt');
+      expect((mittel['qualitaeten'] as List).single['wirkung'], 'Wenig');
+    });
+
+    test('eingebaute Pakete werden mit dem Schlüssel entschlüsselt', () {
+      final quelle = HouseRulePackSourceSnapshot(
+        packs: <HouseRulePackManifest>[
+          HouseRulePackManifest(
+            id: 'p',
+            title: 'Paket',
+            description: '',
+            isBuiltIn: true,
+            patches: <HouseRulePatch>[
+              HouseRulePatch(
+                section: CatalogSectionId.generalSpecialAbilities,
+                setFields: const <String, dynamic>{},
+                deactivateEntries: false,
+                addEntries: <Map<String, dynamic>>[
+                  <String, dynamic>{
+                    'id': 'sf',
+                    'erklarung_lang': verschluessele('Langtext'),
+                  },
+                ],
+              ),
+            ],
+          ),
+        ],
+      );
+
+      final ohne = entschluesseleHausregelPakete(quelle, schluessel: null);
+      expect(identical(ohne, quelle), isTrue);
+
+      final mit = entschluesseleHausregelPakete(quelle, schluessel: key);
+      final eintrag = mit.packs.single.patches.single.addEntries.single;
+      expect(eintrag['erklarung_lang'], 'Langtext');
+      expect(mit.packs.single.isBuiltIn, isTrue);
+    });
+
+    test('resolveProtectedValue entschlüsselt v3 nur mit Schlüssel', () {
+      final chiffre = verschluessele('Ritualtext');
+      expect(
+        resolveProtectedValue(raw: chiffre, unlocked: true, password: password),
+        isNull,
+      );
+      expect(
+        resolveProtectedValue(
+          raw: chiffre,
+          unlocked: true,
+          password: password,
+          schluessel: key,
+        ),
+        'Ritualtext',
+      );
+      expect(
+        resolveProtectedValue(
+          raw: chiffre,
+          unlocked: false,
+          password: password,
+          schluessel: key,
+        ),
+        isNull,
+      );
     });
   });
 }
