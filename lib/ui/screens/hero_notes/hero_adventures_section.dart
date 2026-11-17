@@ -555,7 +555,7 @@ class _AdventureDateEditor extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final normalizedMonth = usesAventurianMonthPicker
-        ? _normalizeAventurianMonthValue(value.month)
+        ? normalizeAventurianMonth(value.month)
         : value.month;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

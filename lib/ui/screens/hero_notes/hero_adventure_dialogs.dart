@@ -71,7 +71,7 @@ class _AdventureDateDraft {
       dayController = TextEditingController(text: initial.day),
       monthController = null,
       yearController = TextEditingController(text: initial.year),
-      selectedMonth = _normalizeAventurianMonthValue(initial.month);
+      selectedMonth = normalizeAventurianMonth(initial.month);
 
   // Ausgangswert; ueber ihn bleiben unbekannte Felder erhalten.
   final HeroAdventureDateValue _initial;
@@ -1554,10 +1554,6 @@ class _AdventureDialogDateFields extends StatelessWidget {
       ],
     );
   }
-}
-
-String _normalizeAventurianMonthValue(String rawValue) {
-  return normalizeAventurianMonth(rawValue);
 }
 
 String _adventureCompletionTitle(HeroAdventureEntry entry) {

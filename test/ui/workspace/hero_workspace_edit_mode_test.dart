@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -229,12 +228,6 @@ void main() {
 
   double centerDx(WidgetTester tester, Finder finder) {
     return tester.getCenter(finder).dx;
-  }
-
-  RenderParagraph paragraphIn(WidgetTester tester, Finder scope, String text) {
-    return tester.renderObject<RenderParagraph>(
-      find.descendant(of: scope, matching: find.text(text)),
-    );
   }
 
   Finder heroDeckToggleButton() {
@@ -1866,36 +1859,6 @@ void main() {
     expect((rasseNarrow - rasseModNarrow).abs(), greaterThan(4));
   });
 
-  testWidgets(
-    // Veraltet: Inspector hat jetzt einen eigenen TabBar (Vitals/Magie/Rast/Probe);
-    // die alte Annahme "no TabBar im wide workspace" gilt nicht mehr.
-    'wide workspace shows collapsed Helden Deck instead of TabBar',
-    skip: true,
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: [buildHero()],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 10,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
-
-      await openWorkspace(tester, repo, size: const Size(1600, 1200));
-
-      expect(find.text('Helden Deck'), findsNothing);
-      expect(find.byType(TabBar), findsNothing);
-      expect(find.text('Inspector'), findsNothing);
-      expect(find.byTooltip('Vitals'), findsOneWidget);
-      expect(heroDeckToggleButton(), findsOneWidget);
-      expect(find.byTooltip('Helden-Deck einblenden'), findsOneWidget);
-      expect(workspaceDetailsToggleButton(), findsOneWidget);
-    },
-  );
-
   testWidgets('wide workspace inspector opens rest dialog and saves changes', (
     tester,
   ) async {
@@ -1996,83 +1959,6 @@ void main() {
       expect(state, isNotNull);
       expect(state!.ueberanstrengung, 3);
       expect(state.erschoepfung, 0);
-    },
-  );
-
-  testWidgets(
-    // Veraltet: LeP nutzt nun InspectorVitalBlock mit ±5/±1, Belastung
-    // nutzt eigene Row – Spaltenausrichtung greift nicht mehr.
-    'wide workspace inspector keeps vital control columns stable and long labels visible',
-    skip: true,
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: [buildHero(vorteileText: 'AE+1')],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 10,
-            currentKap: 0,
-            currentAu: 10,
-            ueberanstrengung: 1,
-            erschoepfung: 0,
-          ),
-        },
-      );
-
-      await openWorkspace(tester, repo, size: const Size(1600, 1200));
-
-      final ueberanstrengungRow = find.byKey(
-        const ValueKey<String>('workspace-vital-row-ueberanstrengung'),
-      );
-      final erschoepfungRow = find.byKey(
-        const ValueKey<String>('workspace-vital-row-erschoepfung'),
-      );
-
-      expect(
-        paragraphIn(
-          tester,
-          ueberanstrengungRow,
-          'Überanstrengung',
-        ).didExceedMaxLines,
-        isFalse,
-      );
-      expect(
-        paragraphIn(tester, erschoepfungRow, 'Erschöpfung').didExceedMaxLines,
-        isFalse,
-      );
-
-      final lepMinusBefore = centerDx(tester, find.byTooltip('LeP verringern'));
-      final ueberanstrengungMinusBefore = centerDx(
-        tester,
-        tooltipIn(ueberanstrengungRow, 'Überanstrengung verringern'),
-      );
-      final erschoepfungMinusBefore = centerDx(
-        tester,
-        tooltipIn(erschoepfungRow, 'Erschöpfung verringern'),
-      );
-      final erschoepfungPlusBefore = centerDx(
-        tester,
-        tooltipIn(erschoepfungRow, 'Erschöpfung erhöhen'),
-      );
-
-      expect(ueberanstrengungMinusBefore, closeTo(lepMinusBefore, 0.01));
-      expect(erschoepfungMinusBefore, closeTo(lepMinusBefore, 0.01));
-
-      await tester.tap(tooltipIn(erschoepfungRow, 'Erschöpfung erhöhen'));
-      await tester.pumpAndSettle();
-
-      expect(
-        tooltipIn(erschoepfungRow, 'Erschöpfung zurücksetzen'),
-        findsOneWidget,
-      );
-      expect(
-        centerDx(tester, tooltipIn(erschoepfungRow, 'Erschöpfung verringern')),
-        closeTo(erschoepfungMinusBefore, 0.01),
-      );
-      expect(
-        centerDx(tester, tooltipIn(erschoepfungRow, 'Erschöpfung erhöhen')),
-        closeTo(erschoepfungPlusBefore, 0.01),
-      );
     },
   );
 

@@ -21,9 +21,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.da
 //
 // Beleg: Liber Cantiones S. 220 (Ruhe Körper, Ruhe Geist).
 
-/// Zauber-ID von Ruhe Körper, Ruhe Geist.
-const String kRuheKoerperZauberId = 'spell_ruhe_koerper_ruhe_geist';
-
 /// LeP je verschlafener Stunde.
 const int kRuheKoerperLepJeStunde = 2;
 

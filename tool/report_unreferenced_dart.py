@@ -6,9 +6,7 @@ from pathlib import Path
 # Greift bewusst breit auf alle '.dart'-Stringliterale, damit auch
 # conditional imports mit mehreren Pfaden erkannt werden.
 IMPORT_RE = re.compile(r"'([^']+\.dart)'")
-INTENTIONAL_LEGACY_FILES = {
-    Path("lib/rules/derived/mods_rules.dart"),
-}
+INTENTIONAL_LEGACY_FILES: set[Path] = set()
 
 
 def resolve_target(repo_root: Path, source: Path, uri: str) -> Path | None:

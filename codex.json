@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "dsa-rules": {
-      "command": "tool/mcp_dsa_rules/.venv/Scripts/python.exe",
-      "args": ["-m", "dsa_rules_mcp.server"]
-    }
-  }
-}

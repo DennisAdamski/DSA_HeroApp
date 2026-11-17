@@ -535,8 +535,8 @@ Uint8List? _decodeOptionalCatalogSaltV3(
 
 /// Berechnet den absoluten Asset-Pfad relativ zur Manifest-Datei.
 ///
-/// Beispiel: `'assets/catalogs/v1/manifest.json'` + `'talente.json'`
-/// ergibt `'assets/catalogs/v1/talente.json'`.
+/// Beispiel: `'assets/catalogs/house_rules_v1/manifest.json'` + `'talente.json'`
+/// ergibt `'assets/catalogs/house_rules_v1/talente.json'`.
 String _resolveAssetPath(String manifestAssetPath, String relativePath) {
   final baseDir = path.posix.dirname(manifestAssetPath);
   return path.posix.normalize(path.posix.join(baseDir, relativePath));

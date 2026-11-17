@@ -314,7 +314,6 @@ langsamsten Dateien. Die Hive-Tests laufen dabei mit echtem Dateisystem. Automat
 | `test/ui/workspace/wunden_dialog_test.dart` | ui | Wundendialog (Zusammenfassung, Armrollen), SB-Probe gegen Probenwerte, epische Halbierung, Schnellsuche mit gesenkten Werten |
 | `test/rules/bestandshelden_ausruestung_test.dart` | rules | Inventar-Kampf-Abgleich mit gleichnamigen Exemplaren, Befunde B2/B3, Felder neuerer Versionen im Abgleich |
 | `test/ui/combat/hero_combat_tab_test.dart` | ui | Combat-UI-Interaktion/Struktur |
-| `test/ui/combat/hero_combat_talents_tab_test.dart` | ui | Combat-Talents-UI-Validierungsfluss |
 | `test/ui/talents/hero_talents_tab_test.dart` | ui | Talents-UI-Interaktion |
 | `test/ui/workspace/hero_workspace_edit_mode_test.dart` | ui | Workspace-Edit-Flow |
 | `test/ui/workspace/hero_workspace_import_export_test.dart` | ui | Workspace Import/Export UI |

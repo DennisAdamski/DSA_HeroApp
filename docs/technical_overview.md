@@ -1887,7 +1887,7 @@ kann, ohne die Ausgangsdauer zu verlieren.
 **Dateien:** `lib/rules/derived/combat_rules.dart`,
 `lib/rules/derived/fernkampf_rules.dart`,
 `lib/rules/derived/fernkampf_ladezeit_rules.dart`,
-`lib/rules/derived/combat_mastery_rules.dart`,
+`lib/rules/derived/waffenmeister_rules.dart`,
 `lib/rules/derived/maneuver_rules.dart`,
 `lib/rules/derived/two_weapon_combat_rules.dart`
 
@@ -1953,7 +1953,7 @@ Dabei gilt:
   (`AT/PA -9`, `-6`, `-3` oder `0`) sowie die verfuegbaren
   beidhÃ¤ndigen Aktionsoptionen fuer zweite Waffe, Parierwaffe und
   `Doppelangriff` ab.
-- `combat_mastery_rules.dart` bewertet Punktbudget und Voraussetzungen,
+- `waffenmeister_rules.dart` bewertet Punktbudget und Voraussetzungen,
   prueft die Anwendbarkeit fuer Hauptwaffe, Schild oder Parierwaffe und leitet
   automatisch wirksame Modifikatoren fuer die Kampfvorschau ab.
 - `unarmed_style_rules.dart` wertet aktive waffenlose Kampfstile aus dem
@@ -3166,8 +3166,8 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   (`lib/rules/derived/epic_main_attribute_rules.dart`), das bewusst
   unabhaengig von Hausregel-Schaltern und `isEpisch` arbeitet.
 - `showSteigerungsDialog` reicht das ueber `istHaupteigenschaft` durch;
-  gesetzt wird es nur in `_steigeEigenschaft`
-  (`hero_overview_raise_actions.dart`). Talente und Zauber behalten den
+  gesetzt wird es nur in
+  `advancement_catalog_actions.dart`. Talente und Zauber behalten den
   Aufschlag. Der Dialog zeigt statt der Aufschlagszeile den Hinweis
   „Haupteigenschaft — kein epischer Aufschlag".
 - **Epischer Status ist korrigierbar.** `EpicActivationDialog` hat einen
@@ -3386,7 +3386,7 @@ ueber die Settings-Katalogverwaltung bearbeitet.
 - `HeroNotesTab` gliedert den Bereich jetzt in `Chroniken`, `Kontakte` und
   `Abenteuer`; der bestehende Reisebericht bleibt fachlich und technisch
   separat.
-- `hero_overview_raise_actions.dart` uebergibt Abenteuer-SE fuer
+- `advancement_catalog_actions.dart` uebergibt Abenteuer-SE fuer
   Eigenschaften und Grundwerte an den gemeinsamen Steigerungsdialog und zieht
   verbrauchte SE aus den persistierten Pools ab.
 
