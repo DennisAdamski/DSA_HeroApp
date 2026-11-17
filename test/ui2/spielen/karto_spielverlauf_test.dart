@@ -10,7 +10,9 @@ import 'package:dsa_heldenverwaltung/rules/derived/schaden_ruecknahme_rules.dart
 import 'package:dsa_heldenverwaltung/rules/derived/schaden_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../../test_support/fake_repository.dart';
+
 import 'package:dsa_heldenverwaltung/ui/bridges/karto_bestands_adapter_impl.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';

@@ -16,7 +16,9 @@ import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart'
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../../test_support/fake_repository.dart';
+
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wunden_detail_dialog.dart';
 

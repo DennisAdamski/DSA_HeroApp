@@ -12,7 +12,8 @@ import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_spiel_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/rest_outcome_rules.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../test_support/fake_repository.dart';
 
 import '../test_support/hero_fixtures.dart';
 

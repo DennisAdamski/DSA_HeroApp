@@ -4,7 +4,8 @@ import 'package:dsa_heldenverwaltung/ablaeufe/auxiliator_einsetzen.dart';
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_matrix_rules.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../test_support/fake_repository.dart';
 
 final _jetzt = DateTime.utc(2026, 10, 11, 20);
 

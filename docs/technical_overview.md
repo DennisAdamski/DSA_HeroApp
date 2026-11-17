@@ -207,7 +207,7 @@ Workspace-Header und das Gruppen-Thumbnail. Vollansichten wie die Uebersicht
   stauchen. `HeroActions` holt den Befund dafuer direkt beim Service, nicht
   ueber `ref.read(provider.future)`.
 - In Widget-Tests `avatarGesichtServiceProvider` mit
-  `festerAvatarGesichtService()` (`lib/test_support/`) ueberschreiben: Die
+  `festerAvatarGesichtService()` (`test/test_support/`) ueberschreiben: Die
   echte Erkennung rechnet in einem Isolate, das im Fake-Async nie fertig wird.
 
 Seit 2026-08-08 gilt beim Startabgleich zusaetzlich: Sind lokale und
@@ -1885,7 +1885,7 @@ kann, ohne die Ausgangsdauer zu verlieren.
 ### 4.6 Waffe, Fernkampf-AT, Schaden und Kampfmeisterschaften
 
 **Dateien:** `lib/rules/derived/combat_rules.dart`,
-`lib/rules/derived/fernkampf_rules.dart`,
+`lib/rules/derived/kampf_herleitung_rules.dart`,
 `lib/rules/derived/fernkampf_ladezeit_rules.dart`,
 `lib/rules/derived/waffenmeister_rules.dart`,
 `lib/rules/derived/maneuver_rules.dart`,

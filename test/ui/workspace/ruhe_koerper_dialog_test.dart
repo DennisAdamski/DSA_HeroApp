@@ -9,7 +9,9 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../../test_support/fake_repository.dart';
+
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/heilung/ruhe_koerper_dialog.dart';
 
 const _held = HeroSheet(

@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:dsa_heldenverwaltung/data/sync/in_memory_sync_metadata_store.dart';
+import '../test_support/in_memory_sync_metadata_store.dart';
+
 import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/sync/sync_basis_store.dart';
 import 'package:dsa_heldenverwaltung/data/syncing_hero_repository.dart';

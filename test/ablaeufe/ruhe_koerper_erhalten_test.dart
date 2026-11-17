@@ -4,7 +4,8 @@ import 'package:dsa_heldenverwaltung/ablaeufe/ruhe_koerper_erhalten.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_rest_rules.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../test_support/fake_repository.dart';
 
 import '../test_support/hero_fixtures.dart';
 

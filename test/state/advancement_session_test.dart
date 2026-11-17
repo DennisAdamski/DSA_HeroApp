@@ -9,7 +9,8 @@ import 'package:dsa_heldenverwaltung/rules/derived/advancement_options.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../test_support/fake_repository.dart';
 
 const _catalog = RulesCatalog(
   version: 'test',

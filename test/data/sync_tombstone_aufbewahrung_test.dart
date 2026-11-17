@@ -1,11 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:dsa_heldenverwaltung/data/sync/in_memory_sync_metadata_store.dart';
+import '../test_support/in_memory_sync_metadata_store.dart';
+
 import 'package:dsa_heldenverwaltung/data/syncing_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../test_support/fake_repository.dart';
 
 import '../test_support/fake_remote_hero_sync_gateway.dart';
 

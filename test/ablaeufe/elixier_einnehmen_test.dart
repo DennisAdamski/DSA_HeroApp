@@ -5,7 +5,8 @@ import 'package:dsa_heldenverwaltung/catalog/alchimikum_def.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/alchimika_elixier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../test_support/fake_repository.dart';
 
 final _jetzt = DateTime.utc(2026, 10, 16, 9);
 

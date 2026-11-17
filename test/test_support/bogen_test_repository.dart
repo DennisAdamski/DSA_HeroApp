@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import 'fake_repository.dart';
 
 /// Test-Repository für die frischen Schreibwege des Bogens (ARCH-05).
 ///

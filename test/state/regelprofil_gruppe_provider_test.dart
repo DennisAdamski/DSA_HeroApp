@@ -22,7 +22,8 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/regelprofil_gruppe_providers.dart';
 import 'package:dsa_heldenverwaltung/state/regelprofil_vorschau_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../test_support/fake_repository.dart';
 
 import '../test_support/hero_fixtures.dart';
 import '../test_support/real_catalog.dart';

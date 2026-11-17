@@ -244,6 +244,7 @@ jobs:
             tool/test_flutter_test_shards.py \
             tool/test_import_wiki_ortsfakten.py \
             tool/test_rule_test_evidence.py \
+            tool/test_security_config.py \
             tool/test_summarize_flutter_tests.py
           python tool/check_rule_test_evidence.py
 

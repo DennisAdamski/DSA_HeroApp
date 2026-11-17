@@ -10,7 +10,6 @@ import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ausweichen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/fernkampf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampf_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
@@ -62,6 +61,30 @@ HeroSheet _held({
     vorteileText: '',
     nachteileText: '',
   );
+}
+
+/// Referenzsumme des Fernkampf-AT-Werts (früher `fernkampf_rules.dart`); die
+/// Herleitung muss genau diese Summanden ausweisen.
+int computeRangedAtValue({
+  required int rangedAtBase,
+  required int talentAtValue,
+  required int weaponAtMod,
+  required int ebeAttackPart,
+  required int specializationBonus,
+  required int projectileAtMod,
+  required int manualAtMod,
+  int waffenmeisterAtBonus = 0,
+  int zauberMalus = 0,
+}) {
+  return rangedAtBase +
+      talentAtValue +
+      weaponAtMod +
+      waffenmeisterAtBonus +
+      ebeAttackPart +
+      specializationBonus +
+      projectileAtMod +
+      manualAtMod +
+      zauberMalus;
 }
 
 HerleitungsSchritt _schritt(Herleitung h, String bezeichnung) =>

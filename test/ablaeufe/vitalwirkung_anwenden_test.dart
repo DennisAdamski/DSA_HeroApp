@@ -7,7 +7,8 @@ import 'package:dsa_heldenverwaltung/domain/vitalwirkung.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/zustands_buchung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/vitalwirkung_rules.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../test_support/fake_repository.dart';
 
 final _jetzt = DateTime.utc(2026, 10, 15, 20);
 

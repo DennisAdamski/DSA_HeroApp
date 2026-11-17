@@ -5,7 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/data/auth_service.dart';
 import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../../test_support/fake_repository.dart';
+
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_shell.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
