@@ -17,6 +17,7 @@ import 'gefecht_gegner.dart';
 import 'gefecht_initiative.dart';
 import 'gefecht_beenden.dart';
 import 'gefecht_reserve.dart';
+import 'gefecht_zauberwirkungen.dart';
 import 'gefecht_patzer.dart';
 import 'gefecht_klingen.dart';
 
@@ -248,7 +249,14 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                               angriff: angriff,
                               verteidigung: verteidigung,
                               manoever: manoever,
-                              magie: magie,
+                              magie: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  magie,
+                                  const SizedBox(height: 16),
+                                  _zauberwirkungen(),
+                                ],
+                              ),
                               weitere: [
                                 _weitere(s, snapshot, katalog),
                                 GefechtReservekarte(

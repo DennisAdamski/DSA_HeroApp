@@ -31,6 +31,9 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_begleiter_tab.dart'
     show zeigeVertrautenAktionen;
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/begleiter_zustand_aendern.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/spell_instance_aktionen.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_event_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_protection_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_arcane_effects_block.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_attribute_probes.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_combat_probes.dart';
@@ -225,6 +228,57 @@ class KartoBestandsAdapterImpl
       zauberkostenGebucht: true,
     ),
   );
+
+  /// Bedient eine Zauberwirkung mit denselben Eingaben wie der Effektedialog.
+  @override
+  Future<void> gefechtsWirkung({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required GefechtsWirkungAktion aktion,
+    String? instanzId,
+  }) => _withKartoCompatContext(context, (themedContext) async {
+    final aktionen = SpellInstanceAktionen(
+      context: themedContext,
+      ref: ref,
+      heroId: heroId,
+      // Fehler erscheinen im Bereich der Gefechtsansicht, nicht im Dialog.
+      aendere: (aenderung) => aendereZustandMitMeldung(
+        context: context,
+        ref: ref,
+        heroId: heroId,
+        was: 'Zaubereffekt',
+        aenderung: aenderung,
+      ),
+    );
+    final katalog = ref.read(heroRulesCatalogProvider(heroId)).asData?.value;
+    switch (aktion) {
+      case GefechtsWirkungAktion.zauberHinzufuegen:
+        if (katalog != null) await aktionen.zauberwirkungHinzufuegen(katalog);
+      case GefechtsWirkungAktion.attributoHinzufuegen:
+        await aktionen.attributoQuelleHinzufuegen();
+      case GefechtsWirkungAktion.dauer ||
+          GefechtsWirkungAktion.einsetzen ||
+          GefechtsWirkungAktion.schutzvorrat:
+        final zustand = ref.read(heroStateProvider(heroId)).valueOrNull;
+        final instanz = zustand?.activeSpellEffects.instanzen
+            .where((i) => i.id == instanzId)
+            .firstOrNull;
+        if (instanz == null) return;
+        switch (aktion) {
+          case GefechtsWirkungAktion.dauer:
+            await aktionen.dauerDerQuelle(instanz);
+          case GefechtsWirkungAktion.schutzvorrat:
+            await aktionen.schutzRestAnpassen(instanz);
+          default:
+            if (instanz.effectId == kAengsteLindernZauberId) {
+              await aktionen.aengsteEinsetzen(instanz);
+            } else if (kSchutzZauberIds.contains(instanz.effectId)) {
+              await aktionen.schildAuffangen(instanz);
+            }
+        }
+    }
+  });
 
   /// Öffnet den vorhandenen Ressourcendialog mit Abschlusskosten.
   @override

@@ -15,6 +15,9 @@ import '../shell/karto_test_support.dart';
 /// Kontrollierbare Brücke für Abbruch, Start und doppelte Ergebniscallbacks.
 class GefechtsTestBestand extends TestBestand implements KartoGefechtsAdapter {
   final anfragen = <ResolvedProbeRequest>[];
+
+  /// Aufrufe der Wirkungsbedienung, bevor sie an die echte Brücke gehen.
+  final wirkungsAufrufe = <(GefechtsWirkungAktion, String?)>[];
   bool abbrechen = false;
   bool doppelt = false;
   int w20Wert = 10;
@@ -140,6 +143,24 @@ class GefechtsTestBestand extends TestBestand implements KartoGefechtsAdapter {
     gelungen: gelungen,
     repraesentation: repraesentation,
   );
+
+  @override
+  Future<void> gefechtsWirkung({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required GefechtsWirkungAktion aktion,
+    String? instanzId,
+  }) {
+    wirkungsAufrufe.add((aktion, instanzId));
+    return _bruecke.gefechtsWirkung(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      aktion: aktion,
+      instanzId: instanzId,
+    );
+  }
 
   @override
   Future<void> gefechtsWirkkosten({

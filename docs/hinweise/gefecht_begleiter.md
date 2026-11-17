@@ -176,3 +176,16 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
 - Vor- und Nachteile fragt auch die Vertrautenbindung über `werteMerkmaleAus`
   ab (`hatVorteilMachtvollerVertrauter`, `hatNachteilKeinVertrauter`), nie in
   der Oberfläche und nie über die gespeicherte Liste.
+
+- Zauberwirkungen im Gefecht: Die Kachel `GefechtZauberwirkungen`
+  (`lib/ui2/gefecht/`, unter der Magie-Kachel) zeigt jede laufende Wirkung
+  (`aktiveEffektInstanzen`) mit Quelle, Ziel, Dauer und Schutzvorrat und lässt
+  sie anpassen (Dauer −1, Dauer setzen, Unterdrücken, Beenden, Schutzvorrat,
+  Einsetzen) und anlegen (Zauberwirkung, Attributo-Quelle). Reine
+  Zustandsänderungen laufen frisch über `gefechtsZustand`, alles mit Dialog
+  über `KartoGefechtsAdapter.gefechtsWirkung`; beide nutzen dieselben
+  Bedienwege wie der Dialog „Zauber aktivieren“
+  (`lib/ui/screens/shared/spell_instance_aktionen.dart`). Alte Einzelwirkungen
+  (Axxeleratus, Armatrutz, Legacy-Attributo) erscheinen als „(alt)“ nur zur
+  Anzeige; bedient werden sie über „Alle verwalten“. Eigene Effekt-Definitionen
+  gibt es nicht; der Wirkabschluss legt weiterhin nur das Legacy-Trio an.
