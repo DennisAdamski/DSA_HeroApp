@@ -18,7 +18,7 @@
     "firebase-functions": "^7.0.0"
   },
   "devDependencies": {
-    "@firebase/rules-unit-testing": "^5.0.0",
+    "@firebase/rules-unit-testing": "^6.0.0",
     "@types/node": "^22.18.8",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
