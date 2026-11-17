@@ -1,6 +1,6 @@
 # To-do-Liste: Weiterentwicklung der Heldenverwaltung
 
-Stand: 05.11.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
+Stand: 17.11.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
 Aufgaben und der Verlauf der Teilstände stehen unverändert im
 [Archiv](archiv/README.md); Verweise wie „ARCH-05 Teilstand (3)“ in Code und
 Dokumentation meinen den dortigen Text.
@@ -10,12 +10,12 @@ würdest du anpassen?“ (18.09.2026) mit sieben Vorschlägen (ARCH-01 bis ARCH-
 und dem fachlichen Ausbau MAG-EFF und TRANK. Vor einer Umsetzung den jeweiligen
 Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
 
-## Kurzüberblick (05.11.2026)
+## Kurzüberblick (17.11.2026)
 
 | Bereich | Erledigt | Teilweise / offen |
 | --- | --- | --- |
 | Architektur (ARCH) | 01, 03, 05, 06 abgenommen | 02 und 04: Code fertig, manuelle Prüfung fehlt; 07 begleitend |
-| Fachlicher Ausbau | MAG-EFF: 17 Zauberprofile; TRANK: Teilstände 1 und 2 | weitere Zauber zurückgestellt; Elixiere, Verbandszeug offen; Kräutersuche als Regelfunktion vorhanden (ohne Oberfläche) |
+| Fachlicher Ausbau | MAG-EFF: 17 Zauberprofile; TRANK: Teilstände 1 und 2 | weitere Zauber zurückgestellt; Elixiere, Verbandszeug offen; Kräutersuche als Regelfunktion und Kachel in der Spielansicht (Wildnis, seit 12.–14.11.2026) |
 | Spielabend (SPIEL) | 01, 02, 05, 06, 07 | 03 (nicht begonnen), 04 (Produktion) |
 | Weitere Themen | Gefecht, Gefechtslage 1–7, Reittiere P1, Vertraute V1/V2, Reiseroute Stufe 1, Gruppen v2, Feedback, Redesign R1–R3, Aufräumserie REV-01–16 | siehe [Weitere Themen](#weitere-themen-stand-05112026) |
 
@@ -248,12 +248,13 @@ verlinkten Plan; hier nur Status und offene Punkte.
 
 | Thema | Status | Offen |
 | --- | --- | --- |
-| Gefecht ([Implementierung](gefecht_implementation.md), [Folgepakete](gefecht_folgepakete_plan.md)) | umgesetzt, Review und Restschulden abgeschlossen | – |
+| Gefecht ([Implementierung](gefecht_implementation.md), [Folgepakete](archiv/gefecht_folgepakete_plan.md)) | umgesetzt, Review und Restschulden abgeschlossen | – |
 | [Gefechtslage](gefecht_lage_konzept.md) | Schritte 1–7 umgesetzt (16.10.2026) | Konzentration auf einen Gegner (Paradesperre), Bedienung der Taktik |
 | [Reittiere](reittier_plan.md) | P1 umgesetzt (08.10.2026) | P2 Spielansicht (u. a. Wunden der Begleiter), P3 Reiterkampf |
 | [Vertraute](vertraute_plan.md) | V1 und V2 umgesetzt (08.10.2026) | V3 Gefecht |
 | [Reiseroute](reiseroute_plan.md) | Stufe 1 umgesetzt (03.11.2026): Stationsliste, Spielkachel, Zeitleiste. Avesmaps hat am 12.11.2026 geantwortet: Ortsdaten und Route über die Entwickler-API v1 erlaubt, Kacheln nicht. Seit 13.11.2026: Ortsauswahl mit Avesmaps-Orten und Kartenposition, Tabellenansicht im Blatt, Standort-Kachel mit Ortsdetails (D), Aventurien-Karte im Avesmaps-Stil mit Route und Vollbild, Kachelwerkzeug und Karten-Site vorbereitet | Zugang zur Karten-API und Kacheln veröffentlichen, Sichtprüfung im Web, Reisewege zwischen Stationen, Verweis am Standort |
 | [Gruppen v2](gruppen_sharing_offene_schritte.md) | abgesichert, Legacy-Pfad `gruppen/*` gesperrt | Mitglieder in der Oberfläche entfernen, Live-Listener, Windows-Transport, Emulator-Test, optional einmalige Einladungen |
+| Zuletzt (13.–17.11.2026) | Sync: Windows fragt nur Geändertes ab, alte Tombstones verschwinden (SYNC-11); Katalog: Regeltexte in Alchimika, Vertrautenmagie und Paketen verschlüsselt (KAT-01); Heldensiegel (Bildsiegel, [Assets](heldensiegel_assets.md)); Spielen: Heldenbogen-Kacheln, Kompassrose; Gefecht: laufende Zaubereffekte pro Held (17.11.) | – |
 | [Feedback als GitHub-Issue](feedback_github_plan.md) | in Produktion (16.10.2026) | – |
 | [Redesign R1–R3](redesign_implementation.md) | umgesetzt, [Abnahme](redesign_acceptance.md) | – |
 | Meisterhandwerk ([Hinweise](hinweise/katalog_sonderfertigkeiten.md)) | AsP-Einsatz bei Proben auf das gewählte Talent (03.11.2026) | – |

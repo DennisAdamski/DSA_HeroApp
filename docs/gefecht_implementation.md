@@ -19,7 +19,7 @@ Magie- und Karmaregeln müssen ausdrücklich geprüft werden. Bekannte Sperren
 bleiben dabei verbindlich. Dauerhafte Änderungen verwenden die bestehenden
 Schreibwege auf dem frisch geladenen Helden.
 
-Der Ausbau nach `1b79203` ist in `gefecht_next_plan.md` nachgeführt. Kontakt und
+Der Ausbau nach `1b79203` ist in [`gefecht_next_plan.md`](archiv/gefecht_next_plan.md) nachgeführt. Kontakt und
 Angriffsart werden flüchtig erfasst. AT/PA und Ausweichen prüfen tatsächliche DK;
 Finte wird nach einer Abwehr nicht in den nächsten Angriff übernommen. Fernkampf
 verwendet numerische Entfernungsprofile, bestätigte Situation und Ladezustand.
@@ -443,7 +443,7 @@ erhalten Bonus und alle Budgets. Bei doppeltem Abschlusscallback zählt der Test
 genau eine Zusatzbuchung und eine Bonusentfernung, ohne eine weitere reguläre PA
 zu verbrauchen. Nur das Würfelergebnis und die Callbackwiederholung sind steuerbar;
 der Produktionspfad bleibt unverändert. Prüfungen und aktueller Remote-CI-Stand
-sind im [Folgeplan](gefecht_next_plan.md#testnachtrag-nach-pr-208-4-oktober-2026)
+sind im [Folgeplan](archiv/gefecht_next_plan.md#testnachtrag-nach-pr-208-4-oktober-2026)
 nachgeführt; frühere Abnahmeergebnisse bleiben historische Nachweise.
 
 ## Optionales Zielen (weiteres Paket 1)
@@ -532,7 +532,7 @@ gelöschter Finte wurden bewusst auf die Vorgabe 0 umgestellt.
 
 ## Begegnung, gemeinsame Initiative und Folgepakete (5. Oktober 2026)
 
-Umfang laut [Abschlussentwurf](gefecht_abschluss_entwurf.md): Die lokale
+Umfang laut [Abschlussentwurf](archiv/gefecht_abschluss_entwurf.md): Die lokale
 Begegnung (`state/gefecht_begegnung_provider.dart`) führt mehrere Gegner mit
 stabiler ID, Name, LeP, RS und INI. Eine Heldensitzung wählt ihren Gegner
 ausdrücklich; der Wechsel verwirft Angriffsdaten und alte Zielzahlungen.

@@ -22,7 +22,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   bezahlter Zeit, Profilbindung und Abbau ausschließlich sonstiger FK-Zuschläge.
   `gefecht_ansagefolge_rules.dart` führt eigene misslungene Nahkampf-Ansagen als
   flüchtigen Probenmalus bis einschließlich nächster AT/PA oder Orientieren.
-  Die weiteren Pakete stehen in `docs/gefecht_folgepakete_plan.md`.
+  Die weiteren Pakete stehen in `docs/archiv/gefecht_folgepakete_plan.md`.
   `gefecht_meisterparade_rules.dart` ergänzt die getrennte PA-Ansage und den
   eigenen flüchtigen Erfolgsbonus. Prüfmetadaten binden Erleichterung und einmalige
   Buchung; Schilde benötigen eine konkrete manuelle Ansagegrenze plus aktuelle PA.
@@ -87,7 +87,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   AppBar-Leiste mit Rechenweg (`gefecht_kampfwerte_rules.dart`, inkl. Herleitung der Gefechts-INI).
   Normale Nahkampf-PA benötigt keine allgemeine Paradebestätigung; bekannte
   Verbote und konkrete fehlende Angriffsdaten bleiben in den Kontextregeln wirksam.
-  Der Folgeplan steht in [docs/gefecht_next_plan.md](../gefecht_next_plan.md).
+  Der Folgeplan steht in [docs/archiv/gefecht_next_plan.md](../archiv/gefecht_next_plan.md).
   `gefecht_orientieren_rules.dart` trennt Kampfverluste von geschützten und
   ungeklärten Korrekturen; der Orientierungsdialog nutzt frische Heldendaten.
   `gefecht_kontext.dart` hält ausschließlich flüchtige Kontakt-/Angriffsdaten.
@@ -123,7 +123,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (`gefechtsKlingenVorgaben`) und trägt die einzige Erschwernis ihrer
   Teilproben. Klingenwand/-sturm, Patzer und
   Bruchtest, Manöverfolgen und Fremdwirkung haben je eigene Regelmodule;
-  alles bleibt flüchtig. Stand und Grenzen: [docs/gefecht_abschluss_entwurf.md](../gefecht_abschluss_entwurf.md).
+  alles bleibt flüchtig. Stand und Grenzen: [docs/archiv/gefecht_abschluss_entwurf.md](../archiv/gefecht_abschluss_entwurf.md).
   Bedienung: `gefecht_aktionsknopf.dart` zeigt Status und Hauptgrund
   (`gefechtsHauptgrund`), `gefecht_anordnung.dart` ordnet die Abschnitte,
   `gefecht_schnellleiste.dart` hält schmal Attacke/Parade/Ausweichen/Runde

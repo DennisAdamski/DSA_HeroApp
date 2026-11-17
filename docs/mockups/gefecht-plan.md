@@ -218,7 +218,7 @@ Vorschauen für Desktop, Handy und Ausrüstungsdialog wurden aktualisiert.
 
 ## Folgeausbau ab 1b79203 (02.10.2026)
 
-Der verbindliche Paketplan steht in [gefecht_next_plan.md](../gefecht_next_plan.md).
+Der verbindliche Paketplan steht in [gefecht_next_plan.md](../archiv/gefecht_next_plan.md).
 Im klickbaren Entwurf öffnet **Neue Bedienabläufe** in der Vorschauleiste
 Orientieren, Gegnerkontext, Ziehen und den Wirkabschluss. Die neue Datei
 `gefecht-folgeablaeufe.js` zeigt Dialogabläufe mit flüchtigen Beispielen;
