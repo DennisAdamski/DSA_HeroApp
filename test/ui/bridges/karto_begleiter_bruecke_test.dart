@@ -100,4 +100,55 @@ void main() {
       19,
     );
   });
+
+  testWidgets('begleiterWundenAendern zählt schnelle Klicks vom gespeicherten '
+      'Wert', (tester) async {
+    final repo = FakeRepository(
+      heroes: const [held],
+      states: {
+        'hexe': const HeroState(
+          currentLep: 30,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 30,
+        ),
+      },
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [heroRepositoryProvider.overrideWithValue(repo)],
+        child: MaterialApp(
+          home: Scaffold(
+            body: Consumer(
+              builder: (context, ref, _) {
+                ref.watch(heroByIdProvider('hexe'));
+                return TextButton(
+                  onPressed: () {
+                    for (var i = 0; i < 3; i++) {
+                      const KartoBestandsAdapterImpl().begleiterWundenAendern(
+                        context: context,
+                        ref: ref,
+                        heroId: 'hexe',
+                        begleiterId: 'mira',
+                        schritt: 1,
+                      );
+                    }
+                  },
+                  child: const Text('los'),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('los'));
+    await tester.pumpAndSettle();
+
+    final zustand = (await repo.loadHeroState('hexe'))!;
+    expect(zustand.begleiterZustaende['mira']!.wunden, 3);
+    expect(zustand.begleiterZustaende['mira']!.currentLep, isNull);
+  });
 }

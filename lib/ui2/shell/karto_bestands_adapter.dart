@@ -206,6 +206,18 @@ abstract interface class KartoBestandsAdapter {
     required RessourcenAenderung aenderung,
   });
 
+  /// Ändert den Wundzähler des Begleiters [begleiterId] um [schritt].
+  ///
+  /// Reine Merkhilfe ohne Regelwirkung; gerechnet wird im Bestand auf dem
+  /// gespeicherten Wert. Wie [begleiterWertAendern] ohne Re-Entrancy-Guard.
+  Future<void> begleiterWundenAendern({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String begleiterId,
+    required int schritt,
+  });
+
   /// Würfelt eine Probe für das Reittier [begleiterId] und protokolliert sie.
   ///
   /// Reiten (mit dem Stufenmodifikator des Reittiers) oder LO; nur eine

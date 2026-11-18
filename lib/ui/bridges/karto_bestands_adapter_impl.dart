@@ -679,6 +679,24 @@ class KartoBestandsAdapterImpl
     );
   }
 
+  /// Schreibt den Wundzähler über den gemeinsamen Zustandsweg.
+  @override
+  Future<void> begleiterWundenAendern({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String begleiterId,
+    required int schritt,
+  }) async {
+    await aendereBegleiterWunden(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      begleiterId: begleiterId,
+      schritt: schritt,
+    );
+  }
+
   /// Würfelt die Reittierprobe über den Probendialog und das Würfelprotokoll.
   ///
   /// Reiten trägt den Stufenmodifikator des Reittiers, LO die wirksame

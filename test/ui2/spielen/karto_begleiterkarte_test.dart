@@ -176,6 +176,46 @@ void main() {
     expect(bestand.aufrufe, ['vertrautenAktionen:hexe:mira']);
   });
 
+  group('Wundzähler', () {
+    Finder w(String begleiter, String teil) =>
+        find.byKey(ValueKey<String>('karto-begleiter-$begleiter-wunden-$teil'));
+
+    testWidgets('zeigt die gespeicherten Wunden, ohne Eintrag 0', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        begleiter: const [mira, rosse],
+        werte: const {'mira': BegleiterZustand(wunden: 2)},
+      );
+      expect(tester.widget<Text>(w('mira', 'wert')).data, '2');
+      expect(tester.widget<Text>(w('rosse', 'wert')).data, '0');
+    });
+
+    testWidgets('die Knöpfe melden Schritte, Minus ist bei 0 gesperrt', (
+      tester,
+    ) async {
+      final bestand = await zeige(tester, begleiter: const [mira]);
+      await tester.ensureVisible(w('mira', 'minus'));
+      await tester.tap(w('mira', 'minus'));
+      await tester.tap(w('mira', 'plus'));
+      await tester.pumpAndSettle();
+      expect(bestand.aufrufe, ['wunden:hexe:mira:1']);
+    });
+
+    testWidgets('schmal mit Textfaktor 2 ohne Überlauf', (tester) async {
+      await zeige(
+        tester,
+        begleiter: const [mira, rosse],
+        breite: 360,
+        skalierung: 2,
+        werte: const {'mira': BegleiterZustand(wunden: 3)},
+      );
+      await tester.ensureVisible(w('rosse', 'plus'));
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('Proben des Reittiers (Reittiere P2)', () {
     Finder probe(String begleiter, String art) =>
         find.byKey(ValueKey<String>('karto-begleiter-$begleiter-probe-$art'));

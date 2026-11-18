@@ -245,6 +245,17 @@ class TestBestand implements KartoBestandsAdapter {
   }
 
   @override
+  Future<void> begleiterWundenAendern({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String begleiterId,
+    required int schritt,
+  }) async {
+    aufrufe.add('wunden:$heroId:$begleiterId:$schritt');
+  }
+
+  @override
   Future<void> reittierProbe({
     required BuildContext context,
     required WidgetRef ref,

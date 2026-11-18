@@ -22,6 +22,12 @@ typedef KartoBegleiterWert = void Function(
   RessourcenAenderung aenderung,
 );
 
+/// Meldet einen Schritt des Wundzählers eines Begleiters.
+typedef KartoBegleiterWunden = void Function(
+  HeroCompanion begleiter,
+  int schritt,
+);
+
 /// Meldet die Probe, die ein Reittier an der Karte angeboten bekommt.
 typedef KartoReittierProbe = void Function(
   HeroCompanion reittier,
@@ -46,6 +52,7 @@ class KartoBegleiterAbschnitt extends StatelessWidget {
     required this.onWert,
     required this.onVertrautenAktionen,
     this.onReittierProbe,
+    this.onWunden,
   });
 
   /// Begleiter des Helden in gespeicherter Reihenfolge.
@@ -64,6 +71,10 @@ class KartoBegleiterAbschnitt extends StatelessWidget {
   /// Rückruf bieten die Karten keine Proben an.
   final KartoReittierProbe? onReittierProbe;
 
+  /// Zählt die Wunden eines Begleiters hoch oder herunter; ohne Rückruf
+  /// entfällt die Wundzeile.
+  final KartoBegleiterWunden? onWunden;
+
   /// Schmalste Karte, ab der mehrere Begleiter in einer weiten Kachel
   /// nebeneinander stehen.
   static const double kartenbreiteMin = 320;
@@ -78,6 +89,7 @@ class KartoBegleiterAbschnitt extends StatelessWidget {
       onWert: onWert,
       onVertrautenAktionen: onVertrautenAktionen,
       onReittierProbe: onReittierProbe,
+      onWunden: onWunden,
       mitKampf: weit,
     );
     return KartoAbschnitt(
@@ -131,6 +143,7 @@ class _Karte extends StatelessWidget {
     required this.onWert,
     required this.onVertrautenAktionen,
     required this.onReittierProbe,
+    required this.onWunden,
     required this.mitKampf,
   });
 
@@ -139,6 +152,7 @@ class _Karte extends StatelessWidget {
   final KartoBegleiterWert onWert;
   final void Function(HeroCompanion vertrauter) onVertrautenAktionen;
   final KartoReittierProbe? onReittierProbe;
+  final KartoBegleiterWunden? onWunden;
 
   /// Ob die Kampfwerte der Karte mit angezeigt werden (weite Kachel).
   final bool mitKampf;
@@ -187,6 +201,12 @@ class _Karte extends StatelessWidget {
         Text(
           'Keine Maximalwerte eingetragen.',
           style: texte.bodySmall?.copyWith(color: karto.schriftLeise),
+        ),
+      if (onWunden != null)
+        _WundenZeile(
+          schluessel: 'karto-begleiter-${begleiter.id}-wunden',
+          wunden: begleiterWunden(zustand),
+          onSchritt: (schritt) => onWunden!(begleiter, schritt),
         ),
       if (onReittierProbe != null && reittierHatProben(begleiter))
         Padding(
@@ -433,6 +453,67 @@ class _PoolZeile extends StatelessWidget {
           knopf(-1),
           knopf(1),
           knopf(5),
+        ],
+      ),
+    );
+  }
+}
+
+/// Freier Wundzähler eines Begleiters: − und +, ohne Regelwirkung.
+class _WundenZeile extends StatelessWidget {
+  const _WundenZeile({
+    required this.schluessel,
+    required this.wunden,
+    required this.onSchritt,
+  });
+
+  final String schluessel;
+  final int wunden;
+  final void Function(int schritt) onSchritt;
+
+  @override
+  Widget build(BuildContext context) {
+    final karto = context.karto;
+    final texte = Theme.of(context).textTheme;
+    Widget knopf(int schritt, bool aktiv) => Tooltip(
+      message: schritt > 0 ? 'Eine Wunde mehr' : 'Eine Wunde weniger',
+      child: InkWell(
+        key: ValueKey<String>('$schluessel-${schritt > 0 ? 'plus' : 'minus'}'),
+        onTap: aktiv ? () => onSchritt(schritt) : null,
+        borderRadius: BorderRadius.circular(kKartoRadiusKlein),
+        child: SizedBox(
+          width: 40,
+          height: 40,
+          child: Center(
+            child: Text(
+              mitVorzeichen(schritt),
+              style: texte.etikett.copyWith(
+                color: aktiv ? karto.schrift : karto.schriftStumm,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    return Padding(
+      padding: const EdgeInsets.only(top: Abstand.knapp),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              'Wunden',
+              style: texte.etikett.copyWith(color: karto.schriftLeise),
+            ),
+          ),
+          Text(
+            '$wunden',
+            key: ValueKey<String>('$schluessel-wert'),
+            style: texte.wert.copyWith(
+              color: wunden > 0 ? karto.siegel : karto.schriftStumm,
+            ),
+          ),
+          knopf(-1, wunden > 0),
+          knopf(1, wunden < kBegleiterWundenMax),
         ],
       ),
     );

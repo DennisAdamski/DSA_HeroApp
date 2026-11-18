@@ -1078,6 +1078,7 @@ final _zustand = <_Modell>[
       currentLep: 5,
       currentAsp: 3,
       currentAup: 7,
+      wunden: 2,
     ).toJson(),
     lade: (json) => BegleiterZustand.fromJson(json).toJson(),
     bearbeite: (json) =>

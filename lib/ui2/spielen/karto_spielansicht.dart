@@ -833,6 +833,14 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
           pool: pool,
           aenderung: aenderung,
         ),
+        // Wie die Werte ohne `aktion`-Guard: jeder schnelle Klick zählt.
+        onWunden: (begleiter, schritt) => bestand.begleiterWundenAendern(
+          context: context,
+          ref: ref,
+          heroId: heroId,
+          begleiterId: begleiter.id,
+          schritt: schritt,
+        ),
         // Nur eine Würfelhilfe, gebucht wird nichts: ohne Editorprüfung.
         onReittierProbe: (reittier, art) => aktion(
           () => bestand.reittierProbe(

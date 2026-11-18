@@ -1,6 +1,6 @@
 # Reittiere: Ausbildung, Reiterkampf, Spiel
 
-Stand: Paket P1 umgesetzt (8. Oktober 2026), P2 teilweise (P2a Proben am 18. November 2026), P3 offen. Dieses Dokument hält die Regelquellen, die getroffenen
+Stand: Paket P1 umgesetzt (8. Oktober 2026), P2 teilweise (P2a Proben und P2b Wundzähler am 18. November 2026), P3 offen. Dieses Dokument hält die Regelquellen, die getroffenen
 Entscheidungen und die Paketaufteilung für Pferde und andere Reittiere fest.
 Belege stammen aus dem dsa-rules MCP.
 
@@ -15,7 +15,7 @@ an; Ausbildung ist Freitext, und Reiterkampf ist nicht modelliert.
 | Paket | Inhalt | Stand |
 |---|---|---|
 | P1 Pferd-Grundlage | Reit-SF im Katalog, Ausbildungskatalog, Ausbildungsmodell am Begleiter, abgeleitete Wirkwerte, Ausbildungsschritte und Pferde-SF im Begleiter-Tab, gewürfelte Ausbildungsproben | umgesetzt |
-| P2 Spielansicht | laufende LeP/AuP/Wunden je Begleiter im `HeroState` (**LeP/AuP/AsP-Modell `HeroState.begleiterZustaende` mit Anzeige für alle Begleiter seit Vertraute-V2, Wunden offen**), Begleiterkarte in `lib/ui2/spielen/`, LO-Probe, Reiten-Probe mit Stufenmodifikator, Pferdeangriffe würfeln, Rittmeister-Boni | **P2a umgesetzt (18.11.2026): Reiten-Probe mit Stufenmodifikator und LO-Probe auf der Reittierkarte**; offen: Wunden, Pferdeangriffe würfeln, Rittmeister-Boni |
+| P2 Spielansicht | laufende LeP/AuP/Wunden je Begleiter im `HeroState` (**LeP/AuP/AsP-Modell `HeroState.begleiterZustaende` mit Anzeige für alle Begleiter seit Vertraute-V2, Wunden offen**), Begleiterkarte in `lib/ui2/spielen/`, LO-Probe, Reiten-Probe mit Stufenmodifikator, Pferdeangriffe würfeln, Rittmeister-Boni | **P2a umgesetzt (18.11.2026): Reiten-Probe mit Stufenmodifikator und LO-Probe auf der Reittierkarte; P2b: freier Wundzähler**; offen: echte Wundregeln, Pferdeangriffe würfeln, Rittmeister-Boni |
 | P3 Gefecht | Schalter „Beritten“, Reiter-SF-Boni nach Hausregel, Reit-AT/PA, Pferdemanöver, Sturmangriff zu Pferd, Pferd als Ziel | offen |
 
 ## Entscheidungen
@@ -136,9 +136,20 @@ Würfelhilfe (Auslöser und Folgen entscheidet der Meister).
   Steigerung, Ausbildung).
 - Kein neues gespeichertes Feld, deshalb keine Modell-, Sync- oder Hashänderung.
 
-**Weiter offen in P2:** Wunden der Begleiter (Wundschwelle von Tieren ist laut
-WdS S. 103 ein Tabellenwert „WS“, die App kennt nur KO; Trefferzonen und
-Wundwirkungen für Vierbeiner sind im Regelwerk nicht belegt), Pferdeangriffe
+**P2b: freier Wundzähler (18.11.2026).** Jede Begleiterkarte (alle Typen)
+trägt eine Zeile „Wunden“ mit − und + (`karto-begleiter-<id>-wunden-plus|minus|wert`).
+`BegleiterZustand.wunden` ist ein Zähler von 0 bis `kBegleiterWundenMax` (9, eine
+Grenze der App), nur bei mindestens einer Wunde im JSON; `mitBegleiterWundenSchritt`
+zählt vom gespeicherten Wert, der Schreibweg ist `aendereBegleiterWunden` über die
+Adaptermethode `begleiterWundenAendern`. **Reine Merkhilfe ohne Regelwirkung:**
+Wundschwelle, Zonen, Abzüge und Kampfunfähigkeit für Tiere sind nicht modelliert,
+weil sie im Regelwerk nicht belegt sind (WdS S. 103 nennt die Wundschwelle von
+Reittieren als Tabellenwert „WS“, die App kennt nur KO; Trefferzonen für Vierbeiner
+fand die Suche nicht). Sync: `wunden` ist Zähler in `begleiterZustaende` (beide
+Geräte zählen); fehlt der Wert in der Basis (0 Wunden), gilt die normale
+Zusammenführung mit Konflikt bei verschiedener Änderung, wie bei „voll“.
+
+**Weiter offen in P2:** echte Wundregeln für Tiere (Wundschwelle, Folgen), Pferdeangriffe
 würfeln (grenzt an P3: Reit-AT, Reiter-Probe +6, Schaden buchen) und die
 Rittmeister-Boni (brauchen den Epik-Schalter und die Erkennung von
 Schlachtross, Rennpferd und Magierpferd).

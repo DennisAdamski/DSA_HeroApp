@@ -126,6 +126,7 @@ const Map<String, String> syncFieldLabels = <String, String>{
   'begleiterZustaende': 'Begleiter (laufende Werte)',
   'standort': 'Standort',
   'zustandsmarker': 'Zustandsmarker',
+  'wunden': 'Wunden',
   'rest': 'Verbleibende Runden',
   'notiz': 'Notiz',
   'currentAup': 'AuP',

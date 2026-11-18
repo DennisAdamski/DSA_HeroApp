@@ -1,4 +1,4 @@
-// Laufende Werte von Begleitern (LeP, AsP, AuP) im `HeroState`.
+// Laufende Werte von Begleitern (LeP, AsP, AuP, Wunden) im `HeroState`.
 //
 // Ein Begleiter ohne Eintrag ist „voll“, also gleich dem wirksamen Maximum
 // (`begleiterWirksamerPoolwert`: Startwert, Steigerung, Tierausbildung). Wie
@@ -42,6 +42,12 @@ enum BegleiterPool {
   int get untergrenze =>
       this == BegleiterPool.lep ? kBegleiterLepUntergrenze : 0;
 }
+
+/// Höchstzahl der Wunden, die der freie Wundzähler eines Begleiters anzeigt.
+///
+/// Eine Grenze der App, keine Regel: Wundschwelle, Zonen und Folgen für Tiere
+/// sind nicht modelliert, der Zähler ist eine Merkhilfe.
+const int kBegleiterWundenMax = 9;
 
 /// Wirksames Maximum des Pools [pool] von [c]; 0, wenn keines hinterlegt ist.
 int begleiterPoolMaximum(HeroCompanion c, BegleiterPool pool) =>
@@ -119,3 +125,27 @@ int? _gespeichert(BegleiterZustand? zustand, BegleiterPool pool) =>
       BegleiterPool.asp => zustand?.currentAsp,
       BegleiterPool.aup => zustand?.currentAup,
     };
+
+/// Gespeicherte Wunden des Begleiters; 0 ohne Eintrag.
+int begleiterWunden(BegleiterZustand? zustand) => zustand?.wunden ?? 0;
+
+/// Ändert den Wundzähler des Begleiters [begleiterId] um [schritt], vom
+/// gespeicherten Wert aus und zwischen 0 und [kBegleiterWundenMax].
+///
+/// Null Wunden werden nicht gespeichert (`null`), ein dadurch leerer Zustand
+/// entfällt. Ohne Änderung bleibt [state] dieselbe Instanz.
+HeroState mitBegleiterWundenSchritt(
+  HeroState state,
+  String begleiterId,
+  int schritt,
+) {
+  final alt = begleiterWunden(state.begleiterZustaende[begleiterId]);
+  final neu = (alt + schritt).clamp(0, kBegleiterWundenMax);
+  if (neu == alt) return state;
+  final eintrag =
+      state.begleiterZustaende[begleiterId] ?? const BegleiterZustand();
+  return state.withBegleiterZustand(
+    begleiterId,
+    eintrag.copyWith(wunden: neu == 0 ? null : neu),
+  );
+}

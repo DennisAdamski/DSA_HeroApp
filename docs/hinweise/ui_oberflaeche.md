@@ -434,6 +434,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Begleiter-Kachel trägt die Knöpfe „Reiten-Probe“, „Reiten im Kampf“ und
   „LO-Probe“ (Rückruf `onReittierProbe`, Brücke `reittierProbe`); Aufbau und
   Grenzen in [reittier_plan.md](../reittier_plan.md#p2a-proben-auf-der-reittierkarte-18112026).
+- **Wundzähler der Begleiter (Reittiere P2b):** Jede Begleiterkarte hat eine Zeile
+  „Wunden“ mit − und + (freier Zähler `BegleiterZustand.wunden`, höchstens 9, ohne
+  Regelwirkung); Details und Grenzen in [reittier_plan.md](../reittier_plan.md).
 - **Zustandsmarker (SPIEL-03):** `KartoMarkerKachel`
   (`lib/ui2/spielen/karto_marker_kachel.dart`) zeigt freie Marker
   (`HeroState.zustandsmarker`, Modell `ZustandsMarker`) mit Name, Notiz und

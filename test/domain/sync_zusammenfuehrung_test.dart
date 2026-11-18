@@ -405,6 +405,26 @@ void main() {
       },
     );
 
+    test('Wunden beider Geräte zählen als Zähler', () {
+      final ergebnis = _fuehre(
+        stand({
+          'mira': {'currentLep': 10, 'wunden': 1},
+        }),
+        stand({
+          'mira': {'currentLep': 10, 'wunden': 2},
+        }),
+        stand({
+          'mira': {'currentLep': 10, 'wunden': 3},
+        }),
+        regeln: zustandZusammenfuehrungsRegeln,
+      );
+
+      expect(ergebnis.vollstaendig, isTrue);
+      expect(ergebnis.ergebnis['begleiterZustaende'], {
+        'mira': {'currentLep': 10, 'wunden': 4},
+      });
+    });
+
     test('fehlt ein Wert („voll“) auf einer Seite, gilt kein Zähler', () {
       Map<String, Map<String, dynamic>> mit(Map<String, dynamic>? mira) => {
         'rondo': {'currentLep': 3},
