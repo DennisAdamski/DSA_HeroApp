@@ -585,6 +585,7 @@ void main() {
         'kampf',
         'effekte',
         'zustand',
+        'marker',
         'dabei',
         'abenteuer',
         'standort',
@@ -1429,6 +1430,7 @@ void main() {
 
     testWidgets('der Vergrößern-Dialog zeigt fünf Stationen', (tester) async {
       await zeige(tester, held: mitStationen(null), breite: 1280);
+      await tester.ensureVisible(k('karto-kachel-reiseroute-vergroessern'));
       await tester.tap(k('karto-kachel-reiseroute-vergroessern'));
       await tester.pumpAndSettle();
       expect(

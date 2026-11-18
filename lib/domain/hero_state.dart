@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/zustands_buchung.dart';
+import 'package:dsa_heldenverwaltung/domain/zustands_marker.dart';
 
 /// Laufzeitzustand eines Helden, getrennt von den Stammdaten (`HeroSheet`).
 ///
@@ -28,6 +29,7 @@ class HeroState {
     this.buchungen = const <ZustandsBuchung>[],
     this.begleiterZustaende = const <String, BegleiterZustand>{},
     this.standort = '',
+    this.zustandsmarker = const <ZustandsMarker>[],
     this.lastModified,
     this.unbekannteFelder = const <String, Object?>{},
   });
@@ -49,6 +51,7 @@ class HeroState {
       buchungen = const <ZustandsBuchung>[],
       begleiterZustaende = const <String, BegleiterZustand>{},
       standort = '',
+      zustandsmarker = const <ZustandsMarker>[],
       unbekannteFelder = const <String, Object?>{};
 
   /// Maximale Anzahl persistierter Wuerfelprotokoll-Eintraege pro Held.
@@ -103,6 +106,13 @@ class HeroState {
   /// Inhalts-Hash behalten.
   final String standort;
 
+  /// Freie Zustandsmarker (SPIEL-03), etwa „Betäubung“ oder „Furcht“, mit
+  /// optionaler Dauer in Runden.
+  ///
+  /// Reine Merkhilfe ohne Regelwirkung. Nur bei Belegung im JSON, damit
+  /// Bestandszustände ihren Inhalts-Hash behalten.
+  final List<ZustandsMarker> zustandsmarker;
+
   /// Zeitpunkt der letzten Speicherung, analog zu `HeroSheet.lastModified`.
   ///
   /// Rein informativ: Der Wert bleibt aus `heroStateContentHash` und damit aus
@@ -133,6 +143,7 @@ class HeroState {
     'buchungen',
     'begleiterZustaende',
     'standort',
+    'zustandsmarker',
     'lastModified',
   };
 
@@ -152,6 +163,7 @@ class HeroState {
     List<ZustandsBuchung>? buchungen,
     Map<String, BegleiterZustand>? begleiterZustaende,
     String? standort,
+    List<ZustandsMarker>? zustandsmarker,
     DateTime? lastModified,
   }) {
     return HeroState(
@@ -170,6 +182,7 @@ class HeroState {
       buchungen: buchungen ?? this.buchungen,
       begleiterZustaende: begleiterZustaende ?? this.begleiterZustaende,
       standort: standort ?? this.standort,
+      zustandsmarker: zustandsmarker ?? this.zustandsmarker,
       lastModified: lastModified ?? this.lastModified,
       unbekannteFelder: unbekannteFelder,
     );
@@ -239,6 +252,10 @@ class HeroState {
             eintrag.key: eintrag.value.toJson(),
         },
       if (standort.trim().isNotEmpty) 'standort': standort,
+      if (zustandsmarker.isNotEmpty)
+        'zustandsmarker': zustandsmarker
+            .map((marker) => marker.toJson())
+            .toList(growable: false),
       if (lastModified != null)
         'lastModified': lastModified!.toUtc().toIso8601String(),
     };
@@ -258,6 +275,7 @@ class HeroState {
           );
     final rawBuchungen = json['buchungen'] as List?;
     final rawBegleiter = json['begleiterZustaende'] as Map?;
+    final rawMarker = json['zustandsmarker'] as List?;
     return HeroState(
       schemaVersion: 6,
       currentLep: getInt('currentLep'),
@@ -298,6 +316,9 @@ class HeroState {
                   ),
             }),
       standort: json['standort'] is String ? json['standort'] as String : '',
+      zustandsmarker: rawMarker == null
+          ? const <ZustandsMarker>[]
+          : ZustandsMarker.listeAusJson(rawMarker),
       lastModified: DateTime.tryParse(json['lastModified'] as String? ?? ''),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );

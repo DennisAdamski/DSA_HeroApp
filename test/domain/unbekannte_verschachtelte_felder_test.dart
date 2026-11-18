@@ -53,6 +53,7 @@ import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/vitalwirkung.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/zustands_buchung.dart';
+import 'package:dsa_heldenverwaltung/domain/zustands_marker.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/rest_rules.dart';
@@ -1082,6 +1083,22 @@ final _zustand = <_Modell>[
     bearbeite: (json) =>
         BegleiterZustand.fromJson(json).copyWith(currentLep: 2).toJson(),
     unbekannt: (json) => BegleiterZustand.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'ZustandsMarker',
+    schluessel: ZustandsMarker.jsonSchluessel,
+    voll: () => const ZustandsMarker(
+      id: 'm1',
+      name: 'Betäubung',
+      rest: 3,
+      notiz: 'Giftpfeil',
+    ).toJson(),
+    lade: (json) => ZustandsMarker.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        ZustandsMarker.fromJson(json)
+            .copyWith(name: 'Furcht', rest: 1, notiz: 'Geist')
+            .toJson(),
+    unbekannt: (json) => ZustandsMarker.fromJson(json).unbekannteFelder,
   ),
 ];
 

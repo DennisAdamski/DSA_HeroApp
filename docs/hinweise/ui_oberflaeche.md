@@ -67,7 +67,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Adaptermethoden, damit die Brücke für dieselben Werte keine zweite
   Providerbeobachtung aufmacht. Die Reihenfolge folgt der Häufigkeit am
   Tisch: Ressourcen, Häufige Proben,
-  Eigenschaften, Kampf, Effekte, Zustand (und Begleiter), Dabei, Abenteuer
+  Eigenschaften, Kampf, Effekte, Zustand, Zustandsmarker (und Begleiter), Dabei, Abenteuer
   samt Standort, Vor- und Nachteile, Würfelprotokoll. Das ist nur die
   Standardanordnung; jede Kachel lässt sich verschieben (Kachelraster, unten).
   Die Schnellaktionen sind **keine Kachel**: sie stehen fest im Seitenkopf
@@ -430,6 +430,22 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `Wrap` nebeneinander stehen; die Datenlage (`ActiveSpellEffectChip`: Name,
   Bonus, Restlaufzeit) trägt keine weitere Darstellung, ein Füllinhalt wäre
   unehrlich.
+- **Zustandsmarker (SPIEL-03):** `KartoMarkerKachel`
+  (`lib/ui2/spielen/karto_marker_kachel.dart`) zeigt freie Marker
+  (`HeroState.zustandsmarker`, Modell `ZustandsMarker`) mit Name, Notiz und
+  optionaler Dauer in Runden; − und + zählen die Dauer eines Markers, ✕ entfernt
+  ihn, der Name öffnet den Änderungsdialog, „Neuer Marker“ den Anlegedialog mit
+  Namensvorschlägen. „Nächste Runde“ (nur sichtbar, solange ein Marker läuft)
+  zählt alle laufenden Marker um eins herunter. Reine Merkhilfe **ohne
+  Regelwirkung**: ein abgelaufener Marker (0, „abgelaufen“) bleibt stehen, nichts
+  wird automatisch entfernt oder gebucht; es gibt keinen persistenten
+  Rundenzähler und keine Kopplung an die flüchtige Gefechtsrunde. Die Kachel
+  schreibt über `heroActionsProvider.updateHeroState` frisch nur die Markerliste
+  (Regeln in `zustandsmarker_rules.dart`, vom gespeicherten Wert aus, höchstens 30
+  Marker); eine offene Planung sperrt den Zustand nicht. Bei schmaler Kachel oder
+  großer Schrift rückt die Dauer in eine eigene Zeile, in `weit` stehen die
+  Marker in zwei Spalten. Der Sync führt die Liste über die Marker-ID zusammen und
+  behandelt `rest` als Zähler.
 - **Vor- und Nachteile bearbeitet UI2 im Merkmalsblatt**
   (`lib/ui2/merkmale/`), nach dem Muster des Abenteuerblatts: modal, eigener
   Schreibweg über `HeroActions.updateHero` und `aendereMerkmale`

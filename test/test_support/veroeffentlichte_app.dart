@@ -35,6 +35,7 @@ import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
+import 'package:dsa_heldenverwaltung/domain/zustands_marker.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
 /// Nachbildung aelterer App-Versionen fuer Tests zum Mischbetrieb.
@@ -444,6 +445,9 @@ Map<String, dynamic> zustandWieVeroeffentlichteApp(
   }
   for (final zustand in _werte(json['begleiterZustaende'])) {
     _behalte(zustand, BegleiterZustand.jsonSchluessel);
+  }
+  for (final marker in _maps(json['zustandsmarker'])) {
+    _behalte(marker, ZustandsMarker.jsonSchluessel);
   }
   for (final eintrag in _maps(json['diceLog'])) {
     _behalte(eintrag, DiceLogEntry.jsonSchluessel);

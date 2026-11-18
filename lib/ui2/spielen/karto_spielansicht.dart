@@ -22,6 +22,7 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuerblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_marker_kachel.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_begleiterkarte.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_dabei_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
@@ -344,6 +345,12 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
         werte: werte,
         mitBelastung: !_belastungInDabei,
       ),
+    ),
+    // Schreibt nur die Markerliste des Laufzeitzustands, frisch und ohne
+    // Regelwirkung.
+    KartoSpielkachelArt.marker => KartoMarkerKachel(
+      heroId: heroId,
+      marker: werte.state.zustandsmarker,
     ),
     KartoSpielkachelArt.begleiter => _begleiter(context, werte),
     KartoSpielkachelArt.dabei => _dabei(context, werte),

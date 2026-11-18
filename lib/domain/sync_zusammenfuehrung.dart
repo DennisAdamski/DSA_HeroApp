@@ -84,27 +84,26 @@ const SyncZusammenfuehrungsRegeln heldZusammenfuehrungsRegeln =
 /// Ressourcen und Erschöpfung sind Zähler: Treffer und Heilung beider
 /// Geräte zählen. Das Würfelprotokoll ist eine Vereinigung; Buchungen
 /// werden über ihre ID zusammengeführt. Beide bleiben auf 50 begrenzt.
-const SyncZusammenfuehrungsRegeln zustandZusammenfuehrungsRegeln =
-    SyncZusammenfuehrungsRegeln(
-      zaehler: <String>{
-        'currentLep',
-        'currentAsp',
-        'currentKap',
-        'currentAu',
-        'erschoepfung',
-        'ueberanstrengung',
-      },
-      maximum: <String>{'schemaVersion', 'lastModified'},
-      protokolle: <String, String>{'diceLog': 'timestamp'},
-      grenzen: <String, int>{'diceLog': 50, 'buchungen': 50},
-      zaehlerInMaps: <String, Set<String>>{
-        'begleiterZustaende': <String>{
-          'currentLep',
-          'currentAsp',
-          'currentAup',
-        },
-      },
-    );
+const SyncZusammenfuehrungsRegeln
+zustandZusammenfuehrungsRegeln = SyncZusammenfuehrungsRegeln(
+  zaehler: <String>{
+    'currentLep',
+    'currentAsp',
+    'currentKap',
+    'currentAu',
+    'erschoepfung',
+    'ueberanstrengung',
+  },
+  maximum: <String>{'schemaVersion', 'lastModified'},
+  protokolle: <String, String>{'diceLog': 'timestamp'},
+  grenzen: <String, int>{'diceLog': 50, 'buchungen': 50},
+  zaehlerInMaps: <String, Set<String>>{
+    'begleiterZustaende': <String>{'currentLep', 'currentAsp', 'currentAup'},
+    // Verbleibende Runden eines Zustandsmarkers (SPIEL-03): zählen beide
+    // Geräte, gilt jeder Schritt.
+    'zustandsmarker': <String>{'rest'},
+  },
+);
 
 /// Ein Wert, den beide Seiten seit der Basis verschieden geändert haben.
 class SyncKonfliktFeld {

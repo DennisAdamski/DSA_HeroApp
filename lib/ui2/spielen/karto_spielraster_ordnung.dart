@@ -71,6 +71,15 @@ enum KartoSpielkachelArt {
     gewicht: 260,
   ),
 
+  /// Freie Zustandsmarker (Betäubung, Furcht, Schmerz) mit optionaler Dauer in
+  /// Runden; reine Merkhilfe ohne Regelwirkung (SPIEL-03).
+  marker(
+    'Zustandsmarker',
+    breiten: SpielkachelBreite.values,
+    standard: SpielkachelBreite.schmal,
+    gewicht: 160,
+  ),
+
   /// Begleiter mit laufenden Werten; nur mit Begleitern vorhanden.
   begleiter(
     'Begleiter',
