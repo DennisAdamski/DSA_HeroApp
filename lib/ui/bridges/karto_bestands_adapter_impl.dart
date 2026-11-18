@@ -21,6 +21,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/auxiliator_dialog
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/magic_status_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reittier_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
@@ -674,6 +676,64 @@ class KartoBestandsAdapterImpl
       heroId: heroId,
       ressource: ressource,
       schritt: schritt,
+    );
+  }
+
+  /// Würfelt die Reittierprobe über den Probendialog und das Würfelprotokoll.
+  ///
+  /// Reiten trägt den Stufenmodifikator des Reittiers, LO die wirksame
+  /// Loyalität; gebucht wird nichts.
+  @override
+  Future<void> reittierProbe({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String begleiterId,
+    required ReittierProbeArt art,
+  }) async {
+    final held = ref.read(heroByIdProvider(heroId));
+    final begleiter = held?.companions
+        .where((c) => c.id == begleiterId)
+        .firstOrNull;
+    if (held == null || begleiter == null) return;
+    ResolvedProbeRequest? request;
+    String? hinweis;
+    if (art == ReittierProbeArt.loyalitaet) {
+      request = begleiterLoyalitaetsProbe(begleiter);
+    } else {
+      final snapshot = ref.read(heroComputedProvider(heroId)).valueOrNull;
+      final katalog = ref.read(heroRulesCatalogProvider(heroId)).valueOrNull;
+      if (snapshot == null || katalog == null) {
+        hinweis = 'Heldenwerte werden noch geladen.';
+      } else {
+        final aufbau = reittierReitenProbe(
+          snapshot: snapshot,
+          talente: katalog.talents,
+          reittier: begleiter,
+          imKampf: art == ReittierProbeArt.reitenImKampf,
+          reiterIstZauberer: detectMagicStatus(held, katalog) != null,
+          epicAdvantagesActive: ref.read(
+            heroEpicAdvantagesActiveProvider(heroId),
+          ),
+        );
+        request = aufbau.request;
+        hinweis = aufbau.hinweis;
+      }
+    }
+    if (request == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(hinweis ?? 'Die Probe ist nicht möglich.')),
+        );
+      }
+      return;
+    }
+    if (!context.mounted) return;
+    await gefechtsProbe(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      request: request,
     );
   }
 

@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reittier_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
@@ -241,6 +242,17 @@ class TestBestand implements KartoBestandsAdapter {
         RessourcenSetzen(:final wert) => 'setzen$wert',
       }}',
     );
+  }
+
+  @override
+  Future<void> reittierProbe({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String begleiterId,
+    required ReittierProbeArt art,
+  }) async {
+    aufrufe.add('reittierProbe:$heroId:$begleiterId:${art.name}');
   }
 
   @override

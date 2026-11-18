@@ -9802,6 +9802,13 @@
         "note": "Reisebericht (Hausregel) S. 1-7 (Chunk 25661, 25662) erneut gelesen: Teilanforderungen (Dickkopf: Klettern und Schwimmen beides notwendig), Sammlungen mit Haken ab 5 (Stadtkenner) und ab 6 (Sektenkenner), Gruppenfolge Bezwinger der Elemente I-III, Meta-Einträge wie Alle Kampferfahrungen gemacht."
       }
     },
+    "test/rules/reittier_probe_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Sichert die Reittierproben der Spielansicht (Reittiere P2) ab: Die Reiten-Probe des Helden uebernimmt den Stufenmodifikator des Reittiers als situative Erschwernis (erprobt erleichtert, als Kampfzeile mit Zuschlaegen fuer laendlich ausgebildete Tiere, geschultes Kampfpferd im Kampf staerker erleichtert, Magierpferd fuer Zauberkundige), nennt im Regelhinweis die Bestandteile und laesst sich nicht ueber die Probensuche ohne Modifikator wiederholen; ohne erfasste Ausbildung gilt kein Modifikator, ohne gefuehrtes Talent oder Katalogeintrag gibt es einen Hinweis. Die LO-Probe wuerfelt 1W20 auf die wirksame Loyalitaet inklusive Ausbildung. Nur Reittiere bieten die Proben an.",
+      "rationale": "Datei und lib/rules/derived/reittier_probe_rules.dart vollstaendig gelesen. Die Stufenmodifikatoren (erprobt -1, geschult -2, Kampfpferd im Kampf -3, laendlich im Kampf +3, Magierpferd -1) und LO +4 des leichten Streitrosses stammen aus ZBA S. 35 und der Variantentabelle und sind in test/rules/reittier_ausbildung_rules_test.dart sowie dem Katalogtest verifiziert; hier wird nur geprueft, dass sie mit dem App-Vorzeichen (Erschwernis wird negativer Modifikator) in den Probenrequest gelangen. Wann eine LO-Probe faellig ist und was ein Misslingen bedeutet, ist nicht Teil der App (Meisterentscheid, vgl. WdZ S. 124 fuer Vertraute); die Probe ist eine Wuerfelhilfe.",
+      "sources": []
+    },
     "test/rules/reittier_ausbilderprobe_rules_test.dart": {
       "kind": "product_contract",
       "status": "verified",

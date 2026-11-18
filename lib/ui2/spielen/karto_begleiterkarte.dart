@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/begleiter_kampfprofil_rules.d
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_anzeige_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reittier_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
@@ -19,6 +20,12 @@ typedef KartoBegleiterWert = void Function(
   HeroCompanion begleiter,
   BegleiterPool pool,
   RessourcenAenderung aenderung,
+);
+
+/// Meldet die Probe, die ein Reittier an der Karte angeboten bekommt.
+typedef KartoReittierProbe = void Function(
+  HeroCompanion reittier,
+  ReittierProbeArt art,
 );
 
 /// Abschnitt „Begleiter“ der Spielansicht: laufende LeP, AsP und AuP.
@@ -38,6 +45,7 @@ class KartoBegleiterAbschnitt extends StatelessWidget {
     required this.zustaende,
     required this.onWert,
     required this.onVertrautenAktionen,
+    this.onReittierProbe,
   });
 
   /// Begleiter des Helden in gespeicherter Reihenfolge.
@@ -52,6 +60,10 @@ class KartoBegleiterAbschnitt extends StatelessWidget {
   /// Öffnet die Vertrautenaktionen eines gebundenen Vertrauten.
   final void Function(HeroCompanion vertrauter) onVertrautenAktionen;
 
+  /// Würfelt eine Probe für ein Reittier (Reiten, im Kampf, LO); ohne
+  /// Rückruf bieten die Karten keine Proben an.
+  final KartoReittierProbe? onReittierProbe;
+
   /// Schmalste Karte, ab der mehrere Begleiter in einer weiten Kachel
   /// nebeneinander stehen.
   static const double kartenbreiteMin = 320;
@@ -65,6 +77,7 @@ class KartoBegleiterAbschnitt extends StatelessWidget {
       zustand: zustaende[begleiter[i].id] ?? const BegleiterZustand(),
       onWert: onWert,
       onVertrautenAktionen: onVertrautenAktionen,
+      onReittierProbe: onReittierProbe,
       mitKampf: weit,
     );
     return KartoAbschnitt(
@@ -117,6 +130,7 @@ class _Karte extends StatelessWidget {
     required this.zustand,
     required this.onWert,
     required this.onVertrautenAktionen,
+    required this.onReittierProbe,
     required this.mitKampf,
   });
 
@@ -124,6 +138,7 @@ class _Karte extends StatelessWidget {
   final BegleiterZustand zustand;
   final KartoBegleiterWert onWert;
   final void Function(HeroCompanion vertrauter) onVertrautenAktionen;
+  final KartoReittierProbe? onReittierProbe;
 
   /// Ob die Kampfwerte der Karte mit angezeigt werden (weite Kachel).
   final bool mitKampf;
@@ -172,6 +187,42 @@ class _Karte extends StatelessWidget {
         Text(
           'Keine Maximalwerte eingetragen.',
           style: texte.bodySmall?.copyWith(color: karto.schriftLeise),
+        ),
+      if (onReittierProbe != null && reittierHatProben(begleiter))
+        Padding(
+          padding: const EdgeInsets.only(top: Abstand.knapp),
+          child: Wrap(
+            spacing: Abstand.eng,
+            children: [
+              for (final (art, text, tipp) in const [
+                (
+                  ReittierProbeArt.reiten,
+                  'Reiten-Probe',
+                  'Reiten mit dem Stufenmodifikator des Reittiers',
+                ),
+                (
+                  ReittierProbeArt.reitenImKampf,
+                  'Reiten im Kampf',
+                  'Reiten mit der Kampfzeile des Stufenmodifikators',
+                ),
+                (
+                  ReittierProbeArt.loyalitaet,
+                  'LO-Probe',
+                  'Loyalität des Reittiers (Würfelhilfe, der Meister entscheidet)',
+                ),
+              ])
+                Tooltip(
+                  message: tipp,
+                  child: TextButton(
+                    key: ValueKey<String>(
+                      'karto-begleiter-${begleiter.id}-probe-${art.name}',
+                    ),
+                    onPressed: () => onReittierProbe!(begleiter, art),
+                    child: Text(text),
+                  ),
+                ),
+            ],
+          ),
         ),
       if (vertrauterGebunden)
         Align(

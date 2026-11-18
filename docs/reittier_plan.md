@@ -1,6 +1,6 @@
 # Reittiere: Ausbildung, Reiterkampf, Spiel
 
-Stand: Paket P1 umgesetzt (8. Oktober 2026), P2 und P3 offen. Dieses Dokument hält die Regelquellen, die getroffenen
+Stand: Paket P1 umgesetzt (8. Oktober 2026), P2 teilweise (P2a Proben am 18. November 2026), P3 offen. Dieses Dokument hält die Regelquellen, die getroffenen
 Entscheidungen und die Paketaufteilung für Pferde und andere Reittiere fest.
 Belege stammen aus dem dsa-rules MCP.
 
@@ -15,7 +15,7 @@ an; Ausbildung ist Freitext, und Reiterkampf ist nicht modelliert.
 | Paket | Inhalt | Stand |
 |---|---|---|
 | P1 Pferd-Grundlage | Reit-SF im Katalog, Ausbildungskatalog, Ausbildungsmodell am Begleiter, abgeleitete Wirkwerte, Ausbildungsschritte und Pferde-SF im Begleiter-Tab, gewürfelte Ausbildungsproben | umgesetzt |
-| P2 Spielansicht | laufende LeP/AuP/Wunden je Begleiter im `HeroState` (**LeP/AuP/AsP-Modell `HeroState.begleiterZustaende` mit Anzeige für alle Begleiter seit Vertraute-V2, Wunden offen**), Begleiterkarte in `lib/ui2/spielen/`, LO-Probe, Reiten-Probe mit Stufenmodifikator, Pferdeangriffe würfeln, Rittmeister-Boni | offen |
+| P2 Spielansicht | laufende LeP/AuP/Wunden je Begleiter im `HeroState` (**LeP/AuP/AsP-Modell `HeroState.begleiterZustaende` mit Anzeige für alle Begleiter seit Vertraute-V2, Wunden offen**), Begleiterkarte in `lib/ui2/spielen/`, LO-Probe, Reiten-Probe mit Stufenmodifikator, Pferdeangriffe würfeln, Rittmeister-Boni | **P2a umgesetzt (18.11.2026): Reiten-Probe mit Stufenmodifikator und LO-Probe auf der Reittierkarte**; offen: Wunden, Pferdeangriffe würfeln, Rittmeister-Boni |
 | P3 Gefecht | Schalter „Beritten“, Reiter-SF-Boni nach Hausregel, Reit-AT/PA, Pferdemanöver, Sturmangriff zu Pferd, Pferd als Ziel | offen |
 
 ## Entscheidungen
@@ -111,6 +111,37 @@ Reittieren den Abschnitt „Reittier-Ausbildung“
   Grund im Dialog; gebucht werden kann trotzdem (Zureiter).
 
 Texte setzt `reittier_ausbildung_anzeige_rules.dart` zusammen.
+
+## P2a: Proben auf der Reittierkarte (18.11.2026)
+
+Die Karte eines Reittiers in der Begleiter-Kachel der Spielansicht
+(`karto_begleiterkarte.dart`) bietet drei Knöpfe (nur `BegleiterTyp.reittier`):
+**Reiten-Probe**, **Reiten im Kampf** und **LO-Probe**
+(`karto-begleiter-<id>-probe-reiten|reitenImKampf|loyalitaet`). Der Aufruf geht
+über `KartoBestandsAdapter.reittierProbe` und den Probendialog der
+Gefechtsbrücke samt Würfelprotokoll; gebucht wird nichts, es ist eine
+Würfelhilfe (Auslöser und Folgen entscheidet der Meister).
+
+- Reiten (`reittierReitenProbe`, `lib/rules/derived/reittier_probe_rules.dart`):
+  die Talentprobe des Helden mit dem Stufenmodifikator des Reittiers
+  (`reitenProbenModifikator`, ZBA S. 35) als vorbelegter situativer Erschwernis,
+  im Regelhinweis mit den Bestandteilen (Kampfzeile, ländlich, Magierpferd −1 für
+  Zauberkundige über `detectMagicStatus`) und dem Reiter-Kampfzuschlag als
+  Information. Weitere Zuschläge (Gelände, Reiterkampf, ohne Sattel) setzt der
+  Spieler im Dialog. Ohne erfasste Ausbildung gibt es keinen Modifikator
+  (Hinweis); führt der Held Reiten nicht, erscheint der Grund als Meldung. Die
+  Probe trägt keinen Verweis, ein „Nochmal würfeln“ über die Probensuche liefe
+  sonst ohne den Modifikator.
+- LO (`begleiterLoyalitaetsProbe`): 1W20 auf die wirksame Loyalität (Grundwert,
+  Steigerung, Ausbildung).
+- Kein neues gespeichertes Feld, deshalb keine Modell-, Sync- oder Hashänderung.
+
+**Weiter offen in P2:** Wunden der Begleiter (Wundschwelle von Tieren ist laut
+WdS S. 103 ein Tabellenwert „WS“, die App kennt nur KO; Trefferzonen und
+Wundwirkungen für Vierbeiner sind im Regelwerk nicht belegt), Pferdeangriffe
+würfeln (grenzt an P3: Reit-AT, Reiter-Probe +6, Schaden buchen) und die
+Rittmeister-Boni (brauchen den Epik-Schalter und die Erkennung von
+Schlachtross, Rennpferd und Magierpferd).
 
 ## Offene Punkte nach P1
 

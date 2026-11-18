@@ -176,6 +176,39 @@ void main() {
     expect(bestand.aufrufe, ['vertrautenAktionen:hexe:mira']);
   });
 
+  group('Proben des Reittiers (Reittiere P2)', () {
+    Finder probe(String begleiter, String art) =>
+        find.byKey(ValueKey<String>('karto-begleiter-$begleiter-probe-$art'));
+
+    testWidgets('nur Reittiere bieten Proben an', (tester) async {
+      await zeige(tester, begleiter: const [mira, rosse]);
+      for (final art in ['reiten', 'reitenImKampf', 'loyalitaet']) {
+        expect(probe('rosse', art), findsOneWidget, reason: art);
+        expect(probe('mira', art), findsNothing, reason: art);
+      }
+    });
+
+    testWidgets('jeder Knopf meldet seine Probe', (tester) async {
+      final bestand = await zeige(tester, begleiter: const [rosse]);
+      for (final art in ['reiten', 'reitenImKampf', 'loyalitaet']) {
+        await tester.ensureVisible(probe('rosse', art));
+        await tester.tap(probe('rosse', art));
+        await tester.pumpAndSettle();
+      }
+      expect(bestand.aufrufe, [
+        'reittierProbe:hexe:rosse:reiten',
+        'reittierProbe:hexe:rosse:reitenImKampf',
+        'reittierProbe:hexe:rosse:loyalitaet',
+      ]);
+    });
+
+    testWidgets('schmal mit Textfaktor 2 ohne Überlauf', (tester) async {
+      await zeige(tester, begleiter: const [rosse], breite: 360, skalierung: 2);
+      await tester.ensureVisible(probe('rosse', 'loyalitaet'));
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   testWidgets('breit steht der Abschnitt im Raster neben anderen Kacheln, '
       'vor dem Protokoll', (tester) async {
     await zeige(tester, begleiter: const [mira], breite: 1400);

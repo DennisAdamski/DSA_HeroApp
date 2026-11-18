@@ -833,6 +833,16 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
           pool: pool,
           aenderung: aenderung,
         ),
+        // Nur eine Würfelhilfe, gebucht wird nichts: ohne Editorprüfung.
+        onReittierProbe: (reittier, art) => aktion(
+          () => bestand.reittierProbe(
+            context: context,
+            ref: ref,
+            heroId: heroId,
+            begleiterId: reittier.id,
+            art: art,
+          ),
+        ),
         onVertrautenAktionen: (vertrauter) => aktion(() async {
           if (!await vorHeldenbearbeitung() || !context.mounted) return;
           await bestand.vertrautenAktionen(

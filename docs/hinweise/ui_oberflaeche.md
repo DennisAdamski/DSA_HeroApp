@@ -430,6 +430,10 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `Wrap` nebeneinander stehen; die Datenlage (`ActiveSpellEffectChip`: Name,
   Bonus, Restlaufzeit) trägt keine weitere Darstellung, ein Füllinhalt wäre
   unehrlich.
+- **Reittierproben (Reittiere P2a):** Die Karte eines Reittiers in der
+  Begleiter-Kachel trägt die Knöpfe „Reiten-Probe“, „Reiten im Kampf“ und
+  „LO-Probe“ (Rückruf `onReittierProbe`, Brücke `reittierProbe`); Aufbau und
+  Grenzen in [reittier_plan.md](../reittier_plan.md#p2a-proben-auf-der-reittierkarte-18112026).
 - **Zustandsmarker (SPIEL-03):** `KartoMarkerKachel`
   (`lib/ui2/spielen/karto_marker_kachel.dart`) zeigt freie Marker
   (`HeroState.zustandsmarker`, Modell `ZustandsMarker`) mit Name, Notiz und

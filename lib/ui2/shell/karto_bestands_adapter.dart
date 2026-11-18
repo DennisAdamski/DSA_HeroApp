@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reittier_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
@@ -203,6 +204,20 @@ abstract interface class KartoBestandsAdapter {
     required String begleiterId,
     required BegleiterPool pool,
     required RessourcenAenderung aenderung,
+  });
+
+  /// Würfelt eine Probe für das Reittier [begleiterId] und protokolliert sie.
+  ///
+  /// Reiten (mit dem Stufenmodifikator des Reittiers) oder LO; nur eine
+  /// Würfelhilfe, gebucht wird nichts. Kann die Probe nicht aufgebaut werden
+  /// (Reiten nicht geführt, Werte noch nicht geladen), erscheint der Grund als
+  /// Meldung.
+  Future<void> reittierProbe({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String begleiterId,
+    required ReittierProbeArt art,
   });
 
   /// Speichert den Standort des Helden im Laufzeitzustand.
