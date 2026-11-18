@@ -23,7 +23,7 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
 echtes Firebase) ist abgeschlossen: ARCH-02, ARCH-04 (Gruppenvorgabe), ARCH-06
 und die Plattformprüfungen aus ARCH-07 sind bestanden; ARCH-04 ist abgenommen.
 Alle Spielabend-Punkte (SPIEL-01 bis 07) sind erledigt. Fachlich bleiben nur die
-zurückgestellten Ausbauthemen (MAG-EFF, TRANK, Reittiere P2/P3, Vertraute V3,
+zurückgestellten Ausbauthemen (MAG-EFF, TRANK, Reittiere P2/P3, Vertraute V3b/V3c,
 Reiseroute, Gruppen v2) und die optionalen Lernregeln aus ARCH-04.
 
 ## Fachlicher Ausbau: MAG-EFF – Zaubereffekte
@@ -273,7 +273,7 @@ verlinkten Plan; hier nur Status und offene Punkte.
 | Gefecht ([Implementierung](gefecht_implementation.md), [Folgepakete](archiv/gefecht_folgepakete_plan.md)) | umgesetzt, Review und Restschulden abgeschlossen | – |
 | [Gefechtslage](gefecht_lage_konzept.md) | Schritte 1–7 umgesetzt (16.10.2026) | Konzentration auf einen Gegner (Paradesperre), Bedienung der Taktik |
 | [Reittiere](reittier_plan.md) | P1 umgesetzt (08.10.2026), P2a Proben auf der Reittierkarte und P2b freier Wundzähler (18.11.2026) | P2 Rest (echte Wundregeln für Tiere, Pferdeangriffe würfeln, Rittmeister-Boni), P3 Reiterkampf |
-| [Vertraute](vertraute_plan.md) | V1 und V2 umgesetzt (08.10.2026) | V3 Gefecht |
+| [Vertraute](vertraute_plan.md) | V1 und V2 umgesetzt (08.10.2026), V3a Würfelhilfen im Gefecht (18.11.2026) | V3b Schaden an Begleiter buchen, V3c Initiative und Aktionen |
 | [Reiseroute](reiseroute_plan.md) | Stufe 1 umgesetzt (03.11.2026): Stationsliste, Spielkachel, Zeitleiste. Avesmaps hat am 12.11.2026 geantwortet: Ortsdaten und Route über die Entwickler-API v1 erlaubt, Kacheln nicht. Seit 13.11.2026: Ortsauswahl mit Avesmaps-Orten und Kartenposition, Tabellenansicht im Blatt, Standort-Kachel mit Ortsdetails (D), Aventurien-Karte im Avesmaps-Stil mit Route und Vollbild, Kachelwerkzeug und Karten-Site vorbereitet | Zugang zur Karten-API und Kacheln veröffentlichen, Sichtprüfung im Web, Reisewege zwischen Stationen, Verweis am Standort |
 | [Gruppen v2](gruppen_sharing_offene_schritte.md) | abgesichert, Legacy-Pfad `gruppen/*` gesperrt | Mitglieder in der Oberfläche entfernen, Live-Listener, Windows-Transport, Emulator-Test, optional einmalige Einladungen |
 | Zuletzt (13.–17.11.2026) | Sync: Windows fragt nur Geändertes ab, alte Tombstones verschwinden (SYNC-11); Katalog: Regeltexte in Alchimika, Vertrautenmagie und Paketen verschlüsselt (KAT-01); Heldensiegel (Bildsiegel, [Assets](heldensiegel_assets.md)); Spielen: Heldenbogen-Kacheln, Kompassrose; Gefecht: laufende Zaubereffekte pro Held (17.11.) | – |

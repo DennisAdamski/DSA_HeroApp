@@ -137,8 +137,13 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   erscheint nur als Banner. Inventar und „Gegenstand benutzen“:
   `gefecht_inventar.dart` mit `gefecht_inventar_rules.dart`; abgebucht wird
   erst beim Abschluss nach Bestätigung über `inventar_verbrauch_rules.dart`
-  (`menge` vor `anzahl`, frisch über `updateHero`). Begleiter nur ansehen:
-  `gefecht_begleiter.dart` mit `begleiter_kampfprofil_rules.dart`.
+  (`menge` vor `anzahl`, frisch über `updateHero`). Begleiter
+  (`gefecht_begleiter.dart` mit `begleiter_kampfprofil_rules.dart`): Kampfprofil
+  und laufende Werte zum Nachschlagen, dazu seit V3a Würfelhilfen (AT, PA, TP) je
+  Angriff über `KartoGefechtsAdapter.gefechtsProbe`
+  (`begleiter_gefecht_probe_rules.dart`). Nur Würfel: kein Schreibweg, keine
+  Aktionsmarke, keine Buchung am Gegner (den Treffer überträgt der Spieler);
+  gebundene Vertraute tragen den Hinweis „Angriffe gelten als magisch“.
 - **Reittiere** entwickeln sich nur über die ZBA-Ausbildung, nie über AP
   ([docs/reittier_plan.md](../reittier_plan.md), Pakete P1–P3).
   `HeroCompanion.reittierAusbildung` hält Ausgangsstand, gebuchte Schritte,

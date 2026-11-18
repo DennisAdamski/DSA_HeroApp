@@ -1,6 +1,8 @@
 /// Rechnen mit TP-Angaben in DSA-Schreibweise („1W6+4“, „2W6“, „1W+2 (A)“).
 library;
 
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+
 final RegExp _tpAusdruck = RegExp(
   r'^\s*(\d*\s*[Ww]\s*\d*)\s*(?:([+\-])\s*(\d+))?(.*)$',
 );
@@ -31,4 +33,26 @@ String tpMitZuschlag(String tp, int zuschlag) {
     _ => '$summe',
   };
   return '$wuerfel$festText$rest';
+}
+
+final RegExp _tpWuerfel = RegExp(
+  r'^\s*(\d*)\s*[Ww]\s*(\d*)\s*(?:([+\-])\s*(\d+))?\s*(?:\(.*\))?\s*$',
+);
+
+/// Liest eine TP-Angabe als Würfelausdruck, oder `null`, wenn sie sich nicht
+/// lesen lässt.
+///
+/// Erkennt „1W6“, „2W6+3“, „W6-1“ und „1W+2“ (ohne Seitenzahl gilt der W6,
+/// wie in der DSA-Schreibweise); ein Zusatz in Klammern hinter dem Ausdruck
+/// („(A)“) wird übergangen. Freitext wie „Huf +2“ oder eine leere Angabe
+/// ergeben `null`, damit niemand auf geratene Würfel würfelt.
+DiceSpec? tpAusdruckZuWuerfel(String tp) {
+  final treffer = _tpWuerfel.firstMatch(tp);
+  if (treffer == null) return null;
+  final anzahl = treffer.group(1)!.isEmpty ? 1 : int.parse(treffer.group(1)!);
+  final seiten = treffer.group(2)!.isEmpty ? 6 : int.parse(treffer.group(2)!);
+  if (anzahl < 1 || seiten < 2) return null;
+  final betrag = int.tryParse(treffer.group(4) ?? '') ?? 0;
+  final fest = treffer.group(3) == '-' ? -betrag : betrag;
+  return DiceSpec(count: anzahl, sides: seiten, modifier: fest);
 }

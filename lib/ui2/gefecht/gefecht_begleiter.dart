@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/begleiter_gefecht_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_kampfprofil_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
@@ -11,16 +13,20 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 
 /// Begleiter, Tiere und Vertraute zum Nachschlagen im Gefecht.
 ///
-/// Reine Anzeige (Nutzerentscheidung): keine Proben, kein Schreibweg. Die
-/// laufenden Werte (V2) erscheinen neben den Maxima; bedient werden sie in der
-/// Spielansicht. Handelnde Begleiter kommen erst mit V3. Ohne Begleiter
-/// entfällt der Abschnitt vollständig.
+/// Die laufenden Werte (V2) erscheinen neben den Maxima; bedient werden sie in
+/// der Spielansicht. Mit [onProbe] (V3a) hat jeder Angriff Würfelhilfen für
+/// AT, PA und TP aus dem Kampfprofil. Das sind nur Würfel: Der Begleiter hat
+/// keine Aktionen pro Runde, keine Initiative und keine Buchung am Gegner,
+/// Treffer und Schaden überträgt der Spieler selbst; ein Schreibweg entsteht
+/// nicht. Ohne Begleiter entfällt der Abschnitt vollständig.
 class GefechtBegleiter extends StatelessWidget {
   /// Zeigt je Begleiter ein einklappbares Kampfprofil.
   const GefechtBegleiter({
     super.key,
     required this.begleiter,
     this.zustaende = const <String, BegleiterZustand>{},
+    this.onProbe,
+    this.gesperrt = false,
   });
 
   /// Begleiter des Helden in gespeicherter Reihenfolge.
@@ -28,6 +34,13 @@ class GefechtBegleiter extends StatelessWidget {
 
   /// Laufende Werte je Begleiter-ID; fehlende Einträge sind „voll“.
   final Map<String, BegleiterZustand> zustaende;
+
+  /// Würfelt eine Probe des Begleiters (Dialog und Protokoll liegen bei der
+  /// Brücke); ohne Rückruf entfallen die Würfelknöpfe.
+  final Future<void> Function(ResolvedProbeRequest request)? onProbe;
+
+  /// Sperrt die Würfelknöpfe, solange ein anderer Gefechtsschritt läuft.
+  final bool gesperrt;
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +57,8 @@ class GefechtBegleiter extends StatelessWidget {
                 profil: begleiterKampfprofil(c),
                 herleitung: begleiterHerleitungen(c),
                 laufend: _laufend(c),
+                onProbe: onProbe,
+                gesperrt: gesperrt,
               ),
           ],
         ),
@@ -75,8 +90,16 @@ class _Profil extends StatelessWidget {
     required this.profil,
     required this.herleitung,
     required this.laufend,
+    required this.onProbe,
+    required this.gesperrt,
   });
   final BegleiterKampfprofil profil;
+
+  /// Würfelt eine Probe; `null` ohne Würfelknöpfe.
+  final Future<void> Function(ResolvedProbeRequest request)? onProbe;
+
+  /// Ob die Würfelknöpfe gesperrt sind.
+  final bool gesperrt;
 
   /// Herleitungen der Werte, die das Profil zeigt.
   final BegleiterHerleitungen herleitung;
@@ -123,7 +146,7 @@ class _Profil extends StatelessWidget {
             'Aktuell: $laufend',
             key: ValueKey('gefecht-begleiter-laufend-${p.id}'),
           ),
-        for (final a in p.angriffe)
+        for (final (i, a) in p.angriffe.indexed) ...[
           Text(
             [
               a.name,
@@ -132,6 +155,37 @@ class _Profil extends StatelessWidget {
               if (a.tp.trim().isNotEmpty) 'TP ${a.tp}',
               if (a.dk.trim().isNotEmpty) 'DK ${a.dk}',
             ].join(' · '),
+          ),
+          if (onProbe != null)
+            Wrap(
+              spacing: 8,
+              children: [
+                for (final (art, request) in [
+                  ('at', begleiterAngriffProbe(p, a)),
+                  ('pa', begleiterParadeProbe(p, a)),
+                  ('tp', begleiterSchadenProbe(p, a)),
+                ])
+                  if (request != null)
+                    TextButton(
+                      key: ValueKey('gefecht-begleiter-${p.id}-$i-$art'),
+                      onPressed: gesperrt ? null : () => onProbe!(request),
+                      child: Text('${art.toUpperCase()} würfeln'),
+                    ),
+              ],
+            ),
+          if (onProbe != null &&
+              a.tp.trim().isNotEmpty &&
+              begleiterSchadenProbe(p, a) == null)
+            Text(
+              'TP „${a.tp.trim()}“ lässt sich nicht als Würfel lesen: am Tisch '
+              'würfeln.',
+              key: ValueKey('gefecht-begleiter-${p.id}-$i-tp-hinweis'),
+            ),
+        ],
+        if (p.angriffeMagisch)
+          Text(
+            kBegleiterMagischHinweis,
+            key: ValueKey('gefecht-begleiter-${p.id}-magisch'),
           ),
         Text(
           [

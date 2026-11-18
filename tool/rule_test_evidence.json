@@ -9802,6 +9802,13 @@
         "note": "Reisebericht (Hausregel) S. 1-7 (Chunk 25661, 25662) erneut gelesen: Teilanforderungen (Dickkopf: Klettern und Schwimmen beides notwendig), Sammlungen mit Haken ab 5 (Stadtkenner) und ab 6 (Sektenkenner), Gruppenfolge Bezwinger der Elemente I-III, Meta-Einträge wie Alle Kampferfahrungen gemacht."
       }
     },
+    "test/rules/begleiter_gefecht_probe_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Sichert die Wuerfelhilfen fuer Begleiterangriffe im Gefecht (Vertraute V3a) ab: AT-Probe (1W20 gegen die wirksame AT inklusive Steigerung), PA-Probe (wirksame PA), TP-Wurf aus dem Wuerfelausdruck der TP-Angabe; ohne AT, PA oder lesbare TP gibt es keine Probe. Gebundene Vertraute tragen den Hinweis, dass ihre Angriffe als magisch gelten, andere Begleiter nicht.",
+      "rationale": "Datei und lib/rules/derived/begleiter_gefecht_probe_rules.dart vollstaendig gelesen. Die Werte (AT 10 + 2 gesteigert, PA 5, 1W6, 1W6+3) sind Beispieleingaben; die Wirkwertrechnung ist in begleiter_wirkwert_rules_test.dart geprueft. Der Satz 'Angriffe gelten als magisch' steht in WdZ S. 125 (Vertraute, laut docs/vertraute_plan.md per dsa-rules MCP belegt); hier wird nur geprueft, dass der Hinweis fuer gebundene Vertraute erscheint, keine Regelwirkung (Immunitaeten, Aurapanzer) behauptet.",
+      "sources": []
+    },
     "test/rules/reittier_probe_rules_test.dart": {
       "kind": "product_contract",
       "status": "verified",

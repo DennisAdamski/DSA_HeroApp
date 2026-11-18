@@ -22,4 +22,40 @@ void main() {
   test('ohne Zuschlag bleibt die Angabe unveraendert', () {
     expect(tpMitZuschlag(' 1W6 + 2 ', 0), ' 1W6 + 2 ');
   });
+
+  group('tpAusdruckZuWuerfel', () {
+    test('liest Würfel mit festem Anteil', () {
+      final a = tpAusdruckZuWuerfel('1W6+3')!;
+      expect((a.count, a.sides, a.modifier), (1, 6, 3));
+      final b = tpAusdruckZuWuerfel('2W6')!;
+      expect((b.count, b.sides, b.modifier), (2, 6, 0));
+      final c = tpAusdruckZuWuerfel(' 2 W 6 - 1 ')!;
+      expect((c.count, c.sides, c.modifier), (2, 6, -1));
+      final d = tpAusdruckZuWuerfel('W20')!;
+      expect((d.count, d.sides, d.modifier), (1, 20, 0));
+    });
+
+    test('ohne Seitenzahl gilt der W6 der DSA-Schreibweise', () {
+      final a = tpAusdruckZuWuerfel('1W+4')!;
+      expect((a.count, a.sides, a.modifier), (1, 6, 4));
+    });
+
+    test('ein Zusatz in Klammern wird übergangen', () {
+      final a = tpAusdruckZuWuerfel('1W+4 (A)')!;
+      expect((a.count, a.sides, a.modifier), (1, 6, 4));
+    });
+
+    test('Freitext und leere Angaben sind nicht lesbar', () {
+      expect(tpAusdruckZuWuerfel('Huf +2'), isNull);
+      expect(tpAusdruckZuWuerfel(''), isNull);
+      expect(tpAusdruckZuWuerfel('Gift'), isNull);
+      expect(tpAusdruckZuWuerfel('3'), isNull);
+      expect(tpAusdruckZuWuerfel('1W6 und mehr'), isNull);
+      expect(tpAusdruckZuWuerfel('0W6'), isNull);
+    });
+
+    test('die Anzeige passt zu tpMitZuschlag', () {
+      expect(tpAusdruckZuWuerfel(tpMitZuschlag('1W6', 2))!.label, '1W6+2');
+    });
+  });
 }

@@ -1,6 +1,6 @@
 # Vertraute: Bindung, Entwicklung, Spiel
 
-Stand: Pakete V1 und V2 umgesetzt (8. Oktober 2026); V3 ist offen. Das Dokument
+Stand: Pakete V1 und V2 umgesetzt (8. Oktober 2026); V3a (Würfelhilfen im Gefecht) am 18. November 2026, der Rest von V3 ist offen. Das Dokument
 hält die Regelquellen, die Nutzerentscheidungen und die Paketaufteilung für
 Vertrautentiere von Hexen, Geoden, Zibiljas und Goblin-Schamaninnen fest. Alle
 Belege kommen aus dem dsa-rules MCP. Vorbild ist das Reittier-Paket
@@ -12,7 +12,7 @@ Belege kommen aus dem dsa-rules MCP. Vorbild ist das Reittier-Paket
 |---|---|---|
 | V1 Grundlage | Artenkatalog, Bindung mit AP-Buchung bei der Hexe, AP-Anteil und Übertragung, Steigerung nach WdZ, Zauber je Art, ZBA-Ausbildung | umgesetzt |
 | V2 Spielansicht | laufende LeP/AsP/AuP je Begleiter im `HeroState` (gemeinsam mit Reittier-P2), Regeneration, Vereinigung, Vertrautenzauber würfeln | umgesetzt |
-| V3 Gefecht | Vertraute als handelnde Begleiter, magische Angriffe, besondere Kampfregeln, Schaden in die Laufzeitwerte | offen |
+| V3 Gefecht | Vertraute als handelnde Begleiter, magische Angriffe, besondere Kampfregeln, Schaden in die Laufzeitwerte | **V3a umgesetzt (18.11.2026): AT-, PA- und TP-Würfelhilfen je Begleiterangriff, Hinweis „Angriffe gelten als magisch“**; offen: V3b Schaden an Begleiter buchen, V3c Initiative und Aktionen pro Runde, strukturierte Kampfregeln, Aurapanzer-Wirkung |
 
 ## Entscheidungen (Nutzer, 8. Oktober 2026)
 
@@ -330,12 +330,34 @@ Abgedeckt durch `test/ui/begleiter/vertrauten_spiel_test.dart`,
 - Die Rücknahme eines Abenteuers, das vor dem Einrichten des AP-Anteils
   gebucht wurde, zieht dem Vertrauten nichts ab, weil der Zähler bei 0
   stehen bleibt.
-- Wunden und Zonen der Begleiter fehlen im Laufzeitmodell (V3/Reittier-P3);
-  Schaden an Begleitern wird von Hand über die Schrittknöpfe gebucht.
+- Wunden der Begleiter sind seit Reittiere P2b nur ein freier Zähler
+  (`BegleiterZustand.wunden`) ohne Zonen und Regelwirkung; Schaden an Begleitern
+  wird von Hand über die Schrittknöpfe gebucht (V3b).
 - Die LO-Probe (Gefahr) und die KL-Probe sind Würfelhilfen; die Folgen
   (Loyalitätsänderung) entscheidet der Meister, die App bucht sie nicht.
 - Der „Göttliche Begleiter“ (Hausregel Erweiterung S. 17) bekommt AP wie ein
   Vertrauter, ist aber nicht modelliert.
+
+## V3a: Würfelhilfen im Gefecht (18.11.2026)
+
+Im aufgeklappten Profil eines Begleiters (`GefechtBegleiter`, UI2-Gefecht) hat
+jeder Angriff die Knöpfe „AT würfeln“, „PA würfeln“ (nur mit PA) und „TP würfeln“
+(nur bei lesbarem Würfelausdruck, `tpAusdruckZuWuerfel`, sonst ein Hinweis).
+Zielwerte sind die wirksamen Werte aus `begleiterKampfprofil` (Steigerung und
+Ausbildung); Zu- und Abschläge stellt der Spieler im Probendialog ein. Der
+Aufruf geht über `KartoGefechtsAdapter.gefechtsProbe` und das Würfelprotokoll des
+Helden. Regeln: `lib/rules/derived/begleiter_gefecht_probe_rules.dart`.
+
+**Bewusst nicht gebaut (V3b/V3c):** Es gibt keinen Schreibweg, keine Aktionsmarken
+pro Runde, keine Initiative des Begleiters und keine Buchung am Gegner; den
+Treffer überträgt der Spieler über den Gegnerdialog. Gebundene Vertraute tragen
+den Hinweis „Angriffe gelten als magisch“ (WdZ S. 125), ohne Regelwirkung. Auch
+der Aurapanzer (RS = MR gegen magischen Schaden, Wege der Zauberei S. 32) und die
+Kampfregeln der Arten (Katalogtext) wirken nicht. **Schaden an einen Begleiter**
+zu buchen (V3b) braucht einen eigenen Ablauf mit Vorgangs-ID und Protokoll in
+einem Dokument sowie Regeln zur Schadensart; Gegner-Angriffe auf Begleiter kennt
+das Gefecht nicht. Offen aus der Erkundung: Der Katalog führt für die Katze nur
+den Prankenhieb, die Kampfregel „Doppelangriff“ nennt auch einen Biss.
 
 ## Regelquellen
 

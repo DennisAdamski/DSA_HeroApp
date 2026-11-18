@@ -282,6 +282,17 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                                 GefechtBegleiter(
                                   begleiter: snapshot.hero.companions,
                                   zustaende: snapshot.state.begleiterZustaende,
+                                  gesperrt: _busy,
+                                  // Nur Würfel: kein Schreibweg, nichts wird
+                                  // am Gegner gebucht.
+                                  onProbe: (request) => _run(
+                                    () => _bruecke.gefechtsProbe(
+                                      context: context,
+                                      ref: ref,
+                                      heroId: widget.heroId,
+                                      request: request,
+                                    ),
+                                  ),
                                 ),
                               ],
                               ausruestung: Column(

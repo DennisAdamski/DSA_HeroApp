@@ -75,6 +75,7 @@ class BegleiterKampfprofil {
     required this.sonderfertigkeiten,
     required this.vertrautenmagie,
     this.reittier,
+    this.angriffeMagisch = false,
   });
 
   /// Stabile Begleiter-ID; Namen dürfen sich wiederholen.
@@ -87,6 +88,9 @@ class BegleiterKampfprofil {
 
   /// Ausbildungsstand, falls der Begleiter ein Reittier mit Ausbildung ist.
   final ReittierProfil? reittier;
+
+  /// Ob die Angriffe als magisch gelten (gebundener Vertrauter, WdZ S. 125).
+  final bool angriffeMagisch;
 }
 
 /// Leitet das Kampfprofil eines Begleiters ab, wie es der Begleiter-Tab zeigt.
@@ -138,6 +142,8 @@ BegleiterKampfprofil begleiterKampfprofil(HeroCompanion c) {
           if (r.name.trim().isNotEmpty) r.name,
     ],
     reittier: _reittierProfil(c),
+    angriffeMagisch:
+        c.typ == BegleiterTyp.vertrauter && c.vertrautenBindung != null,
   );
 }
 

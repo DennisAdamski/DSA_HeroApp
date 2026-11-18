@@ -6,8 +6,8 @@ import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_begleiter.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
-/// Das Gefecht zeigt die laufenden Werte der Begleiter (V2), sonst nichts
-/// Neues: Handelnde Begleiter kommen erst mit V3.
+/// Das Gefecht zeigt die laufenden Werte der Begleiter (V2). Die Würfelhilfen
+/// (V3a) prüft gefecht_begleiter_probe_test.dart.
 void main() {
   const mira = HeroCompanion(
     id: 'mira',
