@@ -116,4 +116,52 @@ void main() {
       );
     });
   });
+
+  group('Kampfregeln und Aurapanzer des Vertrauten', () {
+    test('die Kampfregeln stammen aus der gebundenen Art (WdZ S. 124)', () {
+      final p = profil(_kater());
+      expect(p.kampfregeln, contains('Hinterhalt (12)'));
+      expect(p.kampfregeln, contains('Doppelangriff (Prankenhieb und Biss)'));
+    });
+
+    test('ohne Bindung oder bei anderen Begleitern gibt es keine', () {
+      expect(profil(_kater(bindung: null)).kampfregeln, isEmpty);
+      expect(
+        profil(_kater(typ: BegleiterTyp.reittier, bindung: null)).kampfregeln,
+        isEmpty,
+      );
+      expect(
+        profil(
+          _kater(bindung: const VertrautenBindung(artId: 'vart_unbekannt')),
+        ).kampfregeln,
+        isEmpty,
+      );
+    });
+
+    test('der Aurapanzer nennt RS in Höhe der MR gegen magischen Schaden', () {
+      const mitPanzer = HeroCompanion(
+        id: 'kater',
+        name: 'Kater',
+        typ: BegleiterTyp.vertrauter,
+        startMr: 4,
+        vertrautenBindung: VertrautenBindung(artId: 'vart_katze'),
+        sonderfertigkeiten: [
+          HeroCompanionSonderfertigkeit(
+            name: 'Aurapanzer',
+            katalogId: 'magsf_aurapanzer',
+          ),
+        ],
+      );
+      final p = profil(mitPanzer);
+      expect(p.hatAurapanzer, isTrue);
+      final text = begleiterAurapanzerText(p)!;
+      expect(text, contains('RS ${p.mr}'));
+      expect(text, contains('Wege der Zauberei S. 32'));
+      expect(begleiterAurapanzerText(profil(_kater())), isNull);
+    });
+
+    test('der Magisch-Hinweis nennt auch dämonische Wesenheiten', () {
+      expect(kBegleiterMagischHinweis, contains('dämonische Wesenheiten'));
+    });
+  });
 }

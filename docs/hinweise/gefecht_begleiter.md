@@ -143,7 +143,8 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Angriff über `KartoGefechtsAdapter.gefechtsProbe`
   (`begleiter_gefecht_probe_rules.dart`). Nur Würfel: kein Schreibweg, keine
   Aktionsmarke, keine Buchung am Gegner (den Treffer überträgt der Spieler);
-  gebundene Vertraute tragen den Hinweis „Angriffe gelten als magisch“.
+  gebundene Vertraute zeigen den Hinweis „Angriffe gelten als magisch“, die
+  Kampfregeln ihrer Art und bei Aurapanzer dessen Wirkung (alles nur Text).
 - **Reittiere** entwickeln sich nur über die ZBA-Ausbildung, nie über AP
   ([docs/reittier_plan.md](../reittier_plan.md), Pakete P1–P3).
   `HeroCompanion.reittierAusbildung` hält Ausgangsstand, gebuchte Schritte,

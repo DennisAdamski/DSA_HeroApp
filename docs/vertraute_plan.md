@@ -350,14 +350,21 @@ Helden. Regeln: `lib/rules/derived/begleiter_gefecht_probe_rules.dart`.
 
 **Bewusst nicht gebaut (V3b/V3c):** Es gibt keinen Schreibweg, keine Aktionsmarken
 pro Runde, keine Initiative des Begleiters und keine Buchung am Gegner; den
-Treffer überträgt der Spieler über den Gegnerdialog. Gebundene Vertraute tragen
-den Hinweis „Angriffe gelten als magisch“ (WdZ S. 125), ohne Regelwirkung. Auch
-der Aurapanzer (RS = MR gegen magischen Schaden, Wege der Zauberei S. 32) und die
-Kampfregeln der Arten (Katalogtext) wirken nicht. **Schaden an einen Begleiter**
+Treffer überträgt der Spieler über den Gegnerdialog. Das Profil zeigt zusätzlich
+(reiner Text, **ohne Regelwirkung**): den Hinweis „Angriffe gelten als magisch und
+können auch dämonische Wesenheiten verletzen“ (WdZ S. 125), die Kampfregeln der
+gebundenen Vertrautenart aus dem Katalog (WdZ S. 124, `kampfregeln`) und bei
+vorhandenem Aurapanzer „RS in Höhe der MR gegen magischen Schaden“ (Wege der
+Zauberei S. 32; nicht gegen elementare Sekundärschäden und körperliche Angriffe
+von Dämonen). Rechnen kann die App Aurapanzer und Kampfregeln erst, wenn Schaden an
+Begleitern samt Schadensart gebucht wird. **Schaden an einen Begleiter**
 zu buchen (V3b) braucht einen eigenen Ablauf mit Vorgangs-ID und Protokoll in
 einem Dokument sowie Regeln zur Schadensart; Gegner-Angriffe auf Begleiter kennt
-das Gefecht nicht. Offen aus der Erkundung: Der Katalog führt für die Katze nur
-den Prankenhieb, die Kampfregel „Doppelangriff“ nennt auch einen Biss.
+das Gefecht nicht. Geklärt (18.11.2026, WdZ S. 124 per dsa-rules MCP): Die
+Vertrautentabelle führt für Katze und Wildkatze nur **eine** Angriffszeile
+(Katze AT 11, PA 11, TP 1W6); die Kampfregel „Doppelangriff (Prankenhieb und
+Biss)“ nennt den Biss ohne eigene Werte. Der Katalog stimmt mit dem Buch überein,
+einen zweiten Angriff legt der Spieler bei Bedarf selbst an.
 
 ## Regelquellen
 

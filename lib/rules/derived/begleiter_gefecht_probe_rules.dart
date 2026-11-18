@@ -13,7 +13,8 @@ import 'tp_ausdruck_rules.dart';
 
 /// Hinweis zu Angriffen, die als magisch gelten.
 const String kBegleiterMagischHinweis =
-    'Die Angriffe des Vertrauten gelten als magisch (WdZ S. 125).';
+    'Die Angriffe des Vertrauten gelten als magisch und können auch '
+    'dämonische Wesenheiten verletzen (WdZ S. 125).';
 
 String _angriffsname(BegleiterKampfprofil p, BegleiterAngriffsprofil a) =>
     '${p.name}: ${a.name}';

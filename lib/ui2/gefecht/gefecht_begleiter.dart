@@ -187,6 +187,13 @@ class _Profil extends StatelessWidget {
             kBegleiterMagischHinweis,
             key: ValueKey('gefecht-begleiter-${p.id}-magisch'),
           ),
+        if (p.kampfregeln.isNotEmpty)
+          Text(
+            'Kampfregeln (WdZ S. 124): ${p.kampfregeln.join(' · ')}',
+            key: ValueKey('gefecht-begleiter-${p.id}-kampfregeln'),
+          ),
+        if (begleiterAurapanzerText(p) case final panzer?)
+          Text(panzer, key: ValueKey('gefecht-begleiter-${p.id}-aurapanzer')),
         Text(
           [
             if (p.mr != null) 'MR ${p.mr}',

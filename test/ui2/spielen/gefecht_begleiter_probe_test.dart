@@ -145,6 +145,32 @@ void main() {
     expect(anfragen, isEmpty);
   });
 
+  testWidgets('Kampfregeln der Art und Aurapanzer stehen im Profil', (
+    tester,
+  ) async {
+    await zeige(
+      tester,
+      begleiter: kater.copyWith(
+        startMr: 4,
+        sonderfertigkeiten: const [
+          HeroCompanionSonderfertigkeit(
+            name: 'Aurapanzer',
+            katalogId: 'magsf_aurapanzer',
+          ),
+        ],
+      ),
+    );
+    final regeln = find.byKey(
+      const ValueKey('gefecht-begleiter-kater-kampfregeln'),
+    );
+    await tester.ensureVisible(regeln);
+    expect(tester.widget<Text>(regeln).data, contains('Hinterhalt (12)'));
+    expect(
+      find.byKey(const ValueKey('gefecht-begleiter-kater-aurapanzer')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('schmal mit Textfaktor 2 ohne Überlauf', (tester) async {
     await zeige(tester, breite: 360, skalierung: 2);
     await tester.ensureVisible(knopf(0, 'tp'));
