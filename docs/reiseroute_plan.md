@@ -368,11 +368,118 @@ und „In der Nähe“ mit Richtungspfeil. Weit: Karte und Steckbrief links,
 wichtige Orte und Nachbarn rechts. Die Kartenposition (x/y) zeigt die Kachel
 nicht mehr.
 
+**Standort auf der Karte (20.11.2026).**
+
+- **Lageskizze:** Die Lageskizze der Standort-Kachel zeigt keine Reiseroute
+  mehr.
+- **Vollbild aus der Standort-Kachel:** Es öffnet ohne Route
+  (`zeigeKarte(mitRoute: false)`). Im Vollbild blendet ein Knopf die
+  Reiseroute ein und aus.
+- **„Standort hierher“:** Die Infotafel eines Orts oder einer Station
+  bietet den Knopf an, außer für den Standort selbst. Er schreibt über
+  `KartoStandortSetzer`, also über `standortSetzen` der Spielansicht.
+  - Das ist derselbe Weg wie der Standortdialog: frisch am Zustand, bei
+    Ortswechsel mit automatischer Station.
+  - Der Knopf erscheint, wenn die Karte aus der Standort-Kachel oder aus dem
+    Reiseroute-Blatt der Spielansicht geöffnet wurde.
+
 **Offen.** Zugang ist angefragt (Issue 7), die Site `heldensync-karten`
 angelegt. Sobald der Zugang kommt: schneiden, veröffentlichen,
 `KARTEN_KACHELN` in CI und `tool/deploy_web.ps1` setzen, Sichtprüfung neben
 avesmaps.de. Schritt für Schritt in
 [avesmaps_kartenzugang.md](avesmaps_kartenzugang.md).
+
+### B2 · Reisewege statt Luftlinie (Plan, 20.11.2026)
+
+**Ziel.** Zwischen zwei Stationen zeichnet die Karte den Weg, den
+Avesmaps berechnet: Straße, Fluss oder See statt der Luftlinie. Je Etappe
+lässt sich wählen, wie gereist wurde, etwa „nur über Land“ oder „mit dem
+Schiff“. Die Tabelle nennt Meilen und Reisetage. Die Luftlinie bleibt der
+Rückfall.
+
+**Schnittstelle** (`GET /api/v1/route`, ohne Schlüssel, CORS offen):
+
+- **Parameter:**
+  - `von`, `nach`: Kennung oder eindeutiger Name;
+  - `ueber`: höchstens zehn Halte, mit `~` getrennt;
+  - `optimierung`: `schnellste` (Vorgabe) oder `kuerzeste`;
+  - `wege`: aus `land`, `fluss`, `see`, kommagetrennt (Vorgabe alle).
+- **Antwort:**
+  - `gefunden` (mit `grund`: `kein_zusammenhang`, `gesperrt`);
+  - `meilen`, `reisestunden`, `raststunden`, `reisetage`, `stundenProTag`;
+  - `etappen[]` mit `art`, `mittel`, `wege`, `von`/`nach` (x/y), `meilen`;
+  - `linie` als `[x, y]`-Punkte und `hinweise`.
+- **Drossel:** je IP-Adresse; `429` mit `Retry-After`.
+
+**Entscheidungen.**
+
+- **Wahl je Etappe am Ziel-Halt:** Die Wahl gehört zur Station, an der eine
+  Etappe endet: neues optionales Feld `HeroReiseStation.anreise` mit `wege`
+  (Menge aus Land, Fluss, See) und `optimierung`.
+  - Es wird nur bei Belegung geschrieben und kommt in `jsonSchluessel`, die
+    Enums laufen über `leseEnumWert`.
+  - Bestandshelden behalten so ihren Hash, und die Wahl synchronisiert
+    zwischen Geräten.
+  - Ohne Feld gilt die Vorgabe (schnellste, alle Wege).
+- **Ergebnis nur lokal:** Das Ergebnis kommt nie ins Heldendokument. Es
+  liegt im lokalen Zwischenspeicher (Hive-Box `avesmaps_routen_v1`).
+  - Schlüssel ist `vonId|nachId|wege|optimierung`.
+  - Ein Eintrag gilt 30 Tage, ein leeres Ergebnis (`gefunden: false`) einen
+    Tag.
+- **Anfragen nur auf Nutzeraktion:**
+  - „Reisewege berechnen“ im Blatt fragt die fehlenden Etappen nacheinander
+    ab.
+  - Bei `429` hört das Holen auf und meldet die Wartezeit.
+  - Auf der Karte erscheinen nur bereits gespeicherte Wege.
+  - Je Etappe eine Anfrage, damit die Wahl je Etappe wirkt und Treffer im
+    Speicher wiederverwendbar bleiben.
+- **Rückfall Luftlinie:** Die Luftlinie wie heute (Pillen) bleibt, wenn
+  - einer Station die `ortId` fehlt,
+  - der Weg noch nicht geholt ist,
+  - die Anfrage scheitert oder `gefunden: false` meldet.
+- **Varianten:** Der Etappendialog zeigt die gespeicherte Wahl samt
+  Ergebnis. „Vergleichen“ holt auf Wunsch bis zu drei Vorgaben nacheinander:
+  - schnellste, alle Wege;
+  - nur Land;
+  - kürzeste.
+
+  Gespeichert wird die übernommene Variante.
+
+**Schritte.**
+
+1. **Daten:**
+   - Modell `AvesmapsRoute` mit `AvesmapsRoutenEtappe`.
+   - `AvesmapsClient.route()`: tolerant lesen, unbekannte `art`/`hinweise`
+     überspringen, `429`/`503` als `AvesmapsFehler`.
+   - `AvesmapsRoutenRepository` mit Hive-Speicher.
+   - Provider `avesmapsRouteProvider` (Familie je Anfrage, liest nur den
+     Speicher) und `AvesmapsRoutenAbruf` für das Holen.
+   - Tests mit `MockClient` und aufgezeichneten Antworten.
+2. **Regeln** (`reiseroute_rules.dart`, `karten_rules.dart`):
+   - `routenAnfrageFuer(etappe)`: nur mit beiden `ortId`.
+   - Formatierung „365 Meilen · 6½ Reisetage · Straße, Fluss“.
+   - `kartenRoutenPunkte` erhält je Abschnitt optional die `linie`, aufgeteilt
+     nach den Wegarten der `etappen`.
+3. **Karte:**
+   - Der Maler zeichnet eine vorhandene `linie` durchgezogen (`#1452f7` mit
+     weißem Saum, Fluss und See in hellerem Blau gestrichelt), sonst die
+     Pillen der Luftlinie.
+   - Treffer auf die Linie öffnen die Etappe in der Infotafel: Meilen,
+     Reisetage, Wegarten, „Reiseweg ändern“.
+4. **Wahl je Etappe:**
+   - Modellfeld `anreise` samt Eintrag in
+     `test/domain/unbekannte_verschachtelte_felder_test.dart`, geschrieben
+     über `KartoReiserouteSchreiben`.
+   - Etappendialog: Wege als Schalter, Optimierung, Ergebnis, „Vergleichen“.
+   - Tabelle und Zeitleiste nennen Meilen und Reisetage statt der Luftlinie,
+     sobald ein Weg vorliegt.
+5. **Pflichtteile:**
+   - Datenschutzerklärung Abschnitt 6 und Verzeichnis der
+     Verarbeitungstätigkeiten um den Routenabruf ergänzen.
+   - Quellenzeile „Wege: Avesmaps“ unter der Karte.
+
+**Später.** B3 Reiseplaner (vom Standort zu einem Ziel, als Station
+übernehmen) baut auf Schritt 1 und dem Etappendialog auf.
 
 ### Für alle Bausteine
 

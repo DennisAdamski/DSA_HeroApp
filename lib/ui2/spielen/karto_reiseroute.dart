@@ -39,6 +39,7 @@ class KartoReiserouteKachel extends ConsumerStatefulWidget {
     super.key,
     required this.heroId,
     required this.stationen,
+    this.onStandortSetzen,
   });
 
   /// ID im gemeinsam genutzten Heldenspeicher.
@@ -46,6 +47,9 @@ class KartoReiserouteKachel extends ConsumerStatefulWidget {
 
   /// Gespeicherte Stationen in Erfassungsreihenfolge.
   final List<HeroReiseStation> stationen;
+
+  /// Setzt den Standort aus der Karte heraus; `null` bietet es nicht an.
+  final KartoStandortSetzer? onStandortSetzen;
 
   @override
   ConsumerState<KartoReiserouteKachel> createState() =>
@@ -101,8 +105,11 @@ class _KartoReiserouteKachelState extends ConsumerState<KartoReiserouteKachel>
               alignment: Alignment.centerRight,
               child: TextButton(
                 key: const ValueKey<String>('karto-reise-alle'),
-                onPressed: () =>
-                    zeigeReiseroute(context: context, heroId: widget.heroId),
+                onPressed: () => zeigeReiseroute(
+                  context: context,
+                  heroId: widget.heroId,
+                  onStandortSetzen: widget.onStandortSetzen,
+                ),
                 child: Text(
                   etappen.length > anzahl
                       ? 'Ganze Route (${etappen.length})'
@@ -121,6 +128,7 @@ class _KartoReiserouteKachelState extends ConsumerState<KartoReiserouteKachel>
 Future<void> zeigeReiseroute({
   required BuildContext context,
   required String heroId,
+  KartoStandortSetzer? onStandortSetzen,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -134,7 +142,10 @@ Future<void> zeigeReiseroute({
     ),
     builder: (context) => FractionallySizedBox(
       heightFactor: .9,
-      child: KartoReiserouteBlatt(heroId: heroId),
+      child: KartoReiserouteBlatt(
+        heroId: heroId,
+        onStandortSetzen: onStandortSetzen,
+      ),
     ),
   );
 }
@@ -156,10 +167,17 @@ enum KartoReiseAnsicht {
 /// Avesmaps an.
 class KartoReiserouteBlatt extends ConsumerStatefulWidget {
   /// Blatt für den Helden [heroId].
-  const KartoReiserouteBlatt({super.key, required this.heroId});
+  const KartoReiserouteBlatt({
+    super.key,
+    required this.heroId,
+    this.onStandortSetzen,
+  });
 
   /// ID im gemeinsam genutzten Heldenspeicher.
   final String heroId;
+
+  /// Setzt den Standort aus der Karte heraus; `null` bietet es nicht an.
+  final KartoStandortSetzer? onStandortSetzen;
 
   @override
   ConsumerState<KartoReiserouteBlatt> createState() =>
@@ -226,7 +244,11 @@ class _KartoReiserouteBlattState extends ConsumerState<KartoReiserouteBlatt>
               key: const ValueKey<String>('karto-reise-blatt-karte'),
               tooltip: 'Auf der Karte zeigen',
               icon: const Icon(Icons.map_outlined),
-              onPressed: () => zeigeKarte(context, heroId: heroId),
+              onPressed: () => zeigeKarte(
+                context,
+                heroId: heroId,
+                onStandortSetzen: widget.onStandortSetzen,
+              ),
             ),
             const SizedBox(width: Abstand.knapp),
             FilledButton.icon(

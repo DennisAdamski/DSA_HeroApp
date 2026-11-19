@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/karten_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ortsfakten_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_lage_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/karten_providers.dart';
@@ -22,17 +23,32 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_standort.dart';
 /// (90 Meilen).
 const double kKartenFokusHalb = 30;
 
+/// Speichert einen neuen Standort des Helden (frischer Zustandsweg der
+/// Spielansicht, legt bei Ortswechsel eine Station an).
+typedef KartoStandortSetzer = Future<void> Function(String standort);
+
 /// Öffnet die Aventurien-Karte des Helden [heroId] im Vollbild, auf Wunsch
 /// um den Ort [fokus].
+///
+/// [mitRoute] bestimmt, ob die Reiseroute beim Öffnen sichtbar ist; im Blatt
+/// lässt sie sich umschalten. Mit [onStandortSetzen] bietet die Infotafel
+/// „Standort hierher“ an.
 Future<void> zeigeKarte(
   BuildContext context, {
   required String heroId,
   AvesmapsOrt? fokus,
+  bool mitRoute = true,
+  KartoStandortSetzer? onStandortSetzen,
 }) {
   return Navigator.of(context).push(
     MaterialPageRoute<void>(
       fullscreenDialog: true,
-      builder: (_) => KartoKartenBlatt(heroId: heroId, fokus: fokus),
+      builder: (_) => KartoKartenBlatt(
+        heroId: heroId,
+        fokus: fokus,
+        mitRoute: mitRoute,
+        onStandortSetzen: onStandortSetzen,
+      ),
     ),
   );
 }
@@ -51,6 +67,8 @@ class KartoKartenBlatt extends ConsumerStatefulWidget {
     super.key,
     required this.heroId,
     this.fokus,
+    this.mitRoute = true,
+    this.onStandortSetzen,
     this.oeffneLink = oeffneExtern,
   });
 
@@ -59,6 +77,12 @@ class KartoKartenBlatt extends ConsumerStatefulWidget {
 
   /// Ort, um den die Karte aufgeht; ohne ihn Route und Standort.
   final AvesmapsOrt? fokus;
+
+  /// Ob die Reiseroute beim Öffnen sichtbar ist.
+  final bool mitRoute;
+
+  /// Setzt den Standort auf einen Ort der Karte; `null` bietet es nicht an.
+  final KartoStandortSetzer? onStandortSetzen;
 
   /// Öffnet Links außerhalb der App; in Tests ersetzbar.
   final KartoLinkOeffner oeffneLink;
@@ -73,6 +97,8 @@ class _KartoKartenBlattState extends ConsumerState<KartoKartenBlatt>
         KartoReiserouteSchreiben<KartoKartenBlatt> {
   final GlobalKey<KartoKarteState> _karte = GlobalKey<KartoKarteState>();
   KartenTreffer? _treffer;
+  late bool _route = widget.mitRoute;
+  bool _setztStandort = false;
 
   @override
   String get heroId => widget.heroId;
@@ -93,7 +119,7 @@ class _KartoKartenBlattState extends ConsumerState<KartoKartenBlatt>
         ref.watch(avesmapsOrteProvider).asData?.value ?? const <AvesmapsOrt>[];
     final verzeichnis = ref.watch(ortsverzeichnisProvider);
     final manifest = ref.watch(kartenKachelManifestProvider).asData?.value;
-    final punkte = werte == null
+    final punkte = werte == null || !_route
         ? const <KartenRoutenPunkt>[]
         : kartenRoutenPunkte(reiseEtappen(werte.hero.reiseStationen));
     final standort = werte == null
@@ -146,11 +172,27 @@ class _KartoKartenBlattState extends ConsumerState<KartoKartenBlatt>
                 ),
                 const SizedBox(height: 12),
                 KartoKartenKnopf(
-                  key: const ValueKey<String>('karto-karte-route'),
-                  symbol: Icons.route_outlined,
-                  tooltip: 'Route und Standort zeigen',
-                  onPressed: () => _karte.currentState?.einpassen(),
+                  key: const ValueKey<String>('karto-karte-route-umschalten'),
+                  symbol: _route ? Icons.layers : Icons.layers_outlined,
+                  tooltip: _route
+                      ? 'Reiseroute ausblenden'
+                      : 'Reiseroute einblenden',
+                  onPressed: () => setState(() {
+                    _route = !_route;
+                    if (!_route && _treffer is KartenTrefferStation) {
+                      _treffer = null;
+                    }
+                  }),
                 ),
+                if (_route) ...[
+                  const SizedBox(height: 6),
+                  KartoKartenKnopf(
+                    key: const ValueKey<String>('karto-karte-route'),
+                    symbol: Icons.route_outlined,
+                    tooltip: 'Route und Standort zeigen',
+                    onPressed: () => _karte.currentState?.einpassen(),
+                  ),
+                ],
                 if (standort != null) ...[
                   const SizedBox(height: 6),
                   KartoKartenKnopf(
@@ -184,6 +226,11 @@ class _KartoKartenBlattState extends ConsumerState<KartoKartenBlatt>
                   child: _Infotafel(
                     treffer: treffer,
                     bearbeitbar: !gesperrt && !schreibt,
+                    standortName: werte?.state.standort ?? '',
+                    onStandortSetzen:
+                        widget.onStandortSetzen == null || _setztStandort
+                        ? null
+                        : _standortSetzen,
                     fehler: fehler,
                     oeffneLink: widget.oeffneLink,
                     onSchliessen: () => setState(() => _treffer = null),
@@ -199,6 +246,22 @@ class _KartoKartenBlattState extends ConsumerState<KartoKartenBlatt>
       ),
     );
   }
+
+  Future<void> _standortSetzen(String ort) async {
+    final setzer = widget.onStandortSetzen;
+    if (setzer == null || _setztStandort) return;
+    setState(() => _setztStandort = true);
+    try {
+      await setzer(ort);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _setztStandort = false;
+          _treffer = null;
+        });
+      }
+    }
+  }
 }
 
 /// Infotafel zu einem getroffenen Ort oder einer Station, in den Farben der
@@ -207,6 +270,8 @@ class _Infotafel extends ConsumerWidget {
   const _Infotafel({
     required this.treffer,
     required this.bearbeitbar,
+    required this.standortName,
+    required this.onStandortSetzen,
     required this.fehler,
     required this.oeffneLink,
     required this.onSchliessen,
@@ -215,6 +280,12 @@ class _Infotafel extends ConsumerWidget {
 
   final KartenTreffer treffer;
   final bool bearbeitbar;
+
+  /// Gespeicherter Standort; „Standort hierher“ fehlt für genau diesen Ort.
+  final String standortName;
+
+  /// Setzt den Standort; `null`, solange es nicht geht.
+  final ValueChanged<String>? onStandortSetzen;
   final String? fehler;
   final KartoLinkOeffner oeffneLink;
   final VoidCallback onSchliessen;
@@ -305,6 +376,7 @@ class _Infotafel extends ConsumerWidget {
           name: ort.name,
         );
         final wiki = sichererWikiLink(details?.wikiUrl ?? '');
+        _hierherKnopf(knoepfe, ort.name);
         if (karte != null) {
           knoepfe.add(
             _TafelKnopf(
@@ -343,6 +415,7 @@ class _Infotafel extends ConsumerWidget {
             ),
           ],
         ]);
+        _hierherKnopf(knoepfe, station.ort);
         knoepfe.add(
           _TafelKnopf(
             key: const ValueKey<String>('karto-karte-info-bearbeiten'),
@@ -395,6 +468,21 @@ class _Infotafel extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// „Standort hierher“, außer für einen leeren Ort oder den Standort selbst.
+  void _hierherKnopf(List<Widget> knoepfe, String ort) {
+    final name = bereinigeStandort(ort);
+    final setzer = onStandortSetzen;
+    if (name.isEmpty || name == bereinigeStandort(standortName)) return;
+    knoepfe.add(
+      _TafelKnopf(
+        key: const ValueKey<String>('karto-karte-info-hierher'),
+        symbol: Icons.person_pin_circle_outlined,
+        text: 'Standort hierher',
+        onPressed: setzer == null ? null : () => setzer(name),
       ),
     );
   }

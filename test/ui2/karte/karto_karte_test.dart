@@ -277,6 +277,60 @@ void main() {
       expect(await repo.loadHeroById('rondra'), isNotNull);
     });
 
+    testWidgets('Standort hierher setzt den getroffenen Ort', (tester) async {
+      final gesetzt = <String>[];
+      await zeige(
+        tester,
+        start: (heroId) => KartoKartenBlatt(
+          heroId: heroId,
+          mitRoute: false,
+          onStandortSetzen: (standort) async => gesetzt.add(standort),
+        ),
+      );
+      expect(
+        tester.widget<KartoKarte>(find.byType(KartoKarte)).routenPunkte,
+        isEmpty,
+      );
+      // Ohne Route trifft der Tipp auf Gareth den Ort, nicht die Station.
+      await tippeStation(tester, 's1');
+      expect(tester.widget<Text>(_k('karto-karte-info-name')).data, 'Gareth');
+      await tester.tap(_k('karto-karte-info-hierher'));
+      await tester.pumpAndSettle();
+      expect(gesetzt, <String>['Gareth']);
+      expect(_k('karto-karte-info-name'), findsNothing);
+    });
+
+    testWidgets('kein Standort hierher für den Standort selbst', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        start: (heroId) =>
+            KartoKartenBlatt(heroId: heroId, onStandortSetzen: (_) async {}),
+      );
+      // Station 2 liegt in Punin, dem gespeicherten Standort.
+      await tippeStation(tester, 's2');
+      expect(_k('karto-karte-info-name'), findsOneWidget);
+      expect(_k('karto-karte-info-hierher'), findsNothing);
+    });
+
+    testWidgets('die Reiseroute lässt sich ein- und ausblenden', (
+      tester,
+    ) async {
+      await zeige(tester);
+      List<KartenRoutenPunkt> punkte() =>
+          tester.widget<KartoKarte>(find.byType(KartoKarte)).routenPunkte;
+      expect(punkte(), hasLength(2));
+      expect(_k('karto-karte-route'), findsOneWidget);
+      await tester.tap(_k('karto-karte-route-umschalten'));
+      await tester.pump();
+      expect(punkte(), isEmpty);
+      expect(_k('karto-karte-route'), findsNothing);
+      await tester.tap(_k('karto-karte-route-umschalten'));
+      await tester.pump();
+      expect(punkte(), hasLength(2));
+    });
+
     testWidgets('die Lageskizze der Standort-Kachel öffnet das Vollbild', (
       tester,
     ) async {
@@ -294,7 +348,6 @@ void main() {
                 return KartoStandortKachel(
                   standort: werte.state.standort,
                   heroId: heroId,
-                  stationen: werte.hero.reiseStationen,
                   onSpeichern: (_) async {},
                 );
               },
@@ -303,9 +356,18 @@ void main() {
         ),
       );
       expect(_k('karto-standort-skizze'), findsOneWidget);
+      // Die Skizze zeigt den Standort ohne Reiseroute.
+      expect(
+        tester.widget<KartoKarte>(_k('karto-standort-skizze')).routenPunkte,
+        isEmpty,
+      );
       await tester.tap(_k('karto-standort-skizze'));
       await tester.pumpAndSettle();
-      expect(find.byType(KartoKartenBlatt), findsOneWidget);
+      final blatt = tester.widget<KartoKartenBlatt>(
+        find.byType(KartoKartenBlatt),
+      );
+      expect(blatt.mitRoute, isFalse);
+      expect(blatt.onStandortSetzen, isNotNull);
       expect(tester.takeException(), isNull);
     });
   });

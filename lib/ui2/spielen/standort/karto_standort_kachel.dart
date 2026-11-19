@@ -6,12 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/avesmaps_ort.dart';
 import 'package:dsa_heldenverwaltung/data/karte/karten_kachel_manifest.dart';
 import 'package:dsa_heldenverwaltung/domain/avesmaps_ortsdetails.dart';
-import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/ortsfakten.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/karten_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ortsfakten_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_lage_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
@@ -40,8 +37,9 @@ const double kStandortFaktBreite = 96;
 /// Ortsverzeichnis der Wiki Aventurica weiß. Geschrieben wird nur der
 /// Standort, über [onSpeichern] (frischer Zustandsweg der Spielansicht).
 ///
-/// Die Lageskizze ist ein Ausschnitt der Aventurien-Karte mit den
-/// [stationen] als Route; mit [heroId] öffnet ein Tipp die große Karte.
+/// Die Lageskizze ist ein Ausschnitt der Aventurien-Karte ohne Reiseroute;
+/// mit [heroId] öffnet ein Tipp die große Karte, in der sich der Standort
+/// über [onSpeichern] auf einen anderen Ort setzen lässt.
 class KartoStandortKachel extends ConsumerWidget {
   /// Kachel für den gespeicherten [standort].
   const KartoStandortKachel({
@@ -50,7 +48,6 @@ class KartoStandortKachel extends ConsumerWidget {
     required this.onSpeichern,
     this.oeffneLink = oeffneExtern,
     this.heroId,
-    this.stationen = const <HeroReiseStation>[],
   });
 
   /// Gespeicherter Standort; leer, solange keiner festgehalten ist.
@@ -64,9 +61,6 @@ class KartoStandortKachel extends ConsumerWidget {
 
   /// Held für die große Karte; ohne ihn öffnet die Skizze nichts.
   final String? heroId;
-
-  /// Stationen der Reiseroute für die Route in der Skizze.
-  final List<HeroReiseStation> stationen;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -126,12 +120,17 @@ class KartoStandortKachel extends ConsumerWidget {
                   (!angefordert || avesmaps.isEmpty),
               onLaden: fordereAn,
               oeffneLink: oeffneLink,
-              routenPunkte: _merker.routenPunkte(stationen),
               manifest: manifest,
               auskunft: auskunft,
               onKarte: held == null
                   ? null
-                  : () => zeigeKarte(context, heroId: held, fokus: ort),
+                  : () => zeigeKarte(
+                      context,
+                      heroId: held,
+                      fokus: ort,
+                      mitRoute: false,
+                      onStandortSetzen: onSpeichern,
+                    ),
             ),
     );
   }
@@ -178,7 +177,6 @@ class _Ortsansicht extends StatelessWidget {
     required this.ladenMoeglich,
     required this.onLaden,
     required this.oeffneLink,
-    required this.routenPunkte,
     required this.manifest,
     required this.auskunft,
     required this.onKarte,
@@ -194,7 +192,6 @@ class _Ortsansicht extends StatelessWidget {
   final bool ladenMoeglich;
   final VoidCallback onLaden;
   final KartoLinkOeffner oeffneLink;
-  final List<KartenRoutenPunkt> routenPunkte;
   final KartenKachelManifest? manifest;
   final OrtsAuskunft auskunft;
   final VoidCallback? onKarte;
@@ -304,7 +301,6 @@ class _Ortsansicht extends StatelessWidget {
         ? KartoLageskizze(
             skizze: _merker.skizze(ort, avesmaps),
             orte: avesmaps,
-            routenPunkte: routenPunkte,
             manifest: manifest,
             onTap: onKarte,
           )
@@ -904,9 +900,6 @@ class _Merker {
   String? _skizzeOrt;
   Lageskizze? _skizze;
 
-  List<HeroReiseStation>? _stationen;
-  List<KartenRoutenPunkt> _punkte = const <KartenRoutenPunkt>[];
-
   List<NaherOrt> nahe(AvesmapsOrt ort, List<AvesmapsOrt> orte, int grenze) {
     if (!identical(_naheListe, orte) ||
         _naheOrt != ort.id ||
@@ -931,13 +924,5 @@ class _Merker {
     _skizzeListe = orte;
     _skizzeOrt = ort.id;
     return neu;
-  }
-
-  List<KartenRoutenPunkt> routenPunkte(List<HeroReiseStation> stationen) {
-    if (!identical(_stationen, stationen)) {
-      _punkte = kartenRoutenPunkte(reiseEtappen(stationen));
-      _stationen = stationen;
-    }
-    return _punkte;
   }
 }

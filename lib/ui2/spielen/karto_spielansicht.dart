@@ -358,13 +358,18 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
     KartoSpielkachelArt.reiseroute => KartoReiserouteKachel(
       heroId: heroId,
       stationen: werte.hero.reiseStationen,
+      onStandortSetzen: (standort) => bestand.standortSetzen(
+        context: context,
+        ref: ref,
+        heroId: heroId,
+        standort: standort,
+      ),
     ),
     // Schreibt nur den Standort, über denselben Zustandsweg wie die
     // Standortzeile der Abenteuer-Kachel.
     KartoSpielkachelArt.standort => KartoStandortKachel(
       standort: werte.state.standort,
       heroId: heroId,
-      stationen: werte.hero.reiseStationen,
       onSpeichern: (standort) => bestand.standortSetzen(
         context: context,
         ref: ref,
