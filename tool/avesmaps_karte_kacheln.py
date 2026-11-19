@@ -15,10 +15,11 @@ eine Kachelpyramide für die App:
 Die Kacheln gehören nie ins Repository (``/build/`` ist ignoriert); sie gehen
 nur auf die Karten-Site (``firebase deploy --config firebase.karten.json``).
 
-Das Paket lädt man selbst im Browser über den Zugangslink herunter. So sieht
-kein Skript den Schlüssel. Aufruf (Pillow oder pyvips nötig)::
+Das Paket lädt ``tool/avesmaps_karte_laden.py`` (Zugang verdeckt abgefragt,
+nie gespeichert). Dieses Werkzeug sieht den Schlüssel nicht. Aufruf (Pillow
+oder pyvips nötig)::
 
-    python -I tool/avesmaps_karte_kacheln.py --paket ~/Downloads/paket.zip
+    python -I tool/avesmaps_karte_kacheln.py --paket ~/Downloads/avesmaps-paket.zip
 
 Ablauf und Lizenzpflichten: docs/web_deployment.md, Abschnitt
 „Kartenkacheln“, und docs/reiseroute_plan.md.

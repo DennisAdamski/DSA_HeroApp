@@ -239,6 +239,7 @@ jobs:
         run: |
           python -m unittest \
             tool/test_avesmaps_karte_kacheln.py \
+            tool/test_avesmaps_karte_laden.py \
             tool/test_ci_relevant_changes.py \
             tool/test_flutter_ci_structure.py \
             tool/test_flutter_test_shards.py \
@@ -295,6 +296,7 @@ jobs:
             --dart-define=BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --dart-define=FEEDBACK_API_URL="$FEEDBACK_API_URL" \
             --dart-define=RULES_INDEX_API_URL="$RULES_INDEX_API_URL" \
+            --dart-define=KARTEN_KACHELN=https://heldensync-karten.web.app \
             --dart-define=FIREBASE_APP_CHECK_SITE_KEY="$FIREBASE_APP_CHECK_SITE_KEY" \
             --dart-define=LEGAL_RESPONSIBLE_NAME="$LEGAL_RESPONSIBLE_NAME" \
             --dart-define=LEGAL_STREET_ADDRESS="$LEGAL_STREET_ADDRESS" \

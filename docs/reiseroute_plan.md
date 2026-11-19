@@ -404,8 +404,9 @@ avesmaps.de. Schritt für Schritt in
 3. **2c (umgesetzt):** C2 als Aventurien-Karte mit Luftlinie; `linie` aus 2b
    kommt als durchgezogene Linie dazu.
 4. **2d:** B3 Reiseplaner.
-5. **2e (vorbereitet):** C3 mit Schlüssel: Werkzeug, Karten-Site und Anzeige
-   stehen; es fehlen Zugang und Veröffentlichung.
+5. **2e (auf Test, 19.11.2026):** C3 mit Schlüssel. Das Paket ist geladen
+   (`tool/avesmaps_karte_laden.py`) und geschnitten, die Web-Builds setzen
+   `KARTEN_KACHELN`. Offen sind Sichtprüfung und Abnahme vor `main`.
 
 ### Rückfragen an Avesmaps
 

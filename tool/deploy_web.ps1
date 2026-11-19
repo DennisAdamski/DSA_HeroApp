@@ -75,6 +75,7 @@ flutter build web --release --no-wasm-dry-run --no-web-resources-cdn `
     "--dart-define=BUILD_TIME=$buildTime" `
     "--dart-define=FEEDBACK_API_URL=$feedbackApiUrl" `
     "--dart-define=RULES_INDEX_API_URL=$rulesIndexApiUrl" `
+    "--dart-define=KARTEN_KACHELN=https://heldensync-karten.web.app" `
     "--dart-define=FIREBASE_APP_CHECK_SITE_KEY=$AppCheckSiteKey" `
     "--dart-define=LEGAL_RESPONSIBLE_NAME=$LegalResponsibleName" `
     "--dart-define=LEGAL_STREET_ADDRESS=$LegalStreetAddress" `
