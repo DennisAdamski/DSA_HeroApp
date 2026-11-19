@@ -511,8 +511,119 @@ Rückfall.
   - `test/ui2/spielen/karto_reiseweg_test.dart`;
   - Kartentest und Eintrag in `unbekannte_verschachtelte_felder_test.dart`.
 
-**Später.** B3 Reiseplaner (vom Standort zu einem Ziel, als Station
-übernehmen) baut auf Schritt 1 und dem Etappendialog auf.
+**Später.** B3 Reiseplaner, siehe unten.
+
+### B3 · Reiseplaner und Zeitrechnung (Konzept, 20.11.2026)
+
+**Ziel.** Ein Ortswechsel geht auf zwei Wegen:
+
+- **Direkt setzen:** eine Korrektur oder ein Sprung, wie heute.
+- **Reise planen:** vom Standort zu einem Ziel.
+
+Beide Wege stehen in der Standort-Kachel und in der Karten-Infotafel
+(„Standort hierher“ neben „Hierher reisen“). Eine geplante Reise landet als
+Weg in der Reiseroute: Abreise, Ankunft, Anreise und Plan.
+
+**Zeitrechnung: Plan nach Regelwerk, Ist über die Daten.**
+
+- **Strecke und Wegarten von Avesmaps:** `etappen[].art` und `meilen`.
+- **Dauer in der App nach den Regeln:**
+  - Grundlage sind Basisregelwerk S. 192 und Geographia Aventurica S. 123.
+  - Je Etappe gilt Tage = Meilen ÷ (Tagesstrecke des Reisemittels ×
+    Geländemodifikator).
+  - Die Reisetage von Avesmaps gelten nur zu Fuß und ohne Wegart und dienen
+    nur zum Vergleich.
+- **Tagesstrecke an Land:**
+
+  | Reisemittel | normal | Eilmarsch |
+  | --- | --- | --- |
+  | zu Fuß | 30 | 45 |
+  | beritten | 40 | 60 |
+  | Fuhrwerk | 30 | 37,5 (×1,25) |
+  | Kutsche | 50 | 62,5 (×1,25) |
+
+  - Eile gilt nur auf befestigten Wegen.
+  - Fuhrwerk und Kutsche fahren auf Pfaden und querfeldein wie zu Fuß.
+- **Gelände:**
+  - Reichsstraße ×1,1, Straße ×1, Weg und Pfad ×0,8, querfeldein ×0,75
+    (offenes Gelände);
+  - eine unbekannte Wegart zählt ×1 und wird erwähnt.
+- **Wasser:**
+  - Fluss 30 Meilen am Tag (Mittel aus Flusskahn stromauf 20 und stromab
+    40; die Richtung kennt Avesmaps nicht);
+  - See 120 (Lastensegler);
+  - Umsteigen zählt wie zu Fuß.
+- **Herleitung sichtbar:** etwa „Reichsstraße 120 Meilen ÷ (30 × 1,1) =
+  3,6 Tage“.
+- **Ankunft:** Abreise + aufgerundete Plantage. Die Ankunft lässt sich vor
+  dem Übernehmen ändern, etwa für Wetter (×0,9 bis ×0,5), Rast oder Umwege.
+  Eingetragen wird das tatsächliche Datum.
+- **Abweichungen:** Ein Weg, der anders verlief als geplant, hat drei
+  Wege:
+  - das Ankunftsdatum ändern (Ist);
+  - Wegarten oder Reisemittel ändern (Plan);
+  - Zwischenhalte als eigene Stationen anlegen.
+
+  Die Tabelle zeigt Ist und Plan nebeneinander, etwa „+9 Tage · 341 Meilen
+  · Plan 6 Tage · 3 Tage länger“.
+
+**Modell** (nur additiv, Felder nur bei Belegung):
+
+- `HeroReiseAnreise` bekommt `abreise` (Datum), `mittel`
+  (`fuss`/`beritten`/`fuhrwerk`/`kutsche`), `tempo` (`normal`/`eil`) sowie
+  `geplanteTage` und `meilen` als Momentaufnahme. So bleibt der Plan ohne
+  Netz und nach Ablauf des Wegspeichers lesbar.
+- Mit `abreise` trennt die Etappe den Aufenthalt am vorigen Ort
+  (vorige Ankunft bis Abreise) von der Reise (Abreise bis Ankunft).
+
+**Schreiben** (je Schritt ein Dokument):
+
+1. **Bogen:**
+   - Eine Ausgangsstation wird angelegt, wenn die zeitlich letzte Station
+     nicht der Standort ist (Datum = Abreise).
+   - Die Ankunftsstation bekommt Kartenverweis, Ankunftsdatum, Abenteuer und
+     `anreise`.
+   - Auf Wunsch springt das Datum des laufenden Abenteuers auf die Ankunft.
+2. **Zustand:** über `standortSetzen`. Die Brücke legt keine zweite Station
+   an, weil die letzte Station schon das Ziel trägt.
+
+**Regeln:**
+
+- `reisezeit_rules.dart` rechnet die Plantage samt Herleitung.
+- `reiseAntreten(held, …)` rechnet den neuen Bogen (rein, testbar).
+- Belege kommen in die Regeltest-Inventur mit beiden Quellen.
+
+**Oberfläche:** Der Reiseplaner (`KartoReiseplaner`) enthält:
+
+- Von (Standort, braucht einen Kartenverweis) und Nach (Ortsfeld bzw. der
+  Ort der Karte);
+- Wegarten und Optimierung;
+- Reisemittel und Eile;
+- Abreise (Vorgabe: Datum des laufenden Abenteuers, sonst der letzten
+  Station);
+- „Weg berechnen“, dann Strecke, Wegarten, Plan mit Herleitung und eine
+  änderbare Ankunft;
+- „Abenteuerdatum auf Ankunft setzen“;
+- „Reisen“.
+
+Der bestehende Reisewegdialog bekommt Reisemittel und Eile, damit auch
+erfasste Etappen einen Plan haben.
+
+**Stufe 2 (danach):** „Unterwegs“ als Zustand des Helden.
+
+- Aufbrechen setzt den Standort auf „unterwegs nach …“. Die Kachel zeigt
+  den Reisetag („Tag 3 von 6“) und die ungefähre Lage auf der Linie.
+- „Angekommen“ übernimmt das tatsächliche Datum.
+- „Unterwegs anhalten“ legt eine Zwischenstation an der geschätzten Lage
+  an.
+- Das braucht ein neues Feld am Zustand (Hash- und Sync-Regeln beachten)
+  und wird deshalb erst nach der Erprobung von Stufe 1 gebaut.
+
+**Offene Fragen für die nächste Sitzung:**
+
+- Sollen Reittiere der Begleiter das Reisemittel vorbelegen?
+- Soll das Wetter je Reise eingebbar sein, oder reicht die freie Ankunft?
+- Soll „Unterwegs“ gleich mitkommen?
 
 ### Für alle Bausteine
 
