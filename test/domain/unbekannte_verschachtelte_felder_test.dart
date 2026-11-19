@@ -569,12 +569,30 @@ final _begleiterAbenteuerNotizen = <_Modell>[
       ortId: 'o1',
       kartenX: 512.5,
       kartenY: 600,
+      anreise: const HeroReiseAnreise(
+        wege: <String>['land'],
+        optimierung: 'kuerzeste',
+      ),
       lastModified: DateTime.utc(2026, 3, 1),
     ).toJson(),
     lade: (json) => HeroReiseStation.fromJson(json).toJson(),
     bearbeite: (json) =>
         HeroReiseStation.fromJson(json).copyWith(notiz: 'N').toJson(),
     unbekannt: (json) => HeroReiseStation.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroReiseAnreise',
+    schluessel: HeroReiseAnreise.jsonSchluessel,
+    voll: () => const HeroReiseAnreise(
+      wege: <String>['land', 'fluss'],
+      optimierung: 'kuerzeste',
+    ).toJson(),
+    lade: (json) => HeroReiseAnreise.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroReiseAnreise.fromJson(json)
+            .copyWith(optimierung: 'schnellste')
+            .toJson(),
+    unbekannt: (json) => HeroReiseAnreise.fromJson(json).unbekannteFelder,
   ),
   _Modell(
     'HeroAdventureLootEntry',

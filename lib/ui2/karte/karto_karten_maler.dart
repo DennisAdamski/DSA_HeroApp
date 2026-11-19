@@ -233,7 +233,7 @@ class KartenMaler extends CustomPainter {
       for (final punkt in szene.routenPunkte)
         kamera.zuBildschirm(punkt.x, punkt.y, size),
     ];
-    _routenlinie(canvas, route);
+    _route(canvas, size, route);
 
     // Wegpunkte und Reisender halten die Namen fern.
     final frei = <Rect>[
@@ -440,6 +440,53 @@ class KartenMaler extends CustomPainter {
           pinsel..color = markenFarbe(art),
         );
     }
+  }
+
+  // Je Abschnitt der gemerkte Reiseweg als durchgezogene Linie, sonst die
+  // Luftlinie als Pillen.
+  void _route(Canvas canvas, Size size, List<Offset> punkte) {
+    final kamera = szene.kamera;
+    var luftlinie = <Offset>[];
+    for (var i = 0; i < punkte.length; i++) {
+      final linie = i == 0 ? null : szene.routenPunkte[i].linie;
+      if (linie == null) {
+        if (luftlinie.isEmpty && i > 0) luftlinie.add(punkte[i - 1]);
+        luftlinie.add(punkte[i]);
+        continue;
+      }
+      _routenlinie(canvas, luftlinie);
+      luftlinie = <Offset>[];
+      _reiseweg(canvas, <Offset>[
+        punkte[i - 1],
+        for (final (x, y) in linie) kamera.zuBildschirm(x, y, size),
+        punkte[i],
+      ]);
+    }
+    _routenlinie(canvas, luftlinie);
+  }
+
+  // Reiseweg von Avesmaps: durchgezogen in der Routenfarbe mit weißem Saum.
+  void _reiseweg(Canvas canvas, List<Offset> punkte) {
+    if (punkte.length < 2) return;
+    final pfad = Path()..moveTo(punkte.first.dx, punkte.first.dy);
+    for (final p in punkte.skip(1)) {
+      pfad.lineTo(p.dx, p.dy);
+    }
+    final saum = Paint()
+      ..style = PaintingStyle.stroke
+      ..color = KartenFarben.routeSaum
+      ..strokeWidth = kRoutenBreite + 2 * kRoutenSaum
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final kern = Paint()
+      ..style = PaintingStyle.stroke
+      ..color = KartenFarben.route
+      ..strokeWidth = kRoutenBreite
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    canvas
+      ..drawPath(pfad, saum)
+      ..drawPath(pfad, kern);
   }
 
   // Luftlinie als Pillen: Strich und Lücke von Mitte zu Mitte, runde Enden,

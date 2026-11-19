@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
+import 'package:dsa_heldenverwaltung/domain/avesmaps_route.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -84,6 +85,7 @@ class ReiseEtappe {
   const ReiseEtappe({
     required this.station,
     required this.nummer,
+    this.vorherige,
     this.tageSeitVorher,
     this.meilenSeitVorher,
   });
@@ -93,6 +95,9 @@ class ReiseEtappe {
 
   /// Laufende Nummer ab 1 in zeitlicher Reihenfolge.
   final int nummer;
+
+  /// Station am Anfang der Etappe, oder `null` (erste Station).
+  final HeroReiseStation? vorherige;
 
   /// Tage seit der vorigen Station, oder `null` (erste Station, Datum fehlt).
   final int? tageSeitVorher;
@@ -120,6 +125,7 @@ List<ReiseEtappe> reiseEtappen(
       ReiseEtappe(
         station: sortiert[i],
         nummer: i + 1,
+        vorherige: vorher,
         tageSeitVorher: vorher == null
             ? null
             : reiseTageZwischen(vorher, sortiert[i]),
@@ -149,9 +155,26 @@ int? reiseTageGesamt(List<ReiseEtappe> etappen) {
   return letzte! - erste!;
 }
 
-/// Kurzer Text zum Abstand einer Etappe, etwa „+3 Tage · 45 Meilen“, oder
-/// `null`, wenn nichts bekannt ist.
-String? reiseEtappenAbstandText(ReiseEtappe etappe) {
+/// Reisetage eines Wegs, auf Vierteltage gerundet („5¾ Reisetage“); unter
+/// einem halben Tag in Reisestunden.
+String formatiereReisezeit(AvesmapsRoute weg) {
+  if (weg.reisetage < .5) {
+    final stunden = math.max(1, weg.reisestunden.round());
+    return stunden == 1 ? '1 Reisestunde' : '$stunden Reisestunden';
+  }
+  final viertel = (weg.reisetage * 4).round();
+  final ganz = viertel ~/ 4;
+  final bruch = const <String>['', '¼', '½', '¾'][viertel % 4];
+  if (ganz == 0) return '$bruch Reisetag';
+  return viertel == 4 ? '1 Reisetag' : '$ganz$bruch Reisetage';
+}
+
+/// Kurzer Text zum Abstand einer Etappe, etwa „+3 Tage · 45 Meilen
+/// Luftlinie“, oder `null`, wenn nichts bekannt ist.
+///
+/// Mit einem gefundenen [weg] stehen dessen Meilen und Reisezeit statt der
+/// Luftlinie da („+9 Tage · 341 Meilen · 5¾ Reisetage“).
+String? reiseEtappenAbstandText(ReiseEtappe etappe, {AvesmapsRoute? weg}) {
   final teile = <String>[];
   final tage = etappe.tageSeitVorher;
   if (tage != null) {
@@ -164,7 +187,13 @@ String? reiseEtappenAbstandText(ReiseEtappe etappe) {
     });
   }
   final meilen = etappe.meilenSeitVorher;
-  if (meilen != null) teile.add('${meilen.round()} Meilen');
+  if (weg != null && weg.gefunden) {
+    teile
+      ..add('${weg.meilen.round()} Meilen')
+      ..add(formatiereReisezeit(weg));
+  } else if (meilen != null) {
+    teile.add('${meilen.round()} Meilen Luftlinie');
+  }
   return teile.isEmpty ? null : teile.join(' · ');
 }
 

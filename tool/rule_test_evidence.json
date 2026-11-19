@@ -4360,6 +4360,13 @@
       "rationale": "Testdatei und lib/rules/derived/reiseroute_rules.dart gelesen: reine Produktlogik (Sortierung, Kalenderarithmetik über aventurian_age_rules, Listenänderungen per copyWith). Das Regelwerk trifft zur Reiseroute keine Aussage; der Kalenderaufbau ist im Eintrag zu aventurian_age_rules_test belegt, der Maßstab von drei Meilen je Karteneinheit stammt aus der Avesmaps-API-Dokumentation und wird hier nicht als Regel behauptet.",
       "sources": []
     },
+    "test/rules/derived/reiseweg_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft die Reisewege zwischen Stationen: Eine Anfrage an Avesmaps entsteht nur mit Kennung an beiden Enden und verschiedenen Orten und nimmt die Anreise der Zielstation (unbekannte Wegarten entfallen). Die Vorgabe (alle Wege, schnellste) schreibt kein Feld, die Station schreibt die Anreise nur bei Belegung. Texte nennen Wegarten nach Anteil (Umsteigen und Unbekanntes entfallen), Reisezeit in Vierteltagen bzw. Stunden und im Abstand den Weg statt der Luftlinie; Kartenpunkte tragen den gemerkten Weg.",
+      "rationale": "Testdatei und lib/rules/derived/reiseweg_rules.dart gelesen: Anfragebau, Formatierung und Zuordnung von Antworten der Avesmaps-Reiseschnittstelle. Gerechnet werden Wege und Reisezeiten bei Avesmaps; das Regelwerk trifft zu diesen Anzeigen keine Aussage.",
+      "sources": []
+    },
     "test/rules/derived/standort_rules_test.dart": {
       "kind": "product_contract",
       "status": "verified",

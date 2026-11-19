@@ -10,7 +10,7 @@ und später auf einer Aventurien-Karte.
 | --- | --- | --- |
 | 0 | Anfrage an Avesmaps (Ortsverzeichnis, Kacheln, CORS, Namensnennung) | beantwortet (12.11.2026): Ortsdaten und Route ja, Kacheln nein |
 | 1 | Stationsliste am Helden, Spielkachel „Reiseroute“, Blatt mit Zeitleiste | umgesetzt |
-| 2 | Ortssuche mit Koordinaten, Reisewege, Karte mit Route und Pins | A2, A1, Tabellenansicht, Ortsdetails (D), Standort-Kachel und Aventurien-Karte im Avesmaps-Stil (C2, C3 vorbereitet) umgesetzt (13.11.2026); Reisewege und Kartenbild (Schlüssel) offen |
+| 2 | Ortssuche mit Koordinaten, Reisewege, Karte mit Route und Pins | A2, A1, Tabellenansicht, Ortsdetails (D), Standort-Kachel und Aventurien-Karte im Avesmaps-Stil (C2, C3 vorbereitet) umgesetzt (13.11.2026); Kartenbild (C3) auf Test (19.11.2026), Reisewege (B2) umgesetzt (20.11.2026) |
 
 ## Stufe 1 (umgesetzt)
 
@@ -389,7 +389,7 @@ angelegt. Sobald der Zugang kommt: schneiden, veröffentlichen,
 avesmaps.de. Schritt für Schritt in
 [avesmaps_kartenzugang.md](avesmaps_kartenzugang.md).
 
-### B2 · Reisewege statt Luftlinie (Plan, 20.11.2026)
+### B2 · Reisewege statt Luftlinie (umgesetzt 20.11.2026)
 
 **Ziel.** Zwischen zwei Stationen zeichnet die Karte den Weg, den
 Avesmaps berechnet: Straße, Fluss oder See statt der Luftlinie. Je Etappe
@@ -477,6 +477,39 @@ Rückfall.
    - Datenschutzerklärung Abschnitt 6 und Verzeichnis der
      Verarbeitungstätigkeiten um den Routenabruf ergänzen.
    - Quellenzeile „Wege: Avesmaps“ unter der Karte.
+
+**Umsetzung.**
+
+- **Daten:**
+  - `AvesmapsRoute`, `AvesmapsRoutenEtappe` und `AvesmapsRoutenAnfrage`
+    (`lib/domain/avesmaps_route.dart`).
+  - `AvesmapsClient.route()`.
+  - `AvesmapsRoutenRepository` mit `HiveAvesmapsRoutenSpeicher`
+    (`avesmaps_routen_v1`).
+  - `avesmapsReisewegeProvider` (`lib/state/avesmaps_routen_providers.dart`).
+- **Modell:** `HeroReiseStation.anreise` ist ein `HeroReiseAnreise` mit
+  `wege`/`optimierung` als Texte der Schnittstelle. Unbekannte Werte bleiben
+  erhalten, ein Enum entfällt.
+- **Regeln:**
+  - `reiseweg_rules.dart`;
+  - `ReiseEtappe.vorherige`;
+  - `reiseEtappenAbstandText(weg:)`;
+  - `kartenRoutenPunkte(wege:)`.
+- **Oberfläche:**
+  - Im Blatt „Reisewege berechnen“ und je Etappe „Reiseweg“
+    (`KartoReisewegDialog`).
+  - Die Infotafel einer Station nennt die Anreise und öffnet den Dialog.
+  - Die Karte zeichnet gemerkte Wege durchgezogen.
+- **Abweichung vom Plan:** Die Linie wird nicht nach Wegarten eingefärbt.
+  Die `von`/`nach`-Punkte der Etappen teilen die `linie` nicht verlässlich
+  auf (in der Antwort vom 20.11.2026 lagen Lücken dazwischen). Die
+  Wegarten stehen deshalb im Text. Treffer auf die Linie entfallen; die
+  Etappe öffnet sich über die Station.
+- **Tests:**
+  - `test/data/avesmaps/avesmaps_routen_test.dart`;
+  - `test/rules/derived/reiseweg_rules_test.dart`;
+  - `test/ui2/spielen/karto_reiseweg_test.dart`;
+  - Kartentest und Eintrag in `unbekannte_verschachtelte_felder_test.dart`.
 
 **Später.** B3 Reiseplaner (vom Standort zu einem Ziel, als Station
 übernehmen) baut auf Schritt 1 und dem Etappendialog auf.

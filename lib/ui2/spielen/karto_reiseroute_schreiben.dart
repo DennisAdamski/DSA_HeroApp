@@ -4,9 +4,11 @@ import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reiseweg_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseroute_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseweg_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_bestaetigen.dart';
 
 /// Gemeinsamer Schreibweg für Reiseroute-Kachel und Reiseroute-Blatt.
@@ -103,6 +105,40 @@ mixin KartoReiserouteSchreiben<T extends ConsumerStatefulWidget>
       ),
     );
   }
+
+  /// Wählt im Reisewegdialog, wie der Held zur Station der [etappe] gereist
+  /// ist, und speichert die Wahl an dieser Station (`anreise`).
+  ///
+  /// Die Vorgabe entfernt das Feld; eine unveränderte Wahl schreibt nichts.
+  Future<void> reisewegWaehlen(ReiseEtappe etappe) async {
+    if (reisewegAnfrageFuer(etappe) == null) return;
+    final wahl = await zeigeReisewegDialog(context, etappe: etappe);
+    if (wahl == null || !mounted) return;
+    final alt = etappe.station.anreise;
+    final neu = wahl.anreise;
+    if (_gleicheAnreise(alt, neu)) return;
+    await schreibeHeld(
+      (held) => ersetzeReiseStation(
+        held,
+        etappe.station.id,
+        (s) => s.copyWith(
+          // Unbekannte Felder einer neueren Fassung bleiben erhalten.
+          anreise: neu == null
+              ? null
+              : (s.anreise ?? const HeroReiseAnreise()).copyWith(
+                  wege: neu.wege,
+                  optimierung: neu.optimierung,
+                ),
+          lastModified: _jetzt(),
+        ),
+      ),
+    );
+  }
+
+  bool _gleicheAnreise(HeroReiseAnreise? a, HeroReiseAnreise? b) =>
+      anreiseOptimierung(a) == anreiseOptimierung(b) &&
+      anreiseWege(a).length == anreiseWege(b).length &&
+      anreiseWege(a).containsAll(anreiseWege(b));
 
   Future<bool> _bestaetigeLoeschen() async {
     return kartoBestaetigen(

@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/avesmaps_ort.dart';
+import 'package:dsa_heldenverwaltung/domain/avesmaps_route.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/ortsfakten.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/karten_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ortsfakten_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reiseweg_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_lage_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
+import 'package:dsa_heldenverwaltung/state/avesmaps_routen_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/karten_providers.dart';
 import 'package:dsa_heldenverwaltung/state/ort_providers.dart';
@@ -119,9 +122,15 @@ class _KartoKartenBlattState extends ConsumerState<KartoKartenBlatt>
         ref.watch(avesmapsOrteProvider).asData?.value ?? const <AvesmapsOrt>[];
     final verzeichnis = ref.watch(ortsverzeichnisProvider);
     final manifest = ref.watch(kartenKachelManifestProvider).asData?.value;
-    final punkte = werte == null || !_route
+    final wege =
+        ref.watch(avesmapsReisewegeProvider).asData?.value ??
+        const <String, AvesmapsRoute>{};
+    final etappen = werte == null
+        ? const <ReiseEtappe>[]
+        : reiseEtappen(werte.hero.reiseStationen);
+    final punkte = !_route
         ? const <KartenRoutenPunkt>[]
-        : kartenRoutenPunkte(reiseEtappen(werte.hero.reiseStationen));
+        : kartenRoutenPunkte(etappen, wege: wege);
     final standort = werte == null
         ? null
         : ortZumStandort(werte.state.standort, verzeichnis, orte);
@@ -227,6 +236,17 @@ class _KartoKartenBlattState extends ConsumerState<KartoKartenBlatt>
                     treffer: treffer,
                     bearbeitbar: !gesperrt && !schreibt,
                     standortName: werte?.state.standort ?? '',
+                    etappe: switch (treffer) {
+                      KartenTrefferStation(:final station) =>
+                        etappen
+                            .where((e) => e.station.id == station.id)
+                            .firstOrNull,
+                      _ => null,
+                    },
+                    wege: wege,
+                    onReiseweg: (etappe) async {
+                      await reisewegWaehlen(etappe);
+                    },
                     onStandortSetzen:
                         widget.onStandortSetzen == null || _setztStandort
                         ? null
@@ -272,6 +292,9 @@ class _Infotafel extends ConsumerWidget {
     required this.bearbeitbar,
     required this.standortName,
     required this.onStandortSetzen,
+    required this.etappe,
+    required this.wege,
+    required this.onReiseweg,
     required this.fehler,
     required this.oeffneLink,
     required this.onSchliessen,
@@ -286,6 +309,15 @@ class _Infotafel extends ConsumerWidget {
 
   /// Setzt den Standort; `null`, solange es nicht geht.
   final ValueChanged<String>? onStandortSetzen;
+
+  /// Etappe zur getroffenen Station, oder `null`.
+  final ReiseEtappe? etappe;
+
+  /// Gemerkte Reisewege.
+  final Map<String, AvesmapsRoute> wege;
+
+  /// Öffnet die Wahl des Reisewegs.
+  final ValueChanged<ReiseEtappe> onReiseweg;
   final String? fehler;
   final KartoLinkOeffner oeffneLink;
   final VoidCallback onSchliessen;
@@ -405,6 +437,12 @@ class _Infotafel extends ConsumerWidget {
             style: titel,
           ),
           Text(<String>['Station $nummer', ?datum].join(' · '), style: leise),
+          if (_anreiseZeile() case final zeile?)
+            Text(
+              zeile,
+              key: const ValueKey<String>('karto-karte-info-reiseweg'),
+              style: leise,
+            ),
           if (station.notiz.trim().isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(
@@ -416,6 +454,17 @@ class _Infotafel extends ConsumerWidget {
           ],
         ]);
         _hierherKnopf(knoepfe, station.ort);
+        final etappe = this.etappe;
+        if (etappe != null && reisewegAnfrageFuer(etappe) != null) {
+          knoepfe.add(
+            _TafelKnopf(
+              key: const ValueKey<String>('karto-karte-info-reiseweg-knopf'),
+              symbol: Icons.alt_route,
+              text: 'Reiseweg',
+              onPressed: bearbeitbar ? () => onReiseweg(etappe) : null,
+            ),
+          );
+        }
         knoepfe.add(
           _TafelKnopf(
             key: const ValueKey<String>('karto-karte-info-bearbeiten'),
@@ -470,6 +519,19 @@ class _Infotafel extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// Anreise zur Station: der gemerkte Weg, sonst die Luftlinie.
+  String? _anreiseZeile() {
+    final etappe = this.etappe;
+    if (etappe == null || etappe.vorherige == null) return null;
+    final weg = reisewegFuer(etappe, wege);
+    final von = etappe.vorherige!.ort.trim();
+    final herkunft = von.isEmpty ? 'Anreise' : 'Von $von';
+    if (weg != null) return '$herkunft: ${reisewegText(weg)}';
+    final meilen = etappe.meilenSeitVorher;
+    if (meilen == null) return null;
+    return '$herkunft: ${meilen.round()} Meilen Luftlinie';
   }
 
   /// „Standort hierher“, außer für einen leeren Ort oder den Standort selbst.

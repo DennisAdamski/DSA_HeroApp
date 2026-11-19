@@ -20,6 +20,7 @@ class HeroReiseStation {
     this.ortId = '',
     this.kartenX,
     this.kartenY,
+    this.anreise,
     this.lastModified,
     this.unbekannteFelder = const <String, Object?>{},
   });
@@ -49,6 +50,10 @@ class HeroReiseStation {
   /// Kartenposition Süd-Nord im Avesmaps-Kartensystem, oder `null`.
   final double? kartenY;
 
+  /// Wie der Held von der vorigen Station hierher gereist ist (erlaubte
+  /// Wege, Optimierung), oder `null` für die Vorgabe von Avesmaps.
+  final HeroReiseAnreise? anreise;
+
   /// Zeitpunkt der letzten Bearbeitung (UTC).
   final DateTime? lastModified;
 
@@ -74,6 +79,7 @@ class HeroReiseStation {
     'ortId',
     'kartenX',
     'kartenY',
+    'anreise',
     'lastModified',
   };
 
@@ -87,6 +93,7 @@ class HeroReiseStation {
     String? ortId,
     Object? kartenX = keepFieldValue,
     Object? kartenY = keepFieldValue,
+    Object? anreise = keepFieldValue,
     Object? lastModified = keepFieldValue,
     Map<String, Object?>? unbekannteFelder,
   }) {
@@ -103,6 +110,9 @@ class HeroReiseStation {
       kartenY: identical(kartenY, keepFieldValue)
           ? this.kartenY
           : kartenY as double?,
+      anreise: identical(anreise, keepFieldValue)
+          ? this.anreise
+          : anreise as HeroReiseAnreise?,
       lastModified: identical(lastModified, keepFieldValue)
           ? this.lastModified
           : lastModified as DateTime?,
@@ -121,6 +131,7 @@ class HeroReiseStation {
       if (ortId.isNotEmpty) 'ortId': ortId,
       if (kartenX != null) 'kartenX': kartenX,
       if (kartenY != null) 'kartenY': kartenY,
+      if (anreise != null) 'anreise': anreise!.toJson(),
       if (lastModified != null)
         'lastModified': lastModified!.toUtc().toIso8601String(),
     }, unbekannteFelder);
@@ -139,7 +150,74 @@ class HeroReiseStation {
       ortId: getString('ortId'),
       kartenX: (json['kartenX'] as num?)?.toDouble(),
       kartenY: (json['kartenY'] as num?)?.toDouble(),
+      anreise: json['anreise'] is Map
+          ? HeroReiseAnreise.fromJson(
+              Map<String, dynamic>.from(json['anreise'] as Map),
+            )
+          : null,
       lastModified: DateTime.tryParse(json['lastModified']?.toString() ?? ''),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+    );
+  }
+}
+
+/// Wie ein Held zu einer Station gereist ist: die erlaubten Wegarten und die
+/// Optimierung, wie sie die Reiseschnittstelle von Avesmaps versteht.
+///
+/// Die Werte bleiben Texte der Schnittstelle (`land`, `fluss`, `see`;
+/// `schnellste`, `kuerzeste`). Unbekannte Werte einer neueren App-Version
+/// bleiben so beim Speichern erhalten; die Regeln übergehen sie.
+class HeroReiseAnreise {
+  /// Erzeugt die Anreise.
+  const HeroReiseAnreise({
+    this.wege = const <String>[],
+    this.optimierung = '',
+    this.unbekannteFelder = const <String, Object?>{},
+  });
+
+  /// Erlaubte Wegarten; leer heißt alle.
+  final List<String> wege;
+
+  /// Optimierung; leer heißt die Vorgabe (`schnellste`).
+  final String optimierung;
+
+  /// JSON-Felder einer neueren App-Version.
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest.
+  static const Set<String> jsonSchluessel = <String>{'wege', 'optimierung'};
+
+  /// Liefert eine Kopie mit gezielt ersetzten Feldern.
+  HeroReiseAnreise copyWith({
+    List<String>? wege,
+    String? optimierung,
+    Map<String, Object?>? unbekannteFelder,
+  }) {
+    return HeroReiseAnreise(
+      wege: wege ?? this.wege,
+      optimierung: optimierung ?? this.optimierung,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+    );
+  }
+
+  /// Serialisiert die Anreise; Felder nur bei Belegung.
+  Map<String, dynamic> toJson() {
+    return mitUnbekanntenFeldern(<String, dynamic>{
+      if (wege.isNotEmpty) 'wege': List<String>.of(wege),
+      if (optimierung.isNotEmpty) 'optimierung': optimierung,
+    }, unbekannteFelder);
+  }
+
+  /// Liest die Anreise tolerant.
+  static HeroReiseAnreise fromJson(Map<String, dynamic> json) {
+    final wege = json['wege'];
+    return HeroReiseAnreise(
+      wege: List<String>.unmodifiable(<String>[
+        if (wege is List)
+          for (final w in wege)
+            if (w is String && w.isNotEmpty) w,
+      ]),
+      optimierung: json['optimierung']?.toString() ?? '',
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }

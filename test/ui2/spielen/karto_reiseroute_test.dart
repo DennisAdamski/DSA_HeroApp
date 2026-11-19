@@ -333,7 +333,7 @@ void main() {
       expect(station.ort, 'Punin');
       expect(station.ortId, 'ort-punin');
       // Luftlinie Gareth–Punin: rund 205 Karteneinheiten mal drei Meilen.
-      expect(find.text('+6 Tage · 604 Meilen'), findsOneWidget);
+      expect(find.text('+6 Tage · 604 Meilen Luftlinie'), findsOneWidget);
     });
 
     testWidgets('Freitext bleibt ohne Verweis; ein geänderter Ortsname löst '

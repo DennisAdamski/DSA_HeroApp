@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/domain/avesmaps_route.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reiseweg_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
@@ -22,6 +24,8 @@ class KartoReiseTabelle extends StatelessWidget {
     required this.etappen,
     required this.abenteuer,
     this.onStation,
+    this.wege = const <String, AvesmapsRoute>{},
+    this.onReiseweg,
   });
 
   /// Darzustellende Etappen, bereits zeitlich geordnet.
@@ -32,6 +36,12 @@ class KartoReiseTabelle extends StatelessWidget {
 
   /// Öffnet die Bearbeitung; `null` zeigt nur an.
   final ValueChanged<HeroReiseStation>? onStation;
+
+  /// Gemerkte Reisewege; mit Weg stehen dessen Meilen und Reisezeit da.
+  final Map<String, AvesmapsRoute> wege;
+
+  /// Öffnet die Wahl des Reisewegs einer Etappe; `null` bietet sie nicht an.
+  final ValueChanged<ReiseEtappe>? onReiseweg;
 
   /// Breite, ab der die Notiz eine eigene Spalte bekommt.
   static const double breiteMitNotizspalte = 520;
@@ -69,7 +79,15 @@ class KartoReiseTabelle extends StatelessWidget {
                 datum: reiseStationDatumText(etappe.station) ?? '—',
                 abstand: etappe.nummer == 1
                     ? null
-                    : reiseEtappenAbstandText(etappe),
+                    : reiseEtappenAbstandText(
+                        etappe,
+                        weg: reisewegFuer(etappe, wege),
+                      ),
+                onReiseweg:
+                    onReiseweg == null || reisewegAnfrageFuer(etappe) == null
+                    ? null
+                    : () => onReiseweg!(etappe),
+                reisewegSchluessel: 'karto-reise-weg-${etappe.station.id}',
                 ort: etappe.station.ort.trim(),
                 abenteuer:
                     reiseStationAbenteuerTitel(etappe.station, abenteuer) ??
@@ -88,6 +106,30 @@ class KartoReiseTabelle extends StatelessWidget {
   }
 }
 
+/// Kleiner Knopf „Reiseweg“ unter dem Abstand einer Etappe.
+class KartoReisewegKnopf extends StatelessWidget {
+  /// Erstellt den Knopf.
+  const KartoReisewegKnopf({super.key, required this.onPressed});
+
+  /// Öffnet die Wahl des Reisewegs.
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton.icon(
+      style: TextButton.styleFrom(
+        visualDensity: VisualDensity.compact,
+        padding: EdgeInsets.zero,
+        minimumSize: const Size(0, 28),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      onPressed: onPressed,
+      icon: const Icon(Icons.alt_route, size: 16),
+      label: const Text('Reiseweg'),
+    );
+  }
+}
+
 class _Zeile extends StatelessWidget {
   const _Zeile({
     super.key,
@@ -100,6 +142,8 @@ class _Zeile extends StatelessWidget {
     this.abstand,
     this.kopf = false,
     this.onTap,
+    this.onReiseweg,
+    this.reisewegSchluessel = '',
   });
 
   final bool breit;
@@ -111,6 +155,8 @@ class _Zeile extends StatelessWidget {
   final String abenteuer;
   final String notiz;
   final VoidCallback? onTap;
+  final VoidCallback? onReiseweg;
+  final String reisewegSchluessel;
 
   static const double _nummerBreite = 28;
 
@@ -153,6 +199,11 @@ class _Zeile extends StatelessWidget {
                   Text(
                     abstand!,
                     style: texte.marke.copyWith(color: karto.schriftStumm),
+                  ),
+                if (onReiseweg != null)
+                  KartoReisewegKnopf(
+                    key: ValueKey<String>(reisewegSchluessel),
+                    onPressed: onReiseweg!,
                   ),
               ],
             ),

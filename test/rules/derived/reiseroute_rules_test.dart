@@ -93,7 +93,10 @@ void main() {
       expect(etappen.last.tageSeitVorher, 4);
       // 5 Karteneinheiten zu je 3 Meilen.
       expect(etappen.last.meilenSeitVorher, closeTo(15, 1e-9));
-      expect(reiseEtappenAbstandText(etappen.last), '+4 Tage · 15 Meilen');
+      expect(
+        reiseEtappenAbstandText(etappen.last),
+        '+4 Tage · 15 Meilen Luftlinie',
+      );
       expect(reiseTageGesamt(etappen), 4);
     });
 

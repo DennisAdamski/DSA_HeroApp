@@ -4,12 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/ort_loader.dart';
 import 'package:dsa_heldenverwaltung/domain/avesmaps_ort.dart';
+import 'package:dsa_heldenverwaltung/domain/avesmaps_route.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/karten_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reiseweg_rules.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
@@ -96,6 +98,35 @@ void main() {
         expect(find.byType(KartoKarte), findsOneWidget);
       });
     }
+
+    testWidgets('zeichnet einen gemerkten Reiseweg statt der Luftlinie', (
+      tester,
+    ) async {
+      final etappen = reiseEtappen(_stationen);
+      final punkte = kartenRoutenPunkte(
+        etappen,
+        wege: <String, AvesmapsRoute>{
+          reisewegAnfrageFuer(etappen.last)!.schluessel: const AvesmapsRoute(
+            gefunden: true,
+            meilen: 700,
+            reisetage: 9,
+            linie: <(double, double)>[(551, 532), (500, 450), (470, 380)],
+          ),
+        },
+      );
+      expect(punkte.last.linie, hasLength(3));
+      await tester.pumpWidget(
+        _rahmen(
+          SizedBox(
+            width: 400,
+            height: 300,
+            child: KartoKarte(orte: _orte, routenPunkte: punkte),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
 
     testWidgets('Tipps treffen Station und Ort, ins Leere nichts', (
       tester,
