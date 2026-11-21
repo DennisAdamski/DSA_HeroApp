@@ -5,8 +5,10 @@ import 'package:dsa_heldenverwaltung/domain/avesmaps_route.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseweg_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reisezeit_rules.dart';
 import 'package:dsa_heldenverwaltung/state/avesmaps_routen_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseplan_bausteine.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
@@ -35,7 +37,8 @@ Future<KartoReisewegWahl?> zeigeReisewegDialog(
 }
 
 /// Wahl des Reisewegs einer Etappe: erlaubte Wege, Optimierung, Ergebnis
-/// von Avesmaps und der Vergleich mit drei Vorgaben.
+/// von Avesmaps, der Vergleich mit drei Vorgaben und der Plan nach Regelwerk
+/// (Reisemittel, Eile, Wetter).
 class KartoReisewegDialog extends ConsumerStatefulWidget {
   /// Dialog für die [etappe]; sie braucht eine vorige Station.
   const KartoReisewegDialog({super.key, required this.etappe});
@@ -51,6 +54,12 @@ class KartoReisewegDialog extends ConsumerStatefulWidget {
 class _KartoReisewegDialogState extends ConsumerState<KartoReisewegDialog> {
   late Set<String> _wege = anreiseWege(widget.etappe.station.anreise);
   late String _optimierung = anreiseOptimierung(widget.etappe.station.anreise);
+  late String _mittel = reiseMittelOderFuss(
+    widget.etappe.station.anreise?.mittel ?? '',
+  );
+  late bool _eil = widget.etappe.station.anreise?.tempo == kReiseTempoEil;
+  late String _wetter = reiseWetter(widget.etappe.station.anreise?.wetter ?? '')
+      .schluessel;
   bool _laedt = false;
   String? _fehler;
 
@@ -90,6 +99,14 @@ class _KartoReisewegDialogState extends ConsumerState<KartoReisewegDialog> {
     final von = widget.etappe.vorherige?.ort.trim() ?? '';
     final nach = widget.etappe.station.ort.trim();
     final leise = texte.legende.copyWith(color: karto.schriftLeise);
+    final plan = weg == null || !weg.gefunden
+        ? null
+        : reisezeitPlan(
+            weg: weg,
+            mittel: _mittel,
+            tempo: _eil ? kReiseTempoEil : kReiseTempoNormal,
+            wetter: _wetter,
+          );
 
     return AlertDialog(
       title: const Text('Reiseweg'),
@@ -144,13 +161,28 @@ class _KartoReisewegDialogState extends ConsumerState<KartoReisewegDialog> {
                   : (auswahl) => setState(() => _optimierung = auswahl.first),
             ),
             const SizedBox(height: Abstand.weit),
-            if (weg != null)
+            KartoReiseplanWahl(
+              kennung: 'karto-reiseweg',
+              mittel: _mittel,
+              eil: _eil,
+              wetter: _wetter,
+              gesperrt: _laedt,
+              onMittel: (m) => setState(() => _mittel = m),
+              onEil: (e) => setState(() => _eil = e),
+              onWetter: (w) => setState(() => _wetter = w),
+            ),
+            const SizedBox(height: Abstand.weit),
+            if (weg != null) ...[
               Text(
                 reisewegText(weg),
                 key: const ValueKey<String>('karto-reiseweg-ergebnis'),
                 style: texte.fliess,
-              )
-            else
+              ),
+              if (plan != null) ...[
+                const SizedBox(height: Abstand.normal),
+                KartoReiseplanHerleitung(plan: plan),
+              ],
+            ] else
               Text(
                 'Noch nicht berechnet. Ohne Weg gilt die Luftlinie.',
                 style: leise,
@@ -217,7 +249,15 @@ class _KartoReisewegDialogState extends ConsumerState<KartoReisewegDialog> {
           key: const ValueKey<String>('karto-reiseweg-uebernehmen'),
           onPressed: () => Navigator.of(context).pop(
             KartoReisewegWahl(
-              anreiseAus(wege: _wege, optimierung: _optimierung),
+              anreiseMitPlan(
+                alt: widget.etappe.station.anreise,
+                wege: _wege,
+                optimierung: _optimierung,
+                mittel: _mittel,
+                eil: _eil,
+                wetter: _wetter,
+                plan: plan,
+              ),
             ),
           ),
           child: const Text('Übernehmen'),

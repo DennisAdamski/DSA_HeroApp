@@ -365,17 +365,26 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
         standort: standort,
       ),
     ),
-    // Schreibt nur den Standort, über denselben Zustandsweg wie die
-    // Standortzeile der Abenteuer-Kachel.
+    // Schreibt den Standort über denselben Zustandsweg wie die Standortzeile
+    // der Abenteuer-Kachel; Reisen schreiben Reise und Standort gemeinsam.
     KartoSpielkachelArt.standort => KartoStandortKachel(
       standort: werte.state.standort,
       heroId: heroId,
+      unterwegs: werte.state.unterwegs,
       onSpeichern: (standort) => bestand.standortSetzen(
         context: context,
         ref: ref,
         heroId: heroId,
         standort: standort,
       ),
+      onReiseZustand: ({required unterwegs, standort}) =>
+          bestand.reiseZustandSetzen(
+            context: context,
+            ref: ref,
+            heroId: heroId,
+            unterwegs: unterwegs,
+            standort: standort,
+          ),
     ),
     // Schreibt nichts am Helden; gewürfelt wird über die Gefechtsbrücke, die
     // selbst ins Würfelprotokoll schreibt.

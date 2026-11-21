@@ -352,6 +352,17 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Eingabedialog ist `zeigeStandortDialog`; gespeichert wird über
   `standortSetzen`. Tests überschreiben `avesmapsOrteSpeicherProvider` statt
   den Heldenspeicher zu öffnen.
+  **Reiseplaner (21.11.2026):** „Reise planen“ in der Standort-Kachel und
+  „Hierher reisen“ in der Karten-Infotafel öffnen `KartoReiseplaner`
+  (`ui2/spielen/karto_reiseplaner.dart`); die Abläufe (Ankommen,
+  Aufbrechen, Angekommen, Anhalten, Abbrechen) liegen in
+  `karto_reise_ablauf.dart` und schreiben erst den Bogen, dann über
+  `reiseZustandSetzen` den Zustand (Reise und Standort in einem Dokument,
+  ohne Brückenstation). Plantage und Herleitung rechnet
+  `reisezeit_rules.dart`, nie das Widget; Reisemittel, Eile und Wetter wählt
+  `KartoReiseplanWahl` (auch im Reisewegdialog). Ist der Held `unterwegs`,
+  zeigt die Kachel Reisetag und Knöpfe, die Karte den Reisenden an der
+  geschätzten Lage auf dem Weg.
   **Karte (13.11.2026):** `lib/ui2/karte/` zeichnet die Aventurien-Karte im
   Stil von Avesmaps selbst (`KartoKarte`, `CustomPainter`, keine
   Kartenbibliothek); die Lageskizze der Standort-Kachel ist ein nicht

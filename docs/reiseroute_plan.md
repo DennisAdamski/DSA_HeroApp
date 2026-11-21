@@ -513,7 +513,7 @@ Rückfall.
 
 **Später.** B3 Reiseplaner, siehe unten.
 
-### B3 · Reiseplaner und Zeitrechnung (Konzept, 20.11.2026)
+### B3 · Reiseplaner und Zeitrechnung (Konzept 20.11.2026, umgesetzt 21.11.2026)
 
 **Ziel.** Ein Ortswechsel geht auf zwei Wegen:
 
@@ -619,11 +619,42 @@ erfasste Etappen einen Plan haben.
 - Das braucht ein neues Feld am Zustand (Hash- und Sync-Regeln beachten)
   und wird deshalb erst nach der Erprobung von Stufe 1 gebaut.
 
-**Offene Fragen für die nächste Sitzung:**
+**Entscheidungen (21.11.2026):**
 
-- Sollen Reittiere der Begleiter das Reisemittel vorbelegen?
-- Soll das Wetter je Reise eingebbar sein, oder reicht die freie Ankunft?
-- Soll „Unterwegs“ gleich mitkommen?
+- Ein Reittier unter den Begleitern belegt „beritten“ vor.
+- Das Wetter ist je Reise wählbar (×1 bis ×0,3, Basisregelwerk S. 192 und
+  Geographia Aventurica S. 123) und fließt in Herleitung und Ankunft ein.
+- „Unterwegs“ (Stufe 2) kam gleich mit.
+
+**Umsetzung.**
+
+- **Regeln:** `reisezeit_rules.dart` mit `reisezeitPlan` (Herleitung je
+  Wegart, Hinweise), `reisemittelVorschlag`, `reiseAbreiseVorschlag`,
+  `reiseDatumPlus`, `reiseAntreten`, `reiseMitAusgangsstation`,
+  `unterwegsLage`, `reiseUnterwegsAnhalten`, `anreiseMitPlan`,
+  `reiseEtappenText`. Regeltest mit beiden Quellen in der Inventur.
+- **Modell:** `HeroReiseAnreise` mit `abreise`, `mittel`, `tempo`,
+  `wetter`, `geplanteTage`, `meilen`; `HeroUnterwegs` als
+  `HeroState.unterwegs`. Alles nur bei Belegung, Hash-Pins unverändert.
+- **Schreiben:** `karto_reise_ablauf.dart`; Bogen über
+  `aendereHeldAusserhalbPlanung`, Zustand über die neue Adaptermethode
+  `reiseZustandSetzen` (Reise und Standort in einem Dokument).
+- **Oberfläche:** `KartoReiseplaner`, `KartoReiseplanWahl`,
+  `KartoReiseplanHerleitung`; Tafel „Unterwegs nach …“ in der
+  Standort-Kachel; Reisender auf der Karte an der geschätzten Lage;
+  Reisewegdialog mit Reisemittel, Eile und Wetter; Tabelle und Zeitleiste
+  mit Ist und Plan.
+- **Abweichungen:**
+  - Das Wetter wirkt nur an Land; auf Fluss und See nennt ein Hinweis, dass
+    es nicht eingerechnet ist.
+  - Eile entfällt bei Wetter ab ×0,7 (Geographia Aventurica: Sturm und
+    heftiger Regen vereiteln den Eilmarsch).
+  - Statt „Standort auf ‚unterwegs nach …‘“ bleibt der Standort der
+    Ausgangsort; die Reise steht im eigenen Feld `unterwegs`.
+  - „Unterwegs anhalten“ legt eine Rast ohne Avesmaps-Verweis an und beendet
+    die Reise; weiter geht es mit einer neuen Planung.
+- **Tests:** `test/rules/derived/reisezeit_rules_test.dart`,
+  `test/ui2/spielen/karto_reiseplaner_test.dart`, Kartentest, Modelltests.
 
 ### Für alle Bausteine
 
@@ -654,7 +685,7 @@ erfasste Etappen einen Plan haben.
    genaue Rücklinks.
 3. **2c (umgesetzt):** C2 als Aventurien-Karte mit Luftlinie; `linie` aus 2b
    kommt als durchgezogene Linie dazu.
-4. **2d:** B3 Reiseplaner.
+4. **2d (umgesetzt, 21.11.2026):** B3 Reiseplaner mit Zeitrechnung und „Unterwegs“.
 5. **2e (auf Test, 19.11.2026):** C3 mit Schlüssel. Das Paket ist geladen
    (`tool/avesmaps_karte_laden.py`) und geschnitten, die Web-Builds setzen
    `KARTEN_KACHELN`. Offen sind Sichtprüfung und Abnahme vor `main`.

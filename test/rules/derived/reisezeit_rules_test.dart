@@ -360,4 +360,97 @@ void main() {
       expect(rast.anreise!.abreise.day, '1');
     });
   });
+
+  group('Anreise im Reisewegdialog', () {
+    final plan = reisezeitPlan(
+      weg: _weg(const <AvesmapsRoutenEtappe>[
+        AvesmapsRoutenEtappe(art: 'Strasse', meilen: 60),
+      ]),
+    );
+
+    test('mit Plan hält sie Reisemittel, Tage und Meilen fest', () {
+      final neu = anreiseMitPlan(
+        alt: HeroReiseAnreise(abreise: _d('1', 'boron')),
+        wege: const <String>['land', 'fluss', 'see'],
+        optimierung: 'schnellste',
+        mittel: kReiseMittelFuss,
+        eil: false,
+        wetter: '',
+        plan: plan,
+      )!;
+      expect(neu.geplanteTage, 2);
+      expect(neu.meilen, 60);
+      expect(neu.mittel, kReiseMittelFuss);
+      expect(neu.abreise.day, '1');
+      expect(neu.toJson().containsKey('tempo'), isFalse);
+    });
+
+    test('ohne Plan bleibt ein früherer Plan nur unverändert', () {
+      const alt = HeroReiseAnreise(
+        mittel: kReiseMittelFuss,
+        geplanteTage: 2,
+        meilen: 60,
+      );
+      final gleich = anreiseMitPlan(
+        alt: alt,
+        wege: const <String>['land', 'fluss', 'see'],
+        optimierung: 'schnellste',
+        mittel: kReiseMittelFuss,
+        eil: false,
+        wetter: '',
+      );
+      expect(gleicheAnreise(gleich, alt), isTrue);
+      final anders = anreiseMitPlan(
+        alt: alt,
+        wege: const <String>['land'],
+        optimierung: 'schnellste',
+        mittel: kReiseMittelFuss,
+        eil: false,
+        wetter: '',
+      )!;
+      expect(anders.geplanteTage, isNull);
+      expect(anders.wege, <String>['land']);
+      expect(
+        anreiseMitPlan(
+          alt: null,
+          wege: const <String>['land', 'fluss', 'see'],
+          optimierung: 'schnellste',
+          mittel: kReiseMittelFuss,
+          eil: false,
+          wetter: '',
+        ),
+        isNull,
+        reason: 'die reine Vorgabe schreibt kein Feld',
+      );
+    });
+
+    test('Etappentext nennt Ist, Meilen und Plan', () {
+      final held = _held(
+        stationen: <HeroReiseStation>[
+          HeroReiseStation(id: 'a', ort: 'Gareth', datum: _d('1', 'boron')),
+          HeroReiseStation(
+            id: 'b',
+            ort: 'Punin',
+            datum: _d('10', 'boron'),
+            anreise: HeroReiseAnreise(
+              abreise: _d('1', 'boron'),
+              geplanteTage: 5.2,
+              meilen: 341.4,
+            ),
+          ),
+        ],
+      );
+      final etappe = reiseEtappen(held.reiseStationen).last;
+      expect(
+        reiseEtappenText(etappe),
+        '+9 Tage · 341 Meilen · Plan 6 Tage · 3 Tage länger',
+      );
+      expect(
+        unterwegsPlanAnkunft(
+          HeroUnterwegs(ziel: 'Punin', anreise: etappe.station.anreise!),
+        )!.day,
+        '7',
+      );
+    });
+  });
 }

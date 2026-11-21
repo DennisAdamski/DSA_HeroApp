@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/avesmaps_route.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reisezeit_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseweg_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
@@ -79,10 +80,7 @@ class KartoReiseTabelle extends StatelessWidget {
                 datum: reiseStationDatumText(etappe.station) ?? '—',
                 abstand: etappe.nummer == 1
                     ? null
-                    : reiseEtappenAbstandText(
-                        etappe,
-                        weg: reisewegFuer(etappe, wege),
-                      ),
+                    : reiseEtappenText(etappe, weg: reisewegFuer(etappe, wege)),
                 onReiseweg:
                     onReiseweg == null || reisewegAnfrageFuer(etappe) == null
                     ? null

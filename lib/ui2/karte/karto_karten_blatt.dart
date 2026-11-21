@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/karten_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ortsfakten_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseweg_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reisezeit_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_lage_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
@@ -19,6 +20,7 @@ import 'package:dsa_heldenverwaltung/state/ort_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/karte/karto_karte.dart';
 import 'package:dsa_heldenverwaltung/ui2/karte/karto_karten_stil.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reise_ablauf.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseroute_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_standort.dart';
 
@@ -35,13 +37,14 @@ typedef KartoStandortSetzer = Future<void> Function(String standort);
 ///
 /// [mitRoute] bestimmt, ob die Reiseroute beim Öffnen sichtbar ist; im Blatt
 /// lässt sie sich umschalten. Mit [onStandortSetzen] bietet die Infotafel
-/// „Standort hierher“ an.
+/// „Standort hierher“ an, mit [onReiseZustand] „Hierher reisen“.
 Future<void> zeigeKarte(
   BuildContext context, {
   required String heroId,
   AvesmapsOrt? fokus,
   bool mitRoute = true,
   KartoStandortSetzer? onStandortSetzen,
+  KartoReiseZustandSetzer? onReiseZustand,
 }) {
   return Navigator.of(context).push(
     MaterialPageRoute<void>(
@@ -51,6 +54,7 @@ Future<void> zeigeKarte(
         fokus: fokus,
         mitRoute: mitRoute,
         onStandortSetzen: onStandortSetzen,
+        onReiseZustand: onReiseZustand,
       ),
     ),
   );
@@ -72,6 +76,7 @@ class KartoKartenBlatt extends ConsumerStatefulWidget {
     this.fokus,
     this.mitRoute = true,
     this.onStandortSetzen,
+    this.onReiseZustand,
     this.oeffneLink = oeffneExtern,
   });
 
@@ -86,6 +91,10 @@ class KartoKartenBlatt extends ConsumerStatefulWidget {
 
   /// Setzt den Standort auf einen Ort der Karte; `null` bietet es nicht an.
   final KartoStandortSetzer? onStandortSetzen;
+
+  /// Schreibt Reise und Standort; mit ihm bietet die Infotafel „Hierher
+  /// reisen“ an (Reiseplaner).
+  final KartoReiseZustandSetzer? onReiseZustand;
 
   /// Öffnet Links außerhalb der App; in Tests ersetzbar.
   final KartoLinkOeffner oeffneLink;
@@ -131,7 +140,26 @@ class _KartoKartenBlattState extends ConsumerState<KartoKartenBlatt>
     final punkte = !_route
         ? const <KartenRoutenPunkt>[]
         : kartenRoutenPunkte(etappen, wege: wege);
-    final standort = werte == null
+    final unterwegs = werte?.state.unterwegs;
+    // Unterwegs steht der Reisende an der geschätzten Lage auf dem Weg.
+    final lage = unterwegs == null
+        ? null
+        : unterwegsLage(
+            unterwegs,
+            heute: reiseHeute(werte!.hero),
+            linie: switch (unterwegsAnfrage(unterwegs)) {
+              final a? => wege[a.schluessel]?.linie ?? const [],
+              null => const <(double, double)>[],
+            },
+          );
+    final standort = lage != null && lage.hatKartenposition
+        ? AvesmapsOrt(
+            id: 'unterwegs',
+            name: 'Unterwegs nach ${unterwegs!.ziel}',
+            x: lage.kartenX!,
+            y: lage.kartenY!,
+          )
+        : werte == null
         ? null
         : ortZumStandort(werte.state.standort, verzeichnis, orte);
     final fokus = widget.fokus;
@@ -251,6 +279,13 @@ class _KartoKartenBlattState extends ConsumerState<KartoKartenBlatt>
                         widget.onStandortSetzen == null || _setztStandort
                         ? null
                         : _standortSetzen,
+                    onHierherReisen:
+                        widget.onReiseZustand == null ||
+                            _setztStandort ||
+                            unterwegs != null ||
+                            (werte?.state.standort ?? '').trim().isEmpty
+                        ? null
+                        : _hierherReisen,
                     fehler: fehler,
                     oeffneLink: widget.oeffneLink,
                     onSchliessen: () => setState(() => _treffer = null),
@@ -265,6 +300,33 @@ class _KartoKartenBlattState extends ConsumerState<KartoKartenBlatt>
         ],
       ),
     );
+  }
+
+  Future<void> _hierherReisen(AvesmapsOrt ort) async {
+    final setzer = widget.onReiseZustand;
+    if (setzer == null || _setztStandort) return;
+    setState(() => _setztStandort = true);
+    try {
+      await reisePlanen(
+        context,
+        ref,
+        heroId: heroId,
+        zustandSetzen: setzer,
+        ziel: ReiseOrt(
+          name: ort.name,
+          ortId: ort.id,
+          kartenX: ort.x,
+          kartenY: ort.y,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _setztStandort = false;
+          _treffer = null;
+        });
+      }
+    }
   }
 
   Future<void> _standortSetzen(String ort) async {
@@ -292,6 +354,7 @@ class _Infotafel extends ConsumerWidget {
     required this.bearbeitbar,
     required this.standortName,
     required this.onStandortSetzen,
+    required this.onHierherReisen,
     required this.etappe,
     required this.wege,
     required this.onReiseweg,
@@ -309,6 +372,9 @@ class _Infotafel extends ConsumerWidget {
 
   /// Setzt den Standort; `null`, solange es nicht geht.
   final ValueChanged<String>? onStandortSetzen;
+
+  /// Plant eine Reise zum Ort; `null`, solange es nicht geht.
+  final ValueChanged<AvesmapsOrt>? onHierherReisen;
 
   /// Etappe zur getroffenen Station, oder `null`.
   final ReiseEtappe? etappe;
@@ -409,6 +475,18 @@ class _Infotafel extends ConsumerWidget {
         );
         final wiki = sichererWikiLink(details?.wikiUrl ?? '');
         _hierherKnopf(knoepfe, ort.name);
+        final reisen = onHierherReisen;
+        if (reisen != null &&
+            bereinigeStandort(ort.name) != bereinigeStandort(standortName)) {
+          knoepfe.add(
+            _TafelKnopf(
+              key: const ValueKey<String>('karto-karte-info-reisen'),
+              symbol: Icons.hiking,
+              text: 'Hierher reisen',
+              onPressed: () => reisen(ort),
+            ),
+          );
+        }
         if (karte != null) {
           knoepfe.add(
             _TafelKnopf(

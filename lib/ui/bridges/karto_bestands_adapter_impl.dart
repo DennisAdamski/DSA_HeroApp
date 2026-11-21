@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_history_panel.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_unterwegs.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/auth/open_sign_in.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/elixier_einnehmen_dialog.dart';
@@ -814,6 +815,28 @@ class KartoBestandsAdapterImpl
       neuerStandort: standort,
       orte: orte,
     );
+  }
+
+  /// Schreibt Reise und Standort in einem Zustandsdokument.
+  @override
+  Future<bool> reiseZustandSetzen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroUnterwegs? unterwegs,
+    String? standort,
+  }) async {
+    final gespeichert = await aendereZustandMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      was: 'Reise',
+      aenderung: (aktuell) => aktuell.copyWith(
+        unterwegs: unterwegs,
+        standort: standort == null ? null : bereinigeStandort(standort),
+      ),
+    );
+    return gespeichert != null;
   }
 
   /// Hält einen Ortswechsel als Station der Reiseroute fest.

@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_unterwegs.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
@@ -448,6 +450,15 @@ Map<String, dynamic> zustandWieVeroeffentlichteApp(
   }
   for (final marker in _maps(json['zustandsmarker'])) {
     _behalte(marker, ZustandsMarker.jsonSchluessel);
+  }
+  final unterwegs = json['unterwegs'];
+  if (unterwegs is Map<String, dynamic>) {
+    _behalte(unterwegs, HeroUnterwegs.jsonSchluessel);
+    final anreise = unterwegs['anreise'];
+    if (anreise is Map<String, dynamic>) {
+      _behalte(anreise, HeroReiseAnreise.jsonSchluessel);
+      _behalteIn(anreise['abreise'], HeroAdventureDateValue.jsonSchluessel);
+    }
   }
   for (final eintrag in _maps(json['diceLog'])) {
     _behalte(eintrag, DiceLogEntry.jsonSchluessel);

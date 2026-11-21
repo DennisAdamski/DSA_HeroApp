@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/aventurian_age_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/aventurian_calendar_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reiseweg_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 
 // Reisezeit nach Regelwerk: Strecke und Wegarten kommen von Avesmaps, die
@@ -224,8 +225,8 @@ class ReisezeitPlan {
   /// Hinweise, etwa zu Eile oder unbekannten Wegarten.
   final List<String> hinweise;
 
-  /// Ganze Reisetage für die Ankunft (aufgerundet, ohne Strecke null).
-  int get ganzeTage => tage <= 0 ? 0 : math.max(1, (tage - 1e-9).ceil());
+  /// Ganze Reisetage für die Ankunft ([reiseGanzeTage]).
+  int get ganzeTage => reiseGanzeTage(tage);
 
   /// Die Tage zum Speichern, auf Hundertstel gerundet.
   double get gespeicherteTage => (tage * 100).round() / 100;
@@ -332,6 +333,11 @@ ReisezeitPlan reisezeitPlan({
   );
 }
 
+/// Ganze Reisetage zu [tage]: aufgerundet, mindestens einer, ohne Strecke
+/// null.
+int reiseGanzeTage(double tage) =>
+    tage <= 0 ? 0 : math.max(1, (tage - 1e-9).ceil());
+
 /// Zahl mit deutschem Komma, ohne überflüssige Nachkommastellen; mit
 /// [stellen] fest gerundet.
 String formatiereReiseZahl(double wert, {int? stellen}) {
@@ -353,12 +359,7 @@ String reiseTageText(int tage) => tage == 1 ? '1 Tag' : '$tage Tage';
 String? reisePlanText(HeroReiseAnreise? anreise) {
   final tage = anreise?.geplanteTage;
   if (anreise == null || tage == null) return null;
-  final ganz = ReisezeitPlan(
-    meilen: 0,
-    tage: tage,
-    zeilen: const <ReisezeitZeile>[],
-    hinweise: const <String>[],
-  ).ganzeTage;
+  final ganz = reiseGanzeTage(tage);
   return <String>[
     'Plan ${reiseTageText(ganz)}',
     reiseMittelName(anreise.mittel),
@@ -366,6 +367,73 @@ String? reisePlanText(HeroReiseAnreise? anreise) {
     if (reiseWetter(anreise.wetter).schluessel.isNotEmpty)
       reiseWetter(anreise.wetter).name,
   ].join(' · ');
+}
+
+/// Ob zwei Anreisen fachlich gleich sind (bekannte Felder; unbekannte
+/// zählen nicht).
+bool gleicheAnreise(HeroReiseAnreise? a, HeroReiseAnreise? b) {
+  final wa = anreiseWege(a);
+  final wb = anreiseWege(b);
+  final da = a?.abreise ?? const HeroAdventureDateValue();
+  final db = b?.abreise ?? const HeroAdventureDateValue();
+  return anreiseOptimierung(a) == anreiseOptimierung(b) &&
+      wa.length == wb.length &&
+      wa.containsAll(wb) &&
+      da.gleicheAngabe(db) &&
+      (a?.mittel ?? '') == (b?.mittel ?? '') &&
+      (a?.tempo ?? '') == (b?.tempo ?? '') &&
+      (a?.wetter ?? '') == (b?.wetter ?? '') &&
+      a?.geplanteTage == b?.geplanteTage &&
+      a?.meilen == b?.meilen;
+}
+
+/// Die Anreise aus der Wahl im Reisewegdialog.
+///
+/// Mit [plan] hält sie Reisemittel, Tempo, Wetter, Tage und Meilen fest. Ohne
+/// Plan bleibt ein früherer Plan von [alt] nur, wenn Wege, Optimierung,
+/// Reisemittel, Tempo und Wetter unverändert sind. Die Abreise von [alt]
+/// bleibt. Ergibt `null` für die reine Vorgabe.
+HeroReiseAnreise? anreiseMitPlan({
+  required HeroReiseAnreise? alt,
+  required Iterable<String> wege,
+  required String optimierung,
+  required String mittel,
+  required bool eil,
+  required String wetter,
+  ReisezeitPlan? plan,
+}) {
+  final basis =
+      anreiseAus(wege: wege, optimierung: optimierung) ??
+      const HeroReiseAnreise();
+  final tempo = eil ? kReiseTempoEil : '';
+  final unveraendert =
+      gleicheAnreise(
+        alt?.copyWith(
+          abreise: const HeroAdventureDateValue(),
+          mittel: '',
+          tempo: '',
+          wetter: '',
+          geplanteTage: null,
+          meilen: null,
+        ),
+        basis,
+      ) &&
+      reiseMittelOderFuss(alt?.mittel ?? '') == reiseMittelOderFuss(mittel) &&
+      (alt?.tempo ?? '') == tempo &&
+      (alt?.wetter ?? '') == wetter;
+  final mitPlan = plan != null || (unveraendert && (alt?.hatPlan ?? false));
+  final neu = basis.copyWith(
+    abreise: alt?.abreise ?? const HeroAdventureDateValue(),
+    mittel: mitPlan ? mittel : '',
+    tempo: mitPlan ? tempo : '',
+    wetter: mitPlan ? wetter : '',
+    geplanteTage:
+        plan?.gespeicherteTage ?? (mitPlan ? alt?.geplanteTage : null),
+    meilen: plan == null
+        ? (mitPlan ? alt?.meilen : null)
+        : (plan.meilen * 10).round() / 10,
+  );
+  return neu.toJson().isEmpty ? null : neu;
 }
 
 /// Vergleich von Ist und Plan einer Etappe: „Plan 6 Tage · 3 Tage länger“,
@@ -376,12 +444,7 @@ String? reisePlanVergleichText(ReiseEtappe etappe) {
   final anreise = etappe.station.anreise;
   final geplant = anreise?.geplanteTage;
   if (anreise == null || geplant == null) return null;
-  final planTage = ReisezeitPlan(
-    meilen: 0,
-    tage: geplant,
-    zeilen: const <ReisezeitZeile>[],
-    hinweise: const <String>[],
-  ).ganzeTage;
+  final planTage = reiseGanzeTage(geplant);
   final teile = <String>['Plan ${reiseTageText(planTage)}'];
   final ist = anreise.abreise.hasContent
       ? reiseTageZwischenDaten(anreise.abreise, etappe.station.datum)
@@ -393,6 +456,29 @@ String? reisePlanVergleichText(ReiseEtappe etappe) {
     if (diff == 0) teile.add('wie geplant');
   }
   return teile.join(' · ');
+}
+
+/// Text zum Abstand einer Etappe samt Plan: „+9 Tage · 341 Meilen · Plan
+/// 6 Tage · 3 Tage länger“; ohne Plan wie [reiseEtappenAbstandText].
+///
+/// Die Meilen kommen vom gemerkten [weg], sonst aus dem Plan der Anreise.
+String? reiseEtappenText(ReiseEtappe etappe, {AvesmapsRoute? weg}) {
+  final vergleich = reisePlanVergleichText(etappe);
+  if (vergleich == null) return reiseEtappenAbstandText(etappe, weg: weg);
+  final anreise = etappe.station.anreise!;
+  final tage = etappe.tageSeitVorher;
+  final meilen = weg != null && weg.gefunden ? weg.meilen : anreise.meilen;
+  return <String>[
+    if (tage != null)
+      switch (tage) {
+        0 => 'am selben Tag',
+        1 => '+1 Tag',
+        < 0 => '${-tage} ${tage == -1 ? 'Tag' : 'Tage'} früher',
+        _ => '+$tage Tage',
+      },
+    if (meilen != null) '${meilen.round()} Meilen',
+    vergleich,
+  ].join(' · ');
 }
 
 /// Fortlaufende Tagesnummer eines Datums, oder `null`, wenn es unvollständig
@@ -638,6 +724,22 @@ ReiseOrt unterwegsVon(HeroUnterwegs u) => ReiseOrt(
   kartenY: u.vonKartenY,
 );
 
+/// Die Avesmaps-Anfrage für den Weg der laufenden Reise [u], oder `null`
+/// ohne Kennung an beiden Enden.
+AvesmapsRoutenAnfrage? unterwegsAnfrage(HeroUnterwegs u) => reisewegAnfrage(
+  HeroReiseStation(id: 'von', ort: u.vonOrt, ortId: u.vonOrtId),
+  HeroReiseStation(id: 'nach', ort: u.ziel, ortId: u.zielOrtId),
+  anreise: u.anreise,
+);
+
+/// Die geplante Ankunft der laufenden Reise [u], oder `null` ohne Plan oder
+/// Abreise.
+HeroAdventureDateValue? unterwegsPlanAnkunft(HeroUnterwegs u) {
+  final tage = u.anreise.geplanteTage;
+  if (tage == null) return null;
+  return reiseDatumPlus(u.anreise.abreise, reiseGanzeTage(tage));
+}
+
 /// Wo eine laufende Reise steht.
 class UnterwegsLage {
   /// Erstellt die Lage.
@@ -687,14 +789,7 @@ UnterwegsLage unterwegsLage(
   List<(double, double)> linie = const <(double, double)>[],
 }) {
   final geplant = u.anreise.geplanteTage;
-  final ganz = geplant == null
-      ? null
-      : ReisezeitPlan(
-          meilen: 0,
-          tage: geplant,
-          zeilen: const <ReisezeitZeile>[],
-          hinweise: const <String>[],
-        ).ganzeTage;
+  final ganz = geplant == null ? null : reiseGanzeTage(geplant);
   final vergangen = reiseTageZwischenDaten(u.anreise.abreise, heute);
   final tag = vergangen == null || vergangen < 0 ? null : vergangen + 1;
   final anteil = vergangen == null || geplant == null || geplant <= 0

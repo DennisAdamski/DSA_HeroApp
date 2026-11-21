@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseweg_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reisezeit_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseroute_dialog.dart';
@@ -116,7 +117,7 @@ mixin KartoReiserouteSchreiben<T extends ConsumerStatefulWidget>
     if (wahl == null || !mounted) return;
     final alt = etappe.station.anreise;
     final neu = wahl.anreise;
-    if (_gleicheAnreise(alt, neu)) return;
+    if (gleicheAnreise(alt, neu)) return;
     await schreibeHeld(
       (held) => ersetzeReiseStation(
         held,
@@ -128,17 +129,18 @@ mixin KartoReiserouteSchreiben<T extends ConsumerStatefulWidget>
               : (s.anreise ?? const HeroReiseAnreise()).copyWith(
                   wege: neu.wege,
                   optimierung: neu.optimierung,
+                  abreise: neu.abreise,
+                  mittel: neu.mittel,
+                  tempo: neu.tempo,
+                  wetter: neu.wetter,
+                  geplanteTage: neu.geplanteTage,
+                  meilen: neu.meilen,
                 ),
           lastModified: _jetzt(),
         ),
       ),
     );
   }
-
-  bool _gleicheAnreise(HeroReiseAnreise? a, HeroReiseAnreise? b) =>
-      anreiseOptimierung(a) == anreiseOptimierung(b) &&
-      anreiseWege(a).length == anreiseWege(b).length &&
-      anreiseWege(a).containsAll(anreiseWege(b));
 
   Future<bool> _bestaetigeLoeschen() async {
     return kartoBestaetigen(
