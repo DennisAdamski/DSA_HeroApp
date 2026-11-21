@@ -232,9 +232,11 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   den Karten, Suchknopf mit Suchfeld in Abschnitt und Blatt. Die Dialoge für
   Abenteuer-Notizen und -Personen im Notizen-Tab der Verwaltung
   (Bestandsoberfläche) bearbeiten Ort und Datum jetzt ebenfalls (14.11.2026,
-  Test in `hero_workspace_edit_mode_test.dart`). **Offen:** Suche über die
-  allgemeinen Notizen des Helden
-  (`HeroSheet.notes`). *Erledigt 05.11.2026:* Umlautfaltung (`suchFaltung`,
+  Test in `hero_workspace_edit_mode_test.dart`). Die allgemeinen Notizen des
+  Helden (`HeroSheet.notes`, nur im klassischen Notizen-Tab „Chroniken“)
+  haben seit 21.11.2026 ein Suchfeld (`filtereNotizIndizes`,
+  `notizen_suche_rules.dart`; filtert nur die Leseansicht, beim Bearbeiten
+  stehen alle da). *Erledigt 05.11.2026:* Umlautfaltung (`suchFaltung`,
   REV-08: „ö“, „oe“ und „o“ fallen zusammen); das Datum ist strukturiert
   gespeichert (`HeroAdventureDateValue`, REV-01).
 - [x] **SPIEL-07 — Spielansicht selbst anordnen.** Beobachtung: Die feste

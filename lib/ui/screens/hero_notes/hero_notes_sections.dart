@@ -1,6 +1,6 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_notes_tab.dart';
 
-class _NotesSection extends StatelessWidget {
+class _NotesSection extends StatefulWidget {
   const _NotesSection({
     required this.entries,
     required this.isEditing,
@@ -18,7 +18,27 @@ class _NotesSection extends StatelessWidget {
   final void Function(int index, String value) onDescriptionChanged;
 
   @override
+  State<_NotesSection> createState() => _NotesSectionState();
+}
+
+class _NotesSectionState extends State<_NotesSection> {
+  final TextEditingController _suche = TextEditingController();
+
+  @override
+  void dispose() {
+    _suche.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final entries = widget.entries;
+    final isEditing = widget.isEditing;
+    // Die Suche filtert nur die Leseansicht; beim Bearbeiten stehen immer alle
+    // Chroniken da, damit eine neue, noch leere nicht verschwindet.
+    final suchtext = isEditing ? '' : _suche.text;
+    final sichtbar = filtereNotizIndizes(entries, suchtext);
+    final zeigeSuche = !isEditing && entries.isNotEmpty;
     return ListView(
       padding: const EdgeInsets.all(_notesPagePadding),
       children: [
@@ -27,31 +47,70 @@ class _NotesSection extends StatelessWidget {
           subtitle: isEditing ? 'Lege Einträge mit Titel und Beschreibung an.' : 'Tippe auf einen Titel, um die vollständige Beschreibung zu sehen.',
           action: FilledButton(
             key: const ValueKey<String>('notes-add-note'),
-            onPressed: onAdd,
+            onPressed: widget.onAdd,
             child: const Text('+ Chronik'),
           ),
           child: entries.isEmpty
               ? const _EmptyState(message: 'Noch keine Chroniken vorhanden.')
               : Column(
                   children: [
-                    for (var index = 0; index < entries.length; index++)
+                    if (zeigeSuche)
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: _notesFieldSpacing,
+                        ),
+                        child: TextField(
+                          key: const ValueKey<String>('notes-note-search'),
+                          controller: _suche,
+                          textInputAction: TextInputAction.search,
+                          decoration: InputDecoration(
+                            labelText: 'Chroniken durchsuchen',
+                            hintText: 'Titel, Text, Ort oder Datum',
+                            prefixIcon: const Icon(Icons.search),
+                            suffixIcon: _suche.text.isEmpty
+                                ? null
+                                : IconButton(
+                                    key: const ValueKey<String>(
+                                      'notes-note-search-clear',
+                                    ),
+                                    tooltip: 'Suche leeren',
+                                    icon: const Icon(Icons.clear),
+                                    onPressed: () =>
+                                        setState(() => _suche.clear()),
+                                  ),
+                          ),
+                          onChanged: (_) => setState(() {}),
+                        ),
+                      ),
+                    if (sichtbar.isEmpty)
+                      _EmptyState(
+                        message: 'Keine Chronik passt zu „${suchtext.trim()}“.',
+                      ),
+                    for (
+                      var position = 0;
+                      position < sichtbar.length;
+                      position++
+                    )
                       Padding(
                         padding: EdgeInsets.only(
-                          bottom: index == entries.length - 1
+                          bottom: position == sichtbar.length - 1
                               ? 0
                               : _notesFieldSpacing,
                         ),
+                        // Immer der Originalindex: Bearbeiten und Löschen
+                        // arbeiten auf der ungefilterten Liste.
                         child: isEditing
                             ? _EditableNoteCard(
-                                index: index,
-                                entry: entries[index],
-                                onRemove: onRemove,
-                                onTitleChanged: onTitleChanged,
-                                onDescriptionChanged: onDescriptionChanged,
+                                index: sichtbar[position],
+                                entry: entries[sichtbar[position]],
+                                onRemove: widget.onRemove,
+                                onTitleChanged: widget.onTitleChanged,
+                                onDescriptionChanged:
+                                    widget.onDescriptionChanged,
                               )
                             : _ReadOnlyNoteTile(
-                                index: index,
-                                entry: entries[index],
+                                index: sichtbar[position],
+                                entry: entries[sichtbar[position]],
                               ),
                       ),
                   ],

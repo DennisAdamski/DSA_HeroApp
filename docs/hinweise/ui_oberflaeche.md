@@ -711,6 +711,15 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Treffer im eigenen Abenteuer bearbeitet man direkt, Treffer in anderen öffnen
   deren Blatt (im Abschnitt über `onAbenteuerOeffnen` und damit den
   Editorschutz, im Blatt direkt). Die Suche liest nur und schreibt nie.
+  **Suche in den allgemeinen Chroniken (21.11.2026):** Die freien Notizen am Helden
+  (`HeroSheet.notes`) gibt es nur im klassischen Notizen-Tab (`lib/ui/`). Dessen
+  Abschnitt „Freie Chroniken“ hat in der Leseansicht ein Suchfeld (Key
+  `notes-note-search`, Leeren `notes-note-search-clear`). Die Regel
+  `filtereNotizIndizes` (`lib/rules/derived/notizen_suche_rules.dart`) liefert
+  Originalindizes: Titel, Beschreibung, Ort und Datum, `suchFaltung`, jedes Wort
+  muss vorkommen. Beim Bearbeiten entfällt die Suche, alle Chroniken stehen da
+  (eine neue leere bliebe sonst verborgen); Bearbeiten und Löschen laufen
+  über den Originalindex. Die Suche liest nur.
   **Zuletzt gewürfelt (SPIEL-01, Teilstand):** Unter den Schnellaktionen im Seitenkopf
   steht ein Streifen mit bis zu `kZuletztGewuerfeltMax` (6) Marken
   (`KartoZuletztGewuerfelt`, `karto_zuletzt_gewuerfelt.dart`). Welche Proben
