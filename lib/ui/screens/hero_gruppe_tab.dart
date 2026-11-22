@@ -292,6 +292,7 @@ class _GruppenDetailAnsicht extends ConsumerWidget {
           heroId: heroId,
           gruppenCode: mitgliedschaft.gruppenCode,
           kontoGruppe: mitgliedschaft.kontoGruppe,
+          syncAvailable: syncAvailable,
         ),
         const SizedBox(height: 16),
         _AktionsLeiste(
