@@ -1,8 +1,10 @@
+import 'package:dsa_heldenverwaltung/catalog/vertrauten_katalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 
 import 'begleiter_wirkwert_rules.dart';
 import 'reittier_ausbildung_rules.dart';
 import 'ruestung_be_rules.dart';
+import 'vertrauten_aurapanzer_rules.dart';
 
 export 'companion_steigerung_rules.dart'
     show begleiterAngriffAt, begleiterAngriffPa;
@@ -75,6 +77,9 @@ class BegleiterKampfprofil {
     required this.sonderfertigkeiten,
     required this.vertrautenmagie,
     this.reittier,
+    this.angriffeMagisch = false,
+    this.kampfregeln = const <String>[],
+    this.hatAurapanzer = false,
   });
 
   /// Stabile Begleiter-ID; Namen dürfen sich wiederholen.
@@ -87,6 +92,30 @@ class BegleiterKampfprofil {
 
   /// Ausbildungsstand, falls der Begleiter ein Reittier mit Ausbildung ist.
   final ReittierProfil? reittier;
+
+  /// Ob die Angriffe als magisch gelten (gebundener Vertrauter, WdZ S. 125).
+  final bool angriffeMagisch;
+
+  /// Besondere Kampfregeln der Vertrautenart als Stichworte (WdZ S. 124);
+  /// leer ohne gebundene Katalogart. Reiner Text, die Regeln wirken nicht.
+  final List<String> kampfregeln;
+
+  /// Ob der Vertraute die Sonderfertigkeit Aurapanzer hat.
+  final bool hatAurapanzer;
+}
+
+/// Hinweis zum Aurapanzer eines Vertrauten, oder `null` ohne ihn.
+///
+/// RS in Höhe der natürlichen MR gegen magischen Schaden (Wege der Zauberei
+/// S. 32); die Wirkung rechnet die App nicht, weil das Gefecht Schaden an
+/// Begleitern und seine Art nicht kennt.
+String? begleiterAurapanzerText(BegleiterKampfprofil p) {
+  if (!p.hatAurapanzer) return null;
+  final mr = p.mr;
+  return 'Aurapanzer: RS ${mr ?? 'in Höhe der MR'} gegen magischen Schaden '
+      '(Zauber mit Merkmal Schaden, erhöhte TP magischer Waffen), nicht gegen '
+      'elementare Sekundärschäden und körperliche Angriffe von Dämonen '
+      '(Wege der Zauberei S. 32).';
 }
 
 /// Leitet das Kampfprofil eines Begleiters ab, wie es der Begleiter-Tab zeigt.
@@ -138,7 +167,20 @@ BegleiterKampfprofil begleiterKampfprofil(HeroCompanion c) {
           if (r.name.trim().isNotEmpty) r.name,
     ],
     reittier: _reittierProfil(c),
+    angriffeMagisch:
+        c.typ == BegleiterTyp.vertrauter && c.vertrautenBindung != null,
+    kampfregeln: _kampfregeln(c),
+    hatAurapanzer:
+        c.typ == BegleiterTyp.vertrauter && vertrautenHatAurapanzer(c),
   );
+}
+
+// Kampfregeln der gebundenen Vertrautenart; auch ein Machtvoller behält die
+// Art als Vorlage.
+List<String> _kampfregeln(HeroCompanion c) {
+  final artId = c.vertrautenBindung?.artId;
+  if (c.typ != BegleiterTyp.vertrauter || artId == null) return const [];
+  return vertrautenArt(artId)?.kampfregeln ?? const [];
 }
 
 // Profil der Ausbildung; `null` ohne erfasste Reittier-Ausbildung.

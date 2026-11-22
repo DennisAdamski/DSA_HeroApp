@@ -168,6 +168,11 @@ frisch über `updateHeroState`, Fehler „… nicht gespeichert“ im nächsten
 Wunden nutzen darüber `aendereWundZustand` und `fuegeWundeHinzu`
 (`lib/ui/screens/workspace/wund_zustand_speichern.dart`), Zaubereffekte die
 Regeln aus `lib/rules/derived/active_spell_state_rules.dart`.
+Die Kachel „Zustandsmarker“ der Spielansicht (SPIEL-03,
+`lib/ui2/spielen/karto_marker_kachel.dart`) schreibt als UI2-Baustein direkt
+über `heroActionsProvider.updateHeroState` (UI2 importiert nichts aus `lib/ui`):
+frisch, nur `HeroState.zustandsmarker`, Schritte vom gespeicherten Wert aus
+(`lib/rules/derived/zustandsmarker_rules.dart`), Fehler im Kachelfuß.
 
 Für Sofortaktionen am Bogen ist `aendereHeldMitMeldung` (dieselbe Datei)
 der Einstieg: frisch über `updateHero`, derselbe Fehlerweg. Bei offener

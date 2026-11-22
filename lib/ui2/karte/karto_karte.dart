@@ -415,7 +415,7 @@ class KartoKartenNennung extends StatelessWidget {
         manifest.nennung.isEmpty
             ? kartenmaterial
             : manifest.nennung.join(' · '),
-      'Ortsdaten: Avesmaps (avesmaps.de)',
+      'Ortsdaten und Wege: Avesmaps (avesmaps.de)',
       if (manifest != null && manifest.lizenzUri.isNotEmpty && !knapp)
         'Lizenz: ${manifest.lizenzUri}',
     ];

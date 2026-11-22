@@ -184,6 +184,17 @@ extension _GefechtAnsichtTeile on _GefechtAnsichtState {
       ],
     ),
   );
+  // Laufende Zauberwirkungen bleiben im Gefecht sichtbar und bedienbar.
+  Widget _zauberwirkungen() => GefechtZauberwirkungen(
+    heroId: widget.heroId,
+    bestand: () => _bruecke,
+    gesperrt: _busy,
+    onAktion: _run,
+    effekteVerwalten: () => _run(
+      () => widget.bestand.effekte(context: context, heroId: widget.heroId),
+    ),
+  );
+
   // Auslösbare Artefakte bleiben unabhängig von den magischen Kenntnissen.
   Widget _artefakte(HeroComputedSnapshot snapshot) {
     final artefakte = gefechtsArtefakte(snapshot.hero);

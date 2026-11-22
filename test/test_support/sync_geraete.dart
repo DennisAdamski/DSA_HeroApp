@@ -1,6 +1,7 @@
 import 'dart:convert';
 
-import 'package:dsa_heldenverwaltung/data/sync/in_memory_sync_metadata_store.dart';
+import 'in_memory_sync_metadata_store.dart';
+
 import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/sync/sync_basis_store.dart';
 import 'package:dsa_heldenverwaltung/data/syncing_hero_repository.dart';
@@ -9,7 +10,8 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import 'fake_repository.dart';
 
 import 'fake_remote_hero_sync_gateway.dart';
 

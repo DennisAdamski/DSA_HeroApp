@@ -1,11 +1,14 @@
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_unterwegs.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/zustands_buchung.dart';
+import 'package:dsa_heldenverwaltung/domain/zustands_marker.dart';
 
 /// Laufzeitzustand eines Helden, getrennt von den Stammdaten (`HeroSheet`).
 ///
@@ -28,6 +31,8 @@ class HeroState {
     this.buchungen = const <ZustandsBuchung>[],
     this.begleiterZustaende = const <String, BegleiterZustand>{},
     this.standort = '',
+    this.zustandsmarker = const <ZustandsMarker>[],
+    this.unterwegs,
     this.lastModified,
     this.unbekannteFelder = const <String, Object?>{},
   });
@@ -49,6 +54,8 @@ class HeroState {
       buchungen = const <ZustandsBuchung>[],
       begleiterZustaende = const <String, BegleiterZustand>{},
       standort = '',
+      zustandsmarker = const <ZustandsMarker>[],
+      unterwegs = null,
       unbekannteFelder = const <String, Object?>{};
 
   /// Maximale Anzahl persistierter Wuerfelprotokoll-Eintraege pro Held.
@@ -103,6 +110,20 @@ class HeroState {
   /// Inhalts-Hash behalten.
   final String standort;
 
+  /// Freie Zustandsmarker (SPIEL-03), etwa „Betäubung“ oder „Furcht“, mit
+  /// optionaler Dauer in Runden.
+  ///
+  /// Reine Merkhilfe ohne Regelwirkung. Nur bei Belegung im JSON, damit
+  /// Bestandszustände ihren Inhalts-Hash behalten.
+  final List<ZustandsMarker> zustandsmarker;
+
+  /// Laufende Reise („unterwegs nach …“), oder `null`, wenn der Held an
+  /// seinem [standort] ist.
+  ///
+  /// Nur bei Belegung im JSON, damit Bestandszustände ihren Inhalts-Hash
+  /// behalten.
+  final HeroUnterwegs? unterwegs;
+
   /// Zeitpunkt der letzten Speicherung, analog zu `HeroSheet.lastModified`.
   ///
   /// Rein informativ: Der Wert bleibt aus `heroStateContentHash` und damit aus
@@ -133,6 +154,8 @@ class HeroState {
     'buchungen',
     'begleiterZustaende',
     'standort',
+    'zustandsmarker',
+    'unterwegs',
     'lastModified',
   };
 
@@ -152,6 +175,8 @@ class HeroState {
     List<ZustandsBuchung>? buchungen,
     Map<String, BegleiterZustand>? begleiterZustaende,
     String? standort,
+    List<ZustandsMarker>? zustandsmarker,
+    Object? unterwegs = keepFieldValue,
     DateTime? lastModified,
   }) {
     return HeroState(
@@ -170,6 +195,10 @@ class HeroState {
       buchungen: buchungen ?? this.buchungen,
       begleiterZustaende: begleiterZustaende ?? this.begleiterZustaende,
       standort: standort ?? this.standort,
+      zustandsmarker: zustandsmarker ?? this.zustandsmarker,
+      unterwegs: identical(unterwegs, keepFieldValue)
+          ? this.unterwegs
+          : unterwegs as HeroUnterwegs?,
       lastModified: lastModified ?? this.lastModified,
       unbekannteFelder: unbekannteFelder,
     );
@@ -239,6 +268,11 @@ class HeroState {
             eintrag.key: eintrag.value.toJson(),
         },
       if (standort.trim().isNotEmpty) 'standort': standort,
+      if (zustandsmarker.isNotEmpty)
+        'zustandsmarker': zustandsmarker
+            .map((marker) => marker.toJson())
+            .toList(growable: false),
+      if (unterwegs != null) 'unterwegs': unterwegs!.toJson(),
       if (lastModified != null)
         'lastModified': lastModified!.toUtc().toIso8601String(),
     };
@@ -258,6 +292,7 @@ class HeroState {
           );
     final rawBuchungen = json['buchungen'] as List?;
     final rawBegleiter = json['begleiterZustaende'] as Map?;
+    final rawMarker = json['zustandsmarker'] as List?;
     return HeroState(
       schemaVersion: 6,
       currentLep: getInt('currentLep'),
@@ -298,6 +333,14 @@ class HeroState {
                   ),
             }),
       standort: json['standort'] is String ? json['standort'] as String : '',
+      zustandsmarker: rawMarker == null
+          ? const <ZustandsMarker>[]
+          : ZustandsMarker.listeAusJson(rawMarker),
+      unterwegs: json['unterwegs'] is Map
+          ? HeroUnterwegs.fromJson(
+              (json['unterwegs'] as Map).cast<String, dynamic>(),
+            )
+          : null,
       lastModified: DateTime.tryParse(json['lastModified'] as String? ?? ''),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );

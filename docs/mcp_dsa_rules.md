@@ -116,22 +116,8 @@ erscheint nach einem Claude-Code-Neustart unter `/mcp`.
 
 ## Konfiguration für Codex CLI
 
-Die Datei `codex.json` im Projekt-Root konfiguriert den Server für den
-OpenAI Codex CLI:
-
-```json
-{
-  "mcpServers": {
-    "dsa-rules": {
-      "command": "tool/mcp_dsa_rules/.venv/Scripts/python.exe",
-      "args": ["-m", "dsa_rules_mcp.server"]
-    }
-  }
-}
-```
-
-Für eine globale Konfiguration (alle Projekte) kann der Eintrag zusätzlich
-in `~/.codex/config.toml` aufgenommen werden:
+Für den OpenAI Codex CLI wird der Server in `.codex/config.toml` im Projekt
+(lokal, per `.gitignore` ausgeschlossen) oder global eingetragen:
 
 ```toml
 [mcp_servers.dsa-rules]

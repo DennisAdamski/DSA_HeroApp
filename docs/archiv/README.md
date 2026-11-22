@@ -16,3 +16,7 @@ Teilstand 6“ in Code, CLAUDE.md und anderen Dokumenten meinen diese Dateien.
 | [arch-06.md](arch-06.md) | ARCH-06 Speichern und Synchronisieren (abgenommen 12.10.2026) |
 | [arch-07.md](arch-07.md) | ARCH-07 Umsetzungsstand und Befundtabelle B1–B13 |
 | [mag-eff-trank.md](mag-eff-trank.md) | MAG-EFF und TRANK: frühere Statustexte |
+| [gefecht-initiative-entwurf.md](gefecht-initiative-entwurf.md) | Entwurf „Paket 3: gemeinsame lokale Initiative“ vom 05.10.2026 (umgesetzt, siehe [gefecht_implementation.md](../gefecht_implementation.md)) |
+| [gefecht_next_plan.md](gefecht_next_plan.md) | Gefechtsausbau: Paketplan und Testnachtrag nach PR 208 (alle Punkte erledigt) |
+| [gefecht_folgepakete_plan.md](gefecht_folgepakete_plan.md) | Gefecht: Folgepakete und Grenzen (umgesetzt) |
+| [gefecht_abschluss_entwurf.md](gefecht_abschluss_entwurf.md) | Gefecht: Abschlussentwurf, Review und Restschulden vom 06.10.2026 (abgeschlossen) |

@@ -4,8 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/data/avatar_load_failure.dart';
 import 'package:dsa_heldenverwaltung/data/syncing_avatar_storage.dart';
-import 'package:dsa_heldenverwaltung/test_support/in_memory_avatar_file_storage.dart';
-import 'package:dsa_heldenverwaltung/test_support/in_memory_cloud_avatar_storage.dart';
+
+import '../test_support/in_memory_avatar_file_storage.dart';
+import '../test_support/in_memory_cloud_avatar_storage.dart';
 
 void main() {
   late InMemoryAvatarFileStorage local;

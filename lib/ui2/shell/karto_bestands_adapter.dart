@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_unterwegs.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reittier_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
@@ -205,6 +207,32 @@ abstract interface class KartoBestandsAdapter {
     required RessourcenAenderung aenderung,
   });
 
+  /// Ändert den Wundzähler des Begleiters [begleiterId] um [schritt].
+  ///
+  /// Reine Merkhilfe ohne Regelwirkung; gerechnet wird im Bestand auf dem
+  /// gespeicherten Wert. Wie [begleiterWertAendern] ohne Re-Entrancy-Guard.
+  Future<void> begleiterWundenAendern({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String begleiterId,
+    required int schritt,
+  });
+
+  /// Würfelt eine Probe für das Reittier [begleiterId] und protokolliert sie.
+  ///
+  /// Reiten (mit dem Stufenmodifikator des Reittiers) oder LO; nur eine
+  /// Würfelhilfe, gebucht wird nichts. Kann die Probe nicht aufgebaut werden
+  /// (Reiten nicht geführt, Werte noch nicht geladen), erscheint der Grund als
+  /// Meldung.
+  Future<void> reittierProbe({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String begleiterId,
+    required ReittierProbeArt art,
+  });
+
   /// Speichert den Standort des Helden im Laufzeitzustand.
   ///
   /// Schreibt frisch über `aendereZustandMitMeldung` und ersetzt nur das Feld
@@ -214,6 +242,21 @@ abstract interface class KartoBestandsAdapter {
     required WidgetRef ref,
     required String heroId,
     required String standort,
+  });
+
+  /// Hält eine Reise im Laufzeitzustand fest.
+  ///
+  /// Schreibt frisch über `aendereZustandMitMeldung` genau ein Dokument:
+  /// [unterwegs] ersetzt die laufende Reise (`null` beendet sie), ein
+  /// gesetzter [standort] zugleich den Standort. Anders als [standortSetzen]
+  /// legt der Weg keine Station an; die schreibt der Reiseablauf selbst am
+  /// Bogen. Liefert, ob gespeichert wurde.
+  Future<bool> reiseZustandSetzen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroUnterwegs? unterwegs,
+    String? standort,
   });
 
   /// Öffnet die Vertrautenaktionen (Vereinigung, Zauber würfeln, Proben …).

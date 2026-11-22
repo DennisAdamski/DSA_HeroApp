@@ -10,7 +10,7 @@ und später auf einer Aventurien-Karte.
 | --- | --- | --- |
 | 0 | Anfrage an Avesmaps (Ortsverzeichnis, Kacheln, CORS, Namensnennung) | beantwortet (12.11.2026): Ortsdaten und Route ja, Kacheln nein |
 | 1 | Stationsliste am Helden, Spielkachel „Reiseroute“, Blatt mit Zeitleiste | umgesetzt |
-| 2 | Ortssuche mit Koordinaten, Reisewege, Karte mit Route und Pins | A2, A1, Tabellenansicht, Ortsdetails (D), Standort-Kachel und Aventurien-Karte im Avesmaps-Stil (C2, C3 vorbereitet) umgesetzt (13.11.2026); Reisewege und Kartenbild (Schlüssel) offen |
+| 2 | Ortssuche mit Koordinaten, Reisewege, Karte mit Route und Pins | A2, A1, Tabellenansicht, Ortsdetails (D), Standort-Kachel und Aventurien-Karte im Avesmaps-Stil (C2, C3 vorbereitet) umgesetzt (13.11.2026); Kartenbild (C3) auf Test (19.11.2026), Reisewege (B2) umgesetzt (20.11.2026) |
 
 ## Stufe 1 (umgesetzt)
 
@@ -254,6 +254,18 @@ eigenen Kacheln lit. f).
 Standort (`HeroState`), Anreise zwischen Stationen (B2) und die grafische
 Darstellung (C2).
 
+### Automatische Station beim Standortwechsel (umgesetzt 16.11.2026)
+
+Ändert der Standort im Abenteuer-Bereich oder in der Standort-Kachel
+(`standortSetzen`), legt die Brücke eine Station an: Ort, Datum und Abenteuer
+aus `reiseStationFuerStandortwechsel` (`reiseroute_rules.dart`), Kartenverweis
+nur bei eindeutigem Ort im Ortsverzeichnis. Keine Station entsteht beim
+Entfernen des Standorts, ohne Ortswechsel und wenn die zeitlich letzte Station
+schon diesen Ort trägt. Es sind zwei eigenständige Schreibvorgänge mit je einem
+Dokument: erst `HeroState.standort`, dann `HeroSheet.reiseStationen`. Scheitert
+der zweite (etwa während einer Planung), bleibt der Standort gespeichert und
+eine Meldung nennt den Grund.
+
 ### Standort-Kachel und Ortsdetails (umgesetzt 13.11.2026)
 
 **Vorbild.** Die Ortsansicht von avesmaps.de, aus dem ausgelieferten Bundle
@@ -356,11 +368,293 @@ und „In der Nähe“ mit Richtungspfeil. Weit: Karte und Steckbrief links,
 wichtige Orte und Nachbarn rechts. Die Kartenposition (x/y) zeigt die Kachel
 nicht mehr.
 
+**Standort auf der Karte (20.11.2026).**
+
+- **Lageskizze:** Die Lageskizze der Standort-Kachel zeigt keine Reiseroute
+  mehr.
+- **Vollbild aus der Standort-Kachel:** Es öffnet ohne Route
+  (`zeigeKarte(mitRoute: false)`). Im Vollbild blendet ein Knopf die
+  Reiseroute ein und aus.
+- **„Standort hierher“:** Die Infotafel eines Orts oder einer Station
+  bietet den Knopf an, außer für den Standort selbst. Er schreibt über
+  `KartoStandortSetzer`, also über `standortSetzen` der Spielansicht.
+  - Das ist derselbe Weg wie der Standortdialog: frisch am Zustand, bei
+    Ortswechsel mit automatischer Station.
+  - Der Knopf erscheint, wenn die Karte aus der Standort-Kachel oder aus dem
+    Reiseroute-Blatt der Spielansicht geöffnet wurde.
+
 **Offen.** Zugang ist angefragt (Issue 7), die Site `heldensync-karten`
 angelegt. Sobald der Zugang kommt: schneiden, veröffentlichen,
 `KARTEN_KACHELN` in CI und `tool/deploy_web.ps1` setzen, Sichtprüfung neben
 avesmaps.de. Schritt für Schritt in
 [avesmaps_kartenzugang.md](avesmaps_kartenzugang.md).
+
+### B2 · Reisewege statt Luftlinie (umgesetzt 20.11.2026)
+
+**Ziel.** Zwischen zwei Stationen zeichnet die Karte den Weg, den
+Avesmaps berechnet: Straße, Fluss oder See statt der Luftlinie. Je Etappe
+lässt sich wählen, wie gereist wurde, etwa „nur über Land“ oder „mit dem
+Schiff“. Die Tabelle nennt Meilen und Reisetage. Die Luftlinie bleibt der
+Rückfall.
+
+**Schnittstelle** (`GET /api/v1/route`, ohne Schlüssel, CORS offen):
+
+- **Parameter:**
+  - `von`, `nach`: Kennung oder eindeutiger Name;
+  - `ueber`: höchstens zehn Halte, mit `~` getrennt;
+  - `optimierung`: `schnellste` (Vorgabe) oder `kuerzeste`;
+  - `wege`: aus `land`, `fluss`, `see`, kommagetrennt (Vorgabe alle).
+- **Antwort:**
+  - `gefunden` (mit `grund`: `kein_zusammenhang`, `gesperrt`);
+  - `meilen`, `reisestunden`, `raststunden`, `reisetage`, `stundenProTag`;
+  - `etappen[]` mit `art`, `mittel`, `wege`, `von`/`nach` (x/y), `meilen`;
+  - `linie` als `[x, y]`-Punkte und `hinweise`.
+- **Drossel:** je IP-Adresse; `429` mit `Retry-After`.
+
+**Entscheidungen.**
+
+- **Wahl je Etappe am Ziel-Halt:** Die Wahl gehört zur Station, an der eine
+  Etappe endet: neues optionales Feld `HeroReiseStation.anreise` mit `wege`
+  (Menge aus Land, Fluss, See) und `optimierung`.
+  - Es wird nur bei Belegung geschrieben und kommt in `jsonSchluessel`, die
+    Enums laufen über `leseEnumWert`.
+  - Bestandshelden behalten so ihren Hash, und die Wahl synchronisiert
+    zwischen Geräten.
+  - Ohne Feld gilt die Vorgabe (schnellste, alle Wege).
+- **Ergebnis nur lokal:** Das Ergebnis kommt nie ins Heldendokument. Es
+  liegt im lokalen Zwischenspeicher (Hive-Box `avesmaps_routen_v1`).
+  - Schlüssel ist `vonId|nachId|wege|optimierung`.
+  - Ein Eintrag gilt 30 Tage, ein leeres Ergebnis (`gefunden: false`) einen
+    Tag.
+- **Anfragen nur auf Nutzeraktion:**
+  - „Reisewege berechnen“ im Blatt fragt die fehlenden Etappen nacheinander
+    ab.
+  - Bei `429` hört das Holen auf und meldet die Wartezeit.
+  - Auf der Karte erscheinen nur bereits gespeicherte Wege.
+  - Je Etappe eine Anfrage, damit die Wahl je Etappe wirkt und Treffer im
+    Speicher wiederverwendbar bleiben.
+- **Rückfall Luftlinie:** Die Luftlinie wie heute (Pillen) bleibt, wenn
+  - einer Station die `ortId` fehlt,
+  - der Weg noch nicht geholt ist,
+  - die Anfrage scheitert oder `gefunden: false` meldet.
+- **Varianten:** Der Etappendialog zeigt die gespeicherte Wahl samt
+  Ergebnis. „Vergleichen“ holt auf Wunsch bis zu drei Vorgaben nacheinander:
+  - schnellste, alle Wege;
+  - nur Land;
+  - kürzeste.
+
+  Gespeichert wird die übernommene Variante.
+
+**Schritte.**
+
+1. **Daten:**
+   - Modell `AvesmapsRoute` mit `AvesmapsRoutenEtappe`.
+   - `AvesmapsClient.route()`: tolerant lesen, unbekannte `art`/`hinweise`
+     überspringen, `429`/`503` als `AvesmapsFehler`.
+   - `AvesmapsRoutenRepository` mit Hive-Speicher.
+   - Provider `avesmapsRouteProvider` (Familie je Anfrage, liest nur den
+     Speicher) und `AvesmapsRoutenAbruf` für das Holen.
+   - Tests mit `MockClient` und aufgezeichneten Antworten.
+2. **Regeln** (`reiseroute_rules.dart`, `karten_rules.dart`):
+   - `routenAnfrageFuer(etappe)`: nur mit beiden `ortId`.
+   - Formatierung „365 Meilen · 6½ Reisetage · Straße, Fluss“.
+   - `kartenRoutenPunkte` erhält je Abschnitt optional die `linie`, aufgeteilt
+     nach den Wegarten der `etappen`.
+3. **Karte:**
+   - Der Maler zeichnet eine vorhandene `linie` durchgezogen (`#1452f7` mit
+     weißem Saum, Fluss und See in hellerem Blau gestrichelt), sonst die
+     Pillen der Luftlinie.
+   - Treffer auf die Linie öffnen die Etappe in der Infotafel: Meilen,
+     Reisetage, Wegarten, „Reiseweg ändern“.
+4. **Wahl je Etappe:**
+   - Modellfeld `anreise` samt Eintrag in
+     `test/domain/unbekannte_verschachtelte_felder_test.dart`, geschrieben
+     über `KartoReiserouteSchreiben`.
+   - Etappendialog: Wege als Schalter, Optimierung, Ergebnis, „Vergleichen“.
+   - Tabelle und Zeitleiste nennen Meilen und Reisetage statt der Luftlinie,
+     sobald ein Weg vorliegt.
+5. **Pflichtteile:**
+   - Datenschutzerklärung Abschnitt 6 und Verzeichnis der
+     Verarbeitungstätigkeiten um den Routenabruf ergänzen.
+   - Quellenzeile „Wege: Avesmaps“ unter der Karte.
+
+**Umsetzung.**
+
+- **Daten:**
+  - `AvesmapsRoute`, `AvesmapsRoutenEtappe` und `AvesmapsRoutenAnfrage`
+    (`lib/domain/avesmaps_route.dart`).
+  - `AvesmapsClient.route()`.
+  - `AvesmapsRoutenRepository` mit `HiveAvesmapsRoutenSpeicher`
+    (`avesmaps_routen_v1`).
+  - `avesmapsReisewegeProvider` (`lib/state/avesmaps_routen_providers.dart`).
+- **Modell:** `HeroReiseStation.anreise` ist ein `HeroReiseAnreise` mit
+  `wege`/`optimierung` als Texte der Schnittstelle. Unbekannte Werte bleiben
+  erhalten, ein Enum entfällt.
+- **Regeln:**
+  - `reiseweg_rules.dart`;
+  - `ReiseEtappe.vorherige`;
+  - `reiseEtappenAbstandText(weg:)`;
+  - `kartenRoutenPunkte(wege:)`.
+- **Oberfläche:**
+  - Im Blatt „Reisewege berechnen“ und je Etappe „Reiseweg“
+    (`KartoReisewegDialog`).
+  - Die Infotafel einer Station nennt die Anreise und öffnet den Dialog.
+  - Die Karte zeichnet gemerkte Wege durchgezogen.
+- **Abweichung vom Plan:** Die Linie wird nicht nach Wegarten eingefärbt.
+  Die `von`/`nach`-Punkte der Etappen teilen die `linie` nicht verlässlich
+  auf (in der Antwort vom 20.11.2026 lagen Lücken dazwischen). Die
+  Wegarten stehen deshalb im Text. Treffer auf die Linie entfallen; die
+  Etappe öffnet sich über die Station.
+- **Tests:**
+  - `test/data/avesmaps/avesmaps_routen_test.dart`;
+  - `test/rules/derived/reiseweg_rules_test.dart`;
+  - `test/ui2/spielen/karto_reiseweg_test.dart`;
+  - Kartentest und Eintrag in `unbekannte_verschachtelte_felder_test.dart`.
+
+**Später.** B3 Reiseplaner, siehe unten.
+
+### B3 · Reiseplaner und Zeitrechnung (Konzept 20.11.2026, umgesetzt 21.11.2026)
+
+**Ziel.** Ein Ortswechsel geht auf zwei Wegen:
+
+- **Direkt setzen:** eine Korrektur oder ein Sprung, wie heute.
+- **Reise planen:** vom Standort zu einem Ziel.
+
+Beide Wege stehen in der Standort-Kachel und in der Karten-Infotafel
+(„Standort hierher“ neben „Hierher reisen“). Eine geplante Reise landet als
+Weg in der Reiseroute: Abreise, Ankunft, Anreise und Plan.
+
+**Zeitrechnung: Plan nach Regelwerk, Ist über die Daten.**
+
+- **Strecke und Wegarten von Avesmaps:** `etappen[].art` und `meilen`.
+- **Dauer in der App nach den Regeln:**
+  - Grundlage sind Basisregelwerk S. 192 und Geographia Aventurica S. 123.
+  - Je Etappe gilt Tage = Meilen ÷ (Tagesstrecke des Reisemittels ×
+    Geländemodifikator).
+  - Die Reisetage von Avesmaps gelten nur zu Fuß und ohne Wegart und dienen
+    nur zum Vergleich.
+- **Tagesstrecke an Land:**
+
+  | Reisemittel | normal | Eilmarsch |
+  | --- | --- | --- |
+  | zu Fuß | 30 | 45 |
+  | beritten | 40 | 60 |
+  | Fuhrwerk | 30 | 37,5 (×1,25) |
+  | Kutsche | 50 | 62,5 (×1,25) |
+
+  - Eile gilt nur auf befestigten Wegen.
+  - Fuhrwerk und Kutsche fahren auf Pfaden und querfeldein wie zu Fuß.
+- **Gelände:**
+  - Reichsstraße ×1,1, Straße ×1, Weg und Pfad ×0,8, querfeldein ×0,75
+    (offenes Gelände);
+  - eine unbekannte Wegart zählt ×1 und wird erwähnt.
+- **Wasser:**
+  - Fluss 30 Meilen am Tag (Mittel aus Flusskahn stromauf 20 und stromab
+    40; die Richtung kennt Avesmaps nicht);
+  - See 120 (Lastensegler);
+  - Umsteigen zählt wie zu Fuß.
+- **Herleitung sichtbar:** etwa „Reichsstraße 120 Meilen ÷ (30 × 1,1) =
+  3,6 Tage“.
+- **Ankunft:** Abreise + aufgerundete Plantage. Die Ankunft lässt sich vor
+  dem Übernehmen ändern, etwa für Wetter (×0,9 bis ×0,5), Rast oder Umwege.
+  Eingetragen wird das tatsächliche Datum.
+- **Abweichungen:** Ein Weg, der anders verlief als geplant, hat drei
+  Wege:
+  - das Ankunftsdatum ändern (Ist);
+  - Wegarten oder Reisemittel ändern (Plan);
+  - Zwischenhalte als eigene Stationen anlegen.
+
+  Die Tabelle zeigt Ist und Plan nebeneinander, etwa „+9 Tage · 341 Meilen
+  · Plan 6 Tage · 3 Tage länger“.
+
+**Modell** (nur additiv, Felder nur bei Belegung):
+
+- `HeroReiseAnreise` bekommt `abreise` (Datum), `mittel`
+  (`fuss`/`beritten`/`fuhrwerk`/`kutsche`), `tempo` (`normal`/`eil`) sowie
+  `geplanteTage` und `meilen` als Momentaufnahme. So bleibt der Plan ohne
+  Netz und nach Ablauf des Wegspeichers lesbar.
+- Mit `abreise` trennt die Etappe den Aufenthalt am vorigen Ort
+  (vorige Ankunft bis Abreise) von der Reise (Abreise bis Ankunft).
+
+**Schreiben** (je Schritt ein Dokument):
+
+1. **Bogen:**
+   - Eine Ausgangsstation wird angelegt, wenn die zeitlich letzte Station
+     nicht der Standort ist (Datum = Abreise).
+   - Die Ankunftsstation bekommt Kartenverweis, Ankunftsdatum, Abenteuer und
+     `anreise`.
+   - Auf Wunsch springt das Datum des laufenden Abenteuers auf die Ankunft.
+2. **Zustand:** über `standortSetzen`. Die Brücke legt keine zweite Station
+   an, weil die letzte Station schon das Ziel trägt.
+
+**Regeln:**
+
+- `reisezeit_rules.dart` rechnet die Plantage samt Herleitung.
+- `reiseAntreten(held, …)` rechnet den neuen Bogen (rein, testbar).
+- Belege kommen in die Regeltest-Inventur mit beiden Quellen.
+
+**Oberfläche:** Der Reiseplaner (`KartoReiseplaner`) enthält:
+
+- Von (Standort, braucht einen Kartenverweis) und Nach (Ortsfeld bzw. der
+  Ort der Karte);
+- Wegarten und Optimierung;
+- Reisemittel und Eile;
+- Abreise (Vorgabe: Datum des laufenden Abenteuers, sonst der letzten
+  Station);
+- „Weg berechnen“, dann Strecke, Wegarten, Plan mit Herleitung und eine
+  änderbare Ankunft;
+- „Abenteuerdatum auf Ankunft setzen“;
+- „Reisen“.
+
+Der bestehende Reisewegdialog bekommt Reisemittel und Eile, damit auch
+erfasste Etappen einen Plan haben.
+
+**Stufe 2 (danach):** „Unterwegs“ als Zustand des Helden.
+
+- Aufbrechen setzt den Standort auf „unterwegs nach …“. Die Kachel zeigt
+  den Reisetag („Tag 3 von 6“) und die ungefähre Lage auf der Linie.
+- „Angekommen“ übernimmt das tatsächliche Datum.
+- „Unterwegs anhalten“ legt eine Zwischenstation an der geschätzten Lage
+  an.
+- Das braucht ein neues Feld am Zustand (Hash- und Sync-Regeln beachten)
+  und wird deshalb erst nach der Erprobung von Stufe 1 gebaut.
+
+**Entscheidungen (21.11.2026):**
+
+- Ein Reittier unter den Begleitern belegt „beritten“ vor.
+- Das Wetter ist je Reise wählbar (×1 bis ×0,3, Basisregelwerk S. 192 und
+  Geographia Aventurica S. 123) und fließt in Herleitung und Ankunft ein.
+- „Unterwegs“ (Stufe 2) kam gleich mit.
+
+**Umsetzung.**
+
+- **Regeln:** `reisezeit_rules.dart` mit `reisezeitPlan` (Herleitung je
+  Wegart, Hinweise), `reisemittelVorschlag`, `reiseAbreiseVorschlag`,
+  `reiseDatumPlus`, `reiseAntreten`, `reiseMitAusgangsstation`,
+  `unterwegsLage`, `reiseUnterwegsAnhalten`, `anreiseMitPlan`,
+  `reiseEtappenText`. Regeltest mit beiden Quellen in der Inventur.
+- **Modell:** `HeroReiseAnreise` mit `abreise`, `mittel`, `tempo`,
+  `wetter`, `geplanteTage`, `meilen`; `HeroUnterwegs` als
+  `HeroState.unterwegs`. Alles nur bei Belegung, Hash-Pins unverändert.
+- **Schreiben:** `karto_reise_ablauf.dart`; Bogen über
+  `aendereHeldAusserhalbPlanung`, Zustand über die neue Adaptermethode
+  `reiseZustandSetzen` (Reise und Standort in einem Dokument).
+- **Oberfläche:** `KartoReiseplaner`, `KartoReiseplanWahl`,
+  `KartoReiseplanHerleitung`; Tafel „Unterwegs nach …“ in der
+  Standort-Kachel; Reisender auf der Karte an der geschätzten Lage;
+  Reisewegdialog mit Reisemittel, Eile und Wetter; Tabelle und Zeitleiste
+  mit Ist und Plan.
+- **Abweichungen:**
+  - Das Wetter wirkt nur an Land; auf Fluss und See nennt ein Hinweis, dass
+    es nicht eingerechnet ist.
+  - Eile entfällt bei Wetter ab ×0,7 (Geographia Aventurica: Sturm und
+    heftiger Regen vereiteln den Eilmarsch).
+  - Statt „Standort auf ‚unterwegs nach …‘“ bleibt der Standort der
+    Ausgangsort; die Reise steht im eigenen Feld `unterwegs`.
+  - „Unterwegs anhalten“ legt eine Rast ohne Avesmaps-Verweis an und beendet
+    die Reise; weiter geht es mit einer neuen Planung.
+- **Tests:** `test/rules/derived/reisezeit_rules_test.dart`,
+  `test/ui2/spielen/karto_reiseplaner_test.dart`, Kartentest, Modelltests.
 
 ### Für alle Bausteine
 
@@ -391,9 +685,10 @@ avesmaps.de. Schritt für Schritt in
    genaue Rücklinks.
 3. **2c (umgesetzt):** C2 als Aventurien-Karte mit Luftlinie; `linie` aus 2b
    kommt als durchgezogene Linie dazu.
-4. **2d:** B3 Reiseplaner.
-5. **2e (vorbereitet):** C3 mit Schlüssel: Werkzeug, Karten-Site und Anzeige
-   stehen; es fehlen Zugang und Veröffentlichung.
+4. **2d (umgesetzt, 21.11.2026):** B3 Reiseplaner mit Zeitrechnung und „Unterwegs“.
+5. **2e (auf Test, 19.11.2026):** C3 mit Schlüssel. Das Paket ist geladen
+   (`tool/avesmaps_karte_laden.py`) und geschnitten, die Web-Builds setzen
+   `KARTEN_KACHELN`. Offen sind Sichtprüfung und Abnahme vor `main`.
 
 ### Rückfragen an Avesmaps
 

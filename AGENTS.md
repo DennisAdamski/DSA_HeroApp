@@ -138,8 +138,8 @@ Hinweis zu `flutter clean`:
 - Berechnungen und Regellogik gehoeren ausschliesslich in die zustaendigen
   Dateien unter lib/rules/derived/.
 - Jede thematische Gruppe von Regeln erhaelt eine eigene Datei, z. B.:
-    - Behinderungsberechnungen → lib/rules/derived/behinderung_rules.dart
-    - Initiativeberechnungen  → lib/rules/derived/initiative_rules.dart
+    - Behinderungsberechnungen → lib/rules/derived/ruestung_be_rules.dart
+    - Initiativeberechnungen  → lib/rules/derived/ini_rules.dart
 - Keine Regelberechnungen in UI-Widgets, Providern oder Domain-Modellen —
   diese Schichten duerfen Regelmodule nur aufrufen, nicht selbst rechnen.
 - Neue Regelthemen stets als eigene, klar benannte Datei anlegen, nicht

@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_history_panel.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_unterwegs.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/auth/open_sign_in.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/elixier_einnehmen_dialog.dart';
@@ -21,12 +22,21 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/auxiliator_dialog
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/magic_status_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reittier_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
+import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
+import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
+import 'package:uuid/uuid.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_begleiter_tab.dart'
     show zeigeVertrautenAktionen;
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/begleiter_zustand_aendern.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/spell_instance_aktionen.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_event_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_protection_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_arcane_effects_block.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_attribute_probes.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_combat_probes.dart';
@@ -221,6 +231,57 @@ class KartoBestandsAdapterImpl
       zauberkostenGebucht: true,
     ),
   );
+
+  /// Bedient eine Zauberwirkung mit denselben Eingaben wie der Effektedialog.
+  @override
+  Future<void> gefechtsWirkung({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required GefechtsWirkungAktion aktion,
+    String? instanzId,
+  }) => _withKartoCompatContext(context, (themedContext) async {
+    final aktionen = SpellInstanceAktionen(
+      context: themedContext,
+      ref: ref,
+      heroId: heroId,
+      // Fehler erscheinen im Bereich der Gefechtsansicht, nicht im Dialog.
+      aendere: (aenderung) => aendereZustandMitMeldung(
+        context: context,
+        ref: ref,
+        heroId: heroId,
+        was: 'Zaubereffekt',
+        aenderung: aenderung,
+      ),
+    );
+    final katalog = ref.read(heroRulesCatalogProvider(heroId)).asData?.value;
+    switch (aktion) {
+      case GefechtsWirkungAktion.zauberHinzufuegen:
+        if (katalog != null) await aktionen.zauberwirkungHinzufuegen(katalog);
+      case GefechtsWirkungAktion.attributoHinzufuegen:
+        await aktionen.attributoQuelleHinzufuegen();
+      case GefechtsWirkungAktion.dauer ||
+          GefechtsWirkungAktion.einsetzen ||
+          GefechtsWirkungAktion.schutzvorrat:
+        final zustand = ref.read(heroStateProvider(heroId)).valueOrNull;
+        final instanz = zustand?.activeSpellEffects.instanzen
+            .where((i) => i.id == instanzId)
+            .firstOrNull;
+        if (instanz == null) return;
+        switch (aktion) {
+          case GefechtsWirkungAktion.dauer:
+            await aktionen.dauerDerQuelle(instanz);
+          case GefechtsWirkungAktion.schutzvorrat:
+            await aktionen.schutzRestAnpassen(instanz);
+          default:
+            if (instanz.effectId == kAengsteLindernZauberId) {
+              await aktionen.aengsteEinsetzen(instanz);
+            } else if (kSchutzZauberIds.contains(instanz.effectId)) {
+              await aktionen.schildAuffangen(instanz);
+            }
+        }
+    }
+  });
 
   /// Öffnet den vorhandenen Ressourcendialog mit Abschlusskosten.
   @override
@@ -619,6 +680,82 @@ class KartoBestandsAdapterImpl
     );
   }
 
+  /// Schreibt den Wundzähler über den gemeinsamen Zustandsweg.
+  @override
+  Future<void> begleiterWundenAendern({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String begleiterId,
+    required int schritt,
+  }) async {
+    await aendereBegleiterWunden(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      begleiterId: begleiterId,
+      schritt: schritt,
+    );
+  }
+
+  /// Würfelt die Reittierprobe über den Probendialog und das Würfelprotokoll.
+  ///
+  /// Reiten trägt den Stufenmodifikator des Reittiers, LO die wirksame
+  /// Loyalität; gebucht wird nichts.
+  @override
+  Future<void> reittierProbe({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String begleiterId,
+    required ReittierProbeArt art,
+  }) async {
+    final held = ref.read(heroByIdProvider(heroId));
+    final begleiter = held?.companions
+        .where((c) => c.id == begleiterId)
+        .firstOrNull;
+    if (held == null || begleiter == null) return;
+    ResolvedProbeRequest? request;
+    String? hinweis;
+    if (art == ReittierProbeArt.loyalitaet) {
+      request = begleiterLoyalitaetsProbe(begleiter);
+    } else {
+      final snapshot = ref.read(heroComputedProvider(heroId)).valueOrNull;
+      final katalog = ref.read(heroRulesCatalogProvider(heroId)).valueOrNull;
+      if (snapshot == null || katalog == null) {
+        hinweis = 'Heldenwerte werden noch geladen.';
+      } else {
+        final aufbau = reittierReitenProbe(
+          snapshot: snapshot,
+          talente: katalog.talents,
+          reittier: begleiter,
+          imKampf: art == ReittierProbeArt.reitenImKampf,
+          reiterIstZauberer: detectMagicStatus(held, katalog) != null,
+          epicAdvantagesActive: ref.read(
+            heroEpicAdvantagesActiveProvider(heroId),
+          ),
+        );
+        request = aufbau.request;
+        hinweis = aufbau.hinweis;
+      }
+    }
+    if (request == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(hinweis ?? 'Die Probe ist nicht möglich.')),
+        );
+      }
+      return;
+    }
+    if (!context.mounted) return;
+    await gefechtsProbe(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      request: request,
+    );
+  }
+
   /// Schreibt den laufenden Wert über den gemeinsamen Zustandsweg.
   @override
   Future<void> begleiterWertAendern({
@@ -653,14 +790,96 @@ class KartoBestandsAdapterImpl
     required String heroId,
     required String standort,
   }) async {
-    await aendereZustandMitMeldung(
+    // Alles Kontextgebundene vor dem Warten greifen: Der Dialog ist danach zu.
+    final bote = ScaffoldMessenger.maybeOf(context);
+    final orte = ref.read(ortsverzeichnisProvider);
+    // Der alte Standort stammt aus dem frisch geladenen Zustand, nicht aus dem
+    // Stand beim Rendern.
+    String? alterStandort;
+    final gespeichert = await aendereZustandMitMeldung(
       context: context,
       ref: ref,
       heroId: heroId,
       was: 'Standort',
-      aenderung: (aktuell) =>
-          aktuell.copyWith(standort: bereinigeStandort(standort)),
+      aenderung: (aktuell) {
+        alterStandort = aktuell.standort;
+        return aktuell.copyWith(standort: bereinigeStandort(standort));
+      },
     );
+    if (gespeichert == null || alterStandort == null) return;
+    await _haltStandortwechselFest(
+      ref: ref,
+      bote: bote,
+      heroId: heroId,
+      alterStandort: alterStandort!,
+      neuerStandort: standort,
+      orte: orte,
+    );
+  }
+
+  /// Schreibt Reise und Standort in einem Zustandsdokument.
+  @override
+  Future<bool> reiseZustandSetzen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroUnterwegs? unterwegs,
+    String? standort,
+  }) async {
+    final gespeichert = await aendereZustandMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      was: 'Reise',
+      aenderung: (aktuell) => aktuell.copyWith(
+        unterwegs: unterwegs,
+        standort: standort == null ? null : bereinigeStandort(standort),
+      ),
+    );
+    return gespeichert != null;
+  }
+
+  /// Hält einen Ortswechsel als Station der Reiseroute fest.
+  ///
+  /// Zweiter, eigenständiger Schreibvorgang am Heldenbogen nach dem
+  /// Standort-Schreiben am Zustand (je Schritt ein Dokument). Er ist
+  /// wiederholbar: Die Regel legt für denselben Ort keine zweite Station an.
+  /// Scheitert er (etwa während einer Planung), bleibt der Standort gespeichert
+  /// und eine Meldung nennt den Grund.
+  Future<void> _haltStandortwechselFest({
+    required WidgetRef ref,
+    required ScaffoldMessengerState? bote,
+    required String heroId,
+    required String alterStandort,
+    required String neuerStandort,
+    required List<OrtEintrag> orte,
+  }) async {
+    if (bereinigeStandort(neuerStandort).isEmpty) return;
+    try {
+      await aendereHeldImEditor(
+        ref: ref,
+        heroId: heroId,
+        aenderung: (held) =>
+            reiseStationFuerStandortwechsel(
+              held: held,
+              alterStandort: alterStandort,
+              neuerStandort: neuerStandort,
+              id: const Uuid().v4(),
+              jetzt: DateTime.now(),
+              orte: orte,
+            ) ??
+            held,
+      );
+    } on Object catch (fehler) {
+      final grund = fehler is StateError ? fehler.message : '$fehler';
+      bote?.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Standort gespeichert, Reiseroute nicht ergänzt: $grund',
+          ),
+        ),
+      );
+    }
   }
 
   /// Öffnet die vorhandenen Vertrautenaktionen des Begleiter-Tabs.

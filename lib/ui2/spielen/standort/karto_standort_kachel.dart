@@ -6,21 +6,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/avesmaps_ort.dart';
 import 'package:dsa_heldenverwaltung/data/karte/karten_kachel_manifest.dart';
 import 'package:dsa_heldenverwaltung/domain/avesmaps_ortsdetails.dart';
-import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_unterwegs.dart';
 import 'package:dsa_heldenverwaltung/domain/ortsfakten.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/karten_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ortsfakten_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reisezeit_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_lage_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
+import 'package:dsa_heldenverwaltung/state/avesmaps_routen_providers.dart';
+import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/karten_providers.dart';
 import 'package:dsa_heldenverwaltung/state/ort_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/karte/karto_karten_blatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reise_ablauf.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_standort.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/standort/karto_lageskizze.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
@@ -40,8 +42,13 @@ const double kStandortFaktBreite = 96;
 /// Ortsverzeichnis der Wiki Aventurica weiß. Geschrieben wird nur der
 /// Standort, über [onSpeichern] (frischer Zustandsweg der Spielansicht).
 ///
-/// Die Lageskizze ist ein Ausschnitt der Aventurien-Karte mit den
-/// [stationen] als Route; mit [heroId] öffnet ein Tipp die große Karte.
+/// Die Lageskizze ist ein Ausschnitt der Aventurien-Karte ohne Reiseroute;
+/// mit [heroId] öffnet ein Tipp die große Karte, in der sich der Standort
+/// über [onSpeichern] auf einen anderen Ort setzen lässt.
+///
+/// Mit [onReiseZustand] plant „Reise planen“ eine Reise vom Standort aus;
+/// ist der Held [unterwegs], zeigt die Kachel Reisetag und die Knöpfe
+/// „Angekommen“, „Anhalten“ und „Abbrechen“.
 class KartoStandortKachel extends ConsumerWidget {
   /// Kachel für den gespeicherten [standort].
   const KartoStandortKachel({
@@ -50,7 +57,8 @@ class KartoStandortKachel extends ConsumerWidget {
     required this.onSpeichern,
     this.oeffneLink = oeffneExtern,
     this.heroId,
-    this.stationen = const <HeroReiseStation>[],
+    this.unterwegs,
+    this.onReiseZustand,
   });
 
   /// Gespeicherter Standort; leer, solange keiner festgehalten ist.
@@ -65,8 +73,11 @@ class KartoStandortKachel extends ConsumerWidget {
   /// Held für die große Karte; ohne ihn öffnet die Skizze nichts.
   final String? heroId;
 
-  /// Stationen der Reiseroute für die Route in der Skizze.
-  final List<HeroReiseStation> stationen;
+  /// Laufende Reise, oder `null`.
+  final HeroUnterwegs? unterwegs;
+
+  /// Schreibt Reise und Standort; ohne ihn bietet die Kachel keine Reise an.
+  final KartoReiseZustandSetzer? onReiseZustand;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -110,29 +121,213 @@ class KartoStandortKachel extends ConsumerWidget {
         icon: const Icon(Icons.edit_location_alt_outlined),
         onPressed: bearbeiten,
       ),
-      child: name.isEmpty
-          ? _OhneStandort(onFesthalten: bearbeiten)
-          : _Ortsansicht(
-              name: name,
-              verzeichnis: verzeichnis,
-              eintrag: eintrag,
-              ort: ort,
-              details: details,
-              avesmaps: avesmaps,
-              laedt: angefordert && liste.isLoading,
-              ladenMoeglich:
-                  abrufbar &&
-                  !liste.isLoading &&
-                  (!angefordert || avesmaps.isEmpty),
-              onLaden: fordereAn,
-              oeffneLink: oeffneLink,
-              routenPunkte: _merker.routenPunkte(stationen),
-              manifest: manifest,
-              auskunft: auskunft,
-              onKarte: held == null
-                  ? null
-                  : () => zeigeKarte(context, heroId: held, fokus: ort),
+      child: _MitReise(
+        heroId: held,
+        unterwegs: unterwegs,
+        setzer: onReiseZustand,
+        planbar: name.isNotEmpty,
+        child: name.isEmpty
+            ? _OhneStandort(onFesthalten: bearbeiten)
+            : _Ortsansicht(
+                name: name,
+                verzeichnis: verzeichnis,
+                eintrag: eintrag,
+                ort: ort,
+                details: details,
+                avesmaps: avesmaps,
+                laedt: angefordert && liste.isLoading,
+                ladenMoeglich:
+                    abrufbar &&
+                    !liste.isLoading &&
+                    (!angefordert || avesmaps.isEmpty),
+                onLaden: fordereAn,
+                oeffneLink: oeffneLink,
+                manifest: manifest,
+                auskunft: auskunft,
+                onKarte: held == null
+                    ? null
+                    : () => zeigeKarte(
+                        context,
+                        heroId: held,
+                        fokus: ort,
+                        mitRoute: false,
+                        onStandortSetzen: onSpeichern,
+                        onReiseZustand: onReiseZustand,
+                      ),
+              ),
+      ),
+    );
+  }
+}
+
+/// Reise zum Standort: Tafel einer laufenden Reise über der Ortsansicht,
+/// sonst „Reise planen“ darunter.
+class _MitReise extends ConsumerWidget {
+  const _MitReise({
+    required this.heroId,
+    required this.unterwegs,
+    required this.setzer,
+    required this.planbar,
+    required this.child,
+  });
+
+  final String? heroId;
+  final HeroUnterwegs? unterwegs;
+  final KartoReiseZustandSetzer? setzer;
+  final bool planbar;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final held = heroId;
+    final u = unterwegs;
+    final setzer = this.setzer;
+    if (held == null || setzer == null) return child;
+    if (u == null) {
+      if (!planbar) return child;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          child,
+          const SizedBox(height: Abstand.normal),
+          TextButton.icon(
+            key: const ValueKey<String>('karto-standort-kachel-reise-planen'),
+            onPressed: () =>
+                reisePlanen(context, ref, heroId: held, zustandSetzen: setzer),
+            icon: const Icon(Icons.hiking),
+            label: const Text('Reise planen'),
+          ),
+        ],
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _UnterwegsTafel(heroId: held, unterwegs: u, setzer: setzer),
+        const SizedBox(height: Abstand.weit),
+        child,
+      ],
+    );
+  }
+}
+
+/// Eine laufende Reise: Ziel, Reisetag, Plan und die Knöpfe zum Beenden.
+class _UnterwegsTafel extends ConsumerWidget {
+  const _UnterwegsTafel({
+    required this.heroId,
+    required this.unterwegs,
+    required this.setzer,
+  });
+
+  final String heroId;
+  final HeroUnterwegs unterwegs;
+  final KartoReiseZustandSetzer setzer;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final karto = context.karto;
+    final texte = Theme.of(context).textTheme;
+    final werte = ref.watch(heroComputedProvider(heroId)).asData?.value;
+    final wege = ref.watch(avesmapsReisewegeProvider).asData?.value;
+    final anfrage = unterwegsAnfrage(unterwegs);
+    final lage = werte == null
+        ? null
+        : unterwegsLage(
+            unterwegs,
+            heute: reiseHeute(werte.hero),
+            linie: anfrage == null
+                ? const <(double, double)>[]
+                : wege?[anfrage.schluessel]?.linie ??
+                      const <(double, double)>[],
+          );
+    final plan = reisePlanText(unterwegs.anreise);
+    final abreise = unterwegs.anreise.abreise;
+    final zeile = <String>[
+      if (unterwegs.vonOrt.isNotEmpty) 'von ${unterwegs.vonOrt}',
+      if (abreise.hasContent) 'ab ${abreise.anzeigeText}',
+      ?plan,
+    ].join(' · ');
+    return DecoratedBox(
+      key: const ValueKey<String>('karto-standort-kachel-unterwegs'),
+      decoration: BoxDecoration(
+        color: karto.meer.withValues(alpha: .08),
+        borderRadius: BorderRadius.circular(kKartoRadiusKlein),
+        border: Border.all(color: karto.meer.withValues(alpha: .35)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(Abstand.weit),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Unterwegs nach ${unterwegs.ziel}',
+              key: const ValueKey<String>(
+                'karto-standort-kachel-unterwegs-ziel',
+              ),
+              style: texte.abschnitt,
             ),
+            if (lage?.text case final text?)
+              Text(
+                text,
+                key: const ValueKey<String>(
+                  'karto-standort-kachel-unterwegs-tag',
+                ),
+                style: texte.fliess,
+              ),
+            if (zeile.isNotEmpty)
+              Text(
+                zeile,
+                style: texte.legende.copyWith(color: karto.schriftLeise),
+              ),
+            const SizedBox(height: Abstand.normal),
+            Wrap(
+              spacing: Abstand.knapp,
+              runSpacing: Abstand.knapp,
+              children: [
+                FilledButton.tonalIcon(
+                  key: const ValueKey<String>(
+                    'karto-standort-kachel-angekommen',
+                  ),
+                  onPressed: () => reiseAngekommen(
+                    context,
+                    ref,
+                    heroId: heroId,
+                    u: unterwegs,
+                    zustandSetzen: setzer,
+                  ),
+                  icon: const Icon(Icons.flag_outlined),
+                  label: const Text('Angekommen'),
+                ),
+                TextButton(
+                  key: const ValueKey<String>('karto-standort-kachel-anhalten'),
+                  onPressed: () => reiseAnhalten(
+                    context,
+                    ref,
+                    heroId: heroId,
+                    u: unterwegs,
+                    zustandSetzen: setzer,
+                  ),
+                  child: const Text('Anhalten'),
+                ),
+                TextButton(
+                  key: const ValueKey<String>(
+                    'karto-standort-kachel-reise-abbrechen',
+                  ),
+                  onPressed: () => reiseAbbrechen(
+                    context,
+                    u: unterwegs,
+                    zustandSetzen: setzer,
+                  ),
+                  child: const Text('Reise abbrechen'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -178,7 +373,6 @@ class _Ortsansicht extends StatelessWidget {
     required this.ladenMoeglich,
     required this.onLaden,
     required this.oeffneLink,
-    required this.routenPunkte,
     required this.manifest,
     required this.auskunft,
     required this.onKarte,
@@ -194,7 +388,6 @@ class _Ortsansicht extends StatelessWidget {
   final bool ladenMoeglich;
   final VoidCallback onLaden;
   final KartoLinkOeffner oeffneLink;
-  final List<KartenRoutenPunkt> routenPunkte;
   final KartenKachelManifest? manifest;
   final OrtsAuskunft auskunft;
   final VoidCallback? onKarte;
@@ -304,7 +497,6 @@ class _Ortsansicht extends StatelessWidget {
         ? KartoLageskizze(
             skizze: _merker.skizze(ort, avesmaps),
             orte: avesmaps,
-            routenPunkte: routenPunkte,
             manifest: manifest,
             onTap: onKarte,
           )
@@ -904,9 +1096,6 @@ class _Merker {
   String? _skizzeOrt;
   Lageskizze? _skizze;
 
-  List<HeroReiseStation>? _stationen;
-  List<KartenRoutenPunkt> _punkte = const <KartenRoutenPunkt>[];
-
   List<NaherOrt> nahe(AvesmapsOrt ort, List<AvesmapsOrt> orte, int grenze) {
     if (!identical(_naheListe, orte) ||
         _naheOrt != ort.id ||
@@ -931,13 +1120,5 @@ class _Merker {
     _skizzeListe = orte;
     _skizzeOrt = ort.id;
     return neu;
-  }
-
-  List<KartenRoutenPunkt> routenPunkte(List<HeroReiseStation> stationen) {
-    if (!identical(_stationen, stationen)) {
-      _punkte = kartenRoutenPunkte(reiseEtappen(stationen));
-      _stationen = stationen;
-    }
-    return _punkte;
   }
 }

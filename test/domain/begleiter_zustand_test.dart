@@ -136,4 +136,78 @@ void main() {
       );
     });
   });
+
+  group('Wundzähler', () {
+    test('ohne Wunde fehlt der Schlüssel, ein leerer Eintrag entfällt', () {
+      expect(const BegleiterZustand().toJson().containsKey('wunden'), isFalse);
+      expect(const BegleiterZustand(wunden: 2).toJson(), {'wunden': 2});
+      expect(const BegleiterZustand(wunden: 2).istLeer, isFalse);
+      expect(const BegleiterZustand().istLeer, isTrue);
+    });
+
+    test('Roundtrip erhält die Wunden und bekannte Schlüssel', () {
+      const z = BegleiterZustand(currentLep: 4, wunden: 3);
+      expect(BegleiterZustand.fromJson(z.toJson()), z);
+      expect(BegleiterZustand.jsonSchluessel, contains('wunden'));
+      final geladen = BegleiterZustand.fromJson({'wunden': 1, 'zukunft': 5});
+      expect(geladen.unbekannteFelder.keys, ['zukunft']);
+    });
+
+    test('zählt vom gespeicherten Wert zwischen 0 und der Obergrenze', () {
+      var z = _leer;
+      for (var i = 0; i < 3; i++) {
+        z = mitBegleiterWundenSchritt(z, 'mira', 1);
+      }
+      expect(begleiterWunden(z.begleiterZustaende['mira']), 3);
+      z = mitBegleiterWundenSchritt(z, 'mira', -1);
+      expect(begleiterWunden(z.begleiterZustaende['mira']), 2);
+      expect(
+        begleiterWunden(
+          mitBegleiterWundenSchritt(z, 'mira', 100).begleiterZustaende['mira'],
+        ),
+        kBegleiterWundenMax,
+      );
+    });
+
+    test('null Wunden werden nicht gespeichert, der Eintrag entfällt', () {
+      final eins = mitBegleiterWundenSchritt(_leer, 'mira', 1);
+      expect(eins.begleiterZustaende, contains('mira'));
+      final zurueck = mitBegleiterWundenSchritt(eins, 'mira', -1);
+      expect(zurueck.begleiterZustaende, isEmpty);
+      expect(heroStateContentHash(zurueck), heroStateContentHash(_leer));
+    });
+
+    test('ohne Änderung bleibt dieselbe Instanz', () {
+      expect(
+        identical(mitBegleiterWundenSchritt(_leer, 'mira', -1), _leer),
+        isTrue,
+      );
+      final voll = mitBegleiterWundenSchritt(
+        _leer,
+        'mira',
+        kBegleiterWundenMax,
+      );
+      expect(
+        identical(mitBegleiterWundenSchritt(voll, 'mira', 1), voll),
+        isTrue,
+      );
+    });
+
+    test('lässt LeP, andere Begleiter und andere Felder unberührt', () {
+      final z = _leer
+          .copyWith(erschoepfung: 2)
+          .withBegleiterZustand('rondo', const BegleiterZustand(currentLep: 5))
+          .withBegleiterZustand('mira', const BegleiterZustand(currentLep: 7));
+      final neu = mitBegleiterWundenSchritt(z, 'mira', 1);
+      expect(
+        neu.begleiterZustaende['mira'],
+        const BegleiterZustand(currentLep: 7, wunden: 1),
+      );
+      expect(
+        neu.begleiterZustaende['rondo'],
+        const BegleiterZustand(currentLep: 5),
+      );
+      expect(neu.erschoepfung, 2);
+    });
+  });
 }

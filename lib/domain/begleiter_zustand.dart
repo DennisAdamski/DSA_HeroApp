@@ -6,14 +6,16 @@ import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 /// Liegt im `HeroState` unter der Begleiter-ID (`HeroState.begleiterZustaende`).
 /// Ein Feld ist `null`, solange der Wert dem wirksamen Maximum entspricht
 /// („voll“); so bleibt ein voller Begleiter ohne Eintrag, und ein Anstieg des
-/// Maximums (Steigerung, Ausbildung) zieht den vollen Wert mit. Wunden kommen
-/// später additiv als weitere optionale Felder dazu.
+/// Maximums (Steigerung, Ausbildung) zieht den vollen Wert mit. [wunden] ist
+/// ein freier Zähler ohne Regelwirkung und `null`, solange der Begleiter keine
+/// Wunde trägt.
 class BegleiterZustand {
   /// Erstellt einen Zustand; `null` heißt „voll“.
   const BegleiterZustand({
     this.currentLep,
     this.currentAsp,
     this.currentAup,
+    this.wunden,
     this.unbekannteFelder = const <String, Object?>{},
   });
 
@@ -26,6 +28,12 @@ class BegleiterZustand {
   /// Aktuelle Ausdauer; `null` entspricht dem wirksamen Maximum.
   final int? currentAup;
 
+  /// Anzahl der Wunden als freier Zähler; `null` heißt keine Wunde.
+  ///
+  /// Reine Merkhilfe: Wundschwelle, Zonen und Folgen für Tiere sind nicht
+  /// modelliert. Nur bei mindestens einer Wunde im JSON.
+  final int? wunden;
+
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten.
   final Map<String, Object?> unbekannteFelder;
 
@@ -34,6 +42,7 @@ class BegleiterZustand {
     'currentLep',
     'currentAsp',
     'currentAup',
+    'wunden',
   };
 
   /// `true`, wenn kein Wert und kein unbekanntes Feld gesetzt ist.
@@ -41,6 +50,7 @@ class BegleiterZustand {
       currentLep == null &&
       currentAsp == null &&
       currentAup == null &&
+      wunden == null &&
       unbekannteFelder.isEmpty;
 
   /// Kopie mit geänderten Feldern; `null` übergeben setzt auf „voll“.
@@ -48,6 +58,7 @@ class BegleiterZustand {
     Object? currentLep = keepFieldValue,
     Object? currentAsp = keepFieldValue,
     Object? currentAup = keepFieldValue,
+    Object? wunden = keepFieldValue,
   }) {
     return BegleiterZustand(
       currentLep: identical(currentLep, keepFieldValue)
@@ -59,6 +70,7 @@ class BegleiterZustand {
       currentAup: identical(currentAup, keepFieldValue)
           ? this.currentAup
           : currentAup as int?,
+      wunden: identical(wunden, keepFieldValue) ? this.wunden : wunden as int?,
       unbekannteFelder: unbekannteFelder,
     );
   }
@@ -68,6 +80,7 @@ class BegleiterZustand {
     'currentLep': ?currentLep,
     'currentAsp': ?currentAsp,
     'currentAup': ?currentAup,
+    'wunden': ?wunden,
   }, unbekannteFelder);
 
   /// Liest einen Zustand; fehlende Werte bleiben `null`.
@@ -77,6 +90,7 @@ class BegleiterZustand {
       currentLep: zahl('currentLep'),
       currentAsp: zahl('currentAsp'),
       currentAup: zahl('currentAup'),
+      wunden: zahl('wunden'),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
@@ -88,6 +102,7 @@ class BegleiterZustand {
           currentLep == other.currentLep &&
           currentAsp == other.currentAsp &&
           currentAup == other.currentAup &&
+          wunden == other.wunden &&
           unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder);
 
   @override
@@ -95,6 +110,7 @@ class BegleiterZustand {
     currentLep,
     currentAsp,
     currentAup,
+    wunden,
     unbekannteFelderHash(unbekannteFelder),
   );
 }

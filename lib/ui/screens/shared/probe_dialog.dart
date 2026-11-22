@@ -24,6 +24,7 @@ Future<void> showProbeDialog({
   required ResolvedProbeRequest request,
   void Function(ProbeResult result)? onResolved,
   void Function(DiceLogEntry entry)? onDiceLogEntry,
+  void Function(bool bestanden)? onExtern,
   bool singleResolution = false,
   bool modifikatorGesperrt = false,
   bool contentUnlocked = true,
@@ -37,6 +38,7 @@ Future<void> showProbeDialog({
       request: request,
       onResolved: onResolved,
       onDiceLogEntry: onDiceLogEntry,
+      onExtern: onExtern,
       singleResolution: singleResolution,
       modifikatorGesperrt: modifikatorGesperrt,
       contentUnlocked: contentUnlocked,
@@ -56,6 +58,7 @@ class ProbeDialog extends StatefulWidget {
     this.rollTrefferzone,
     this.onResolved,
     this.onDiceLogEntry,
+    this.onExtern,
     this.singleResolution = false,
     this.modifikatorGesperrt = false,
     this.contentUnlocked = true,
@@ -96,6 +99,15 @@ class ProbeDialog extends StatefulWidget {
 
   /// Wird fuer Nebenwuerfe innerhalb des Dialogs aufgerufen.
   final void Function(DiceLogEntry entry)? onDiceLogEntry;
+
+  /// Trägt eine außerhalb der App gewürfelte Probe als bestanden
+  /// (`true`) oder nicht bestanden (`false`) ein, ohne Würfelwerte.
+  ///
+  /// Mit Callback zeigt der Dialog die Knöpfe „Bestanden“ und „Nicht
+  /// bestanden“. Der Aufruf geschieht höchstens einmal je Dialog; danach sind
+  /// Würfeln und beide Knöpfe gesperrt. Ohne Callback (Gefecht und andere)
+  /// bleibt der Dialog unverändert.
+  final void Function(bool bestanden)? onExtern;
 
   /// Magisches Meisterhandwerk fuer diese Talentprobe; `null` ohne.
   final MeisterhandwerkAngebot? meisterhandwerk;
@@ -161,6 +173,29 @@ class _ProbeDialogState extends State<ProbeDialog> {
   bool _isAnimating = false;
   bool _resolved = false;
   bool get _locked => widget.singleResolution && _resolved;
+
+  /// Ergebnis einer extern gewürfelten Probe; `null`, solange keines erfasst ist.
+  bool? _externErgebnis;
+
+  /// Ob die Knöpfe „Bestanden“ / „Nicht bestanden“ erscheinen: nur mit
+  /// Callback, nur für Zielwertproben (nicht für Summen- und feste Würfe) und
+  /// nur, solange in der App noch nicht gewürfelt wurde.
+  bool get _zeigeExternKnoepfe =>
+      widget.onExtern != null &&
+      !widget.request.usesSummedTotal &&
+      widget.request.fixedRollTotal == null &&
+      _result == null &&
+      !_isAnimating;
+
+  /// Trägt das externe Ergebnis genau einmal ein.
+  void _erfasseExtern(bool bestanden) {
+    final callback = widget.onExtern;
+    if (callback == null || _externErgebnis != null) return;
+    callback(bestanden);
+    setState(() {
+      _externErgebnis = bestanden;
+    });
+  }
 
   TrefferzonenErgebnis? _trefferzonenErgebnis;
   TrefferzonenErgebnis? _pendingTrefferzonenErgebnis;
@@ -509,6 +544,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
               _buildDiceSection(),
               const SizedBox(height: 12),
               _buildResultSection(result),
+              _buildExternHinweis(),
               _buildTrefferzonenSection(),
             ],
           ),
@@ -519,12 +555,49 @@ class _ProbeDialogState extends State<ProbeDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Schließen'),
         ),
+        if (_zeigeExternKnoepfe) ...[
+          OutlinedButton.icon(
+            key: const ValueKey<String>('probe-dialog-extern-nicht-bestanden'),
+            onPressed: _externErgebnis != null
+                ? null
+                : () => _erfasseExtern(false),
+            icon: const Icon(Icons.close),
+            label: const Text('Nicht bestanden'),
+          ),
+          OutlinedButton.icon(
+            key: const ValueKey<String>('probe-dialog-extern-bestanden'),
+            onPressed: _externErgebnis != null
+                ? null
+                : () => _erfasseExtern(true),
+            icon: const Icon(Icons.check),
+            label: const Text('Bestanden'),
+          ),
+        ],
         FilledButton.icon(
-          onPressed: _isAnimating || _locked ? null : _onActionButton,
+          onPressed: _isAnimating || _locked || _externErgebnis != null
+              ? null
+              : _onActionButton,
           icon: const Icon(Icons.casino_outlined),
           label: Text(_mode == ProbeRollMode.digital ? 'Würfeln' : 'Auswerten'),
         ),
       ],
+    );
+  }
+
+  /// Bestätigung nach einer extern gewürfelten Probe.
+  Widget _buildExternHinweis() {
+    final ergebnis = _externErgebnis;
+    if (ergebnis == null) return const SizedBox.shrink();
+    final text = ergebnis
+        ? 'Als bestanden eingetragen (extern gewürfelt).'
+        : 'Als nicht bestanden eingetragen (extern gewürfelt).';
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Text(
+        text,
+        key: const ValueKey<String>('probe-dialog-extern-hinweis'),
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
     );
   }
 

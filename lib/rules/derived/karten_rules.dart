@@ -1,8 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:dsa_heldenverwaltung/domain/avesmaps_ort.dart';
+import 'package:dsa_heldenverwaltung/domain/avesmaps_route.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reiseweg_rules.dart';
 
 // Was die Aventurien-Karte zeigt: Stationen mit Position und der Ausschnitt,
 // der Route und Standort umfasst. Gerechnet wird im Koordinatensystem von
@@ -75,6 +77,7 @@ class KartenRoutenPunkt {
     required this.nummer,
     required this.x,
     required this.y,
+    this.weg,
   });
 
   /// Die Station.
@@ -88,13 +91,29 @@ class KartenRoutenPunkt {
 
   /// Kartenposition Süd-Nord.
   final double y;
+
+  /// Gemerkter Reiseweg von der vorigen Station hierher, oder `null`
+  /// (dann gilt die Luftlinie).
+  final AvesmapsRoute? weg;
+
+  /// Verlauf des Wegs hierher, oder `null` für die Luftlinie.
+  List<(double, double)>? get linie {
+    final w = weg;
+    if (w == null || !w.gefunden || w.linie.length < 2) return null;
+    return w.linie;
+  }
 }
 
 /// Die Etappen mit Kartenposition, in zeitlicher Reihenfolge.
 ///
 /// Stationen ohne Position fallen weg; die Nummer bleibt die der Etappe,
-/// damit Karte und Tabelle dieselbe Zahl zeigen.
-List<KartenRoutenPunkt> kartenRoutenPunkte(List<ReiseEtappe> etappen) {
+/// damit Karte und Tabelle dieselbe Zahl zeigen. Aus [wege] (gemerkte
+/// Reisewege) bekommt ein Punkt den Weg von der vorigen Station; der gilt nur,
+/// wenn die vorige Station selbst auf der Karte steht.
+List<KartenRoutenPunkt> kartenRoutenPunkte(
+  List<ReiseEtappe> etappen, {
+  Map<String, AvesmapsRoute> wege = const <String, AvesmapsRoute>{},
+}) {
   return List<KartenRoutenPunkt>.unmodifiable(<KartenRoutenPunkt>[
     for (final etappe in etappen)
       if (etappe.station.hatKartenposition)
@@ -103,6 +122,9 @@ List<KartenRoutenPunkt> kartenRoutenPunkte(List<ReiseEtappe> etappen) {
           nummer: etappe.nummer,
           x: etappe.station.kartenX!,
           y: etappe.station.kartenY!,
+          weg: etappe.vorherige?.hatKartenposition ?? false
+              ? reisewegFuer(etappe, wege)
+              : null,
         ),
   ]);
 }

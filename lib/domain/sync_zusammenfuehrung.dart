@@ -102,7 +102,11 @@ const SyncZusammenfuehrungsRegeln zustandZusammenfuehrungsRegeln =
           'currentLep',
           'currentAsp',
           'currentAup',
+          'wunden',
         },
+        // Verbleibende Runden eines Zustandsmarkers (SPIEL-03): zählen beide
+        // Geräte, gilt jeder Schritt.
+        'zustandsmarker': <String>{'rest'},
       },
     );
 

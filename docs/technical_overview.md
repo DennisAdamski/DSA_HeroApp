@@ -38,7 +38,7 @@ Helden im Pen-&-Paper-Rollenspiel *Das Schwarze Auge* (DSA). Die App bietet:
 | Framework | Flutter (Material 3), >=3.47.1 |
 | Zustandsverwaltung | flutter_riverpod ^3.4.2 |
 | Lokale Datenbank | hive_ce ^2.19.3, hive_ce_flutter ^2.3.4 |
-| Volltextsuche | sqlite3 ^3.7.1 (native Libs ueber Build-Hook) |
+| Volltextsuche | sqlite3 ^3.9.1 (native Libs ueber Build-Hook) |
 | Datei-I/O | file_picker ^13.1.0, path_provider ^2.1.5 |
 | Web-Interop | web ^1.1.1 (`package:web` + `dart:js_interop`) |
 | Teilen | share_plus ^13.3.0 |
@@ -207,7 +207,7 @@ Workspace-Header und das Gruppen-Thumbnail. Vollansichten wie die Uebersicht
   stauchen. `HeroActions` holt den Befund dafuer direkt beim Service, nicht
   ueber `ref.read(provider.future)`.
 - In Widget-Tests `avatarGesichtServiceProvider` mit
-  `festerAvatarGesichtService()` (`lib/test_support/`) ueberschreiben: Die
+  `festerAvatarGesichtService()` (`test/test_support/`) ueberschreiben: Die
   echte Erkennung rechnet in einem Isolate, das im Fake-Async nie fertig wird.
 
 Seit 2026-08-08 gilt beim Startabgleich zusaetzlich: Sind lokale und
@@ -518,7 +518,7 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
     `AvatarSnapshot`, `HeroAdvancementEntry`;
   - Laufzeitzustand: `AttributeModifiers`, `ActiveSpellEffectsState`,
     `ActiveSpellEffectDetail`, `SpellEffectInstance`, `SpellDuration`, `WundZustand`, `DiceLogEntry`,
-    `ZustandsBuchung` (ARCH-06), `BegleiterZustand` (V2).
+    `ZustandsBuchung` (ARCH-06), `BegleiterZustand` (V2), `ZustandsMarker` (SPIEL-03).
 
   Ausgenommen ist nur `OffhandSlot`: der Altschlüssel `offhand` wird beim
   Laden migriert und nie geschrieben. Drei Regeln halten das dicht:
@@ -696,7 +696,8 @@ persistiert (eigene Hive-Box `hero_states_v1`).
 | `tempMods` | `StatModifiers` | Temporäre Stat-Modifikatoren |
 | `tempAttributeMods` | `AttributeModifiers` | Temporäre Eigenschaftsmodifikatoren |
 | `buchungen` | `List<ZustandsBuchung>` | Fachliche Buchungen (ARCH-06), höchstens `buchungenMax` = 50, nur bei Belegung im JSON |
-| `begleiterZustaende` | `Map<String, BegleiterZustand>` | Laufende LeP/AsP/AuP je Begleiter-ID (V2, gemeinsam mit Reittier-P2), nur bei Belegung im JSON |
+| `begleiterZustaende` | `Map<String, BegleiterZustand>` | Laufende LeP/AsP/AuP und freier Wundzähler `wunden` je Begleiter-ID (V2, gemeinsam mit Reittier-P2), nur bei Belegung im JSON |
+| `zustandsmarker` | `List<ZustandsMarker>` | Freie Zustandsmarker der Spielansicht (SPIEL-03): `id`, `name`, optionale Dauer `rest` (Runden), `notiz`; nur bei Belegung im JSON, reine Merkhilfe ohne Regelwirkung (`zustandsmarker_rules.dart`); der Sync führt die Liste über die `id` zusammen und zählt `rest` als Zähler |
 | `standort` | `String` | Aktueller Aufenthaltsort als Freitext (Spielansicht, Abschnitt „Standort“), nur bei Belegung im JSON; `standort_rules.dart` bereinigt die Eingabe und baut den Avesmaps-Link `https://avesmaps.de/?siedlung=<Ort>`. Die Karte wird nur verlinkt (`url_launcher`), nicht eingebettet: avesmaps.de sendet `X-Frame-Options: DENY`, und Karten- und Ortsdaten stehen nicht unter freier Lizenz |
 
 `HeroState.empty()` liefert einen Standardzustand mit allen Werten = 0.
@@ -1885,9 +1886,9 @@ kann, ohne die Ausgangsdauer zu verlieren.
 ### 4.6 Waffe, Fernkampf-AT, Schaden und Kampfmeisterschaften
 
 **Dateien:** `lib/rules/derived/combat_rules.dart`,
-`lib/rules/derived/fernkampf_rules.dart`,
+`lib/rules/derived/kampf_herleitung_rules.dart`,
 `lib/rules/derived/fernkampf_ladezeit_rules.dart`,
-`lib/rules/derived/combat_mastery_rules.dart`,
+`lib/rules/derived/waffenmeister_rules.dart`,
 `lib/rules/derived/maneuver_rules.dart`,
 `lib/rules/derived/two_weapon_combat_rules.dart`
 
@@ -1953,7 +1954,7 @@ Dabei gilt:
   (`AT/PA -9`, `-6`, `-3` oder `0`) sowie die verfuegbaren
   beidhÃ¤ndigen Aktionsoptionen fuer zweite Waffe, Parierwaffe und
   `Doppelangriff` ab.
-- `combat_mastery_rules.dart` bewertet Punktbudget und Voraussetzungen,
+- `waffenmeister_rules.dart` bewertet Punktbudget und Voraussetzungen,
   prueft die Anwendbarkeit fuer Hauptwaffe, Schild oder Parierwaffe und leitet
   automatisch wirksame Modifikatoren fuer die Kampfvorschau ab.
 - `unarmed_style_rules.dart` wertet aktive waffenlose Kampfstile aus dem
@@ -3166,8 +3167,8 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   (`lib/rules/derived/epic_main_attribute_rules.dart`), das bewusst
   unabhaengig von Hausregel-Schaltern und `isEpisch` arbeitet.
 - `showSteigerungsDialog` reicht das ueber `istHaupteigenschaft` durch;
-  gesetzt wird es nur in `_steigeEigenschaft`
-  (`hero_overview_raise_actions.dart`). Talente und Zauber behalten den
+  gesetzt wird es nur in
+  `advancement_catalog_actions.dart`. Talente und Zauber behalten den
   Aufschlag. Der Dialog zeigt statt der Aufschlagszeile den Hinweis
   „Haupteigenschaft — kein epischer Aufschlag".
 - **Epischer Status ist korrigierbar.** `EpicActivationDialog` hat einen
@@ -3386,7 +3387,7 @@ ueber die Settings-Katalogverwaltung bearbeitet.
 - `HeroNotesTab` gliedert den Bereich jetzt in `Chroniken`, `Kontakte` und
   `Abenteuer`; der bestehende Reisebericht bleibt fachlich und technisch
   separat.
-- `hero_overview_raise_actions.dart` uebergibt Abenteuer-SE fuer
+- `advancement_catalog_actions.dart` uebergibt Abenteuer-SE fuer
   Eigenschaften und Grundwerte an den gemeinsamen Steigerungsdialog und zieht
   verbrauchte SE aus den persistierten Pools ab.
 

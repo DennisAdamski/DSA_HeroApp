@@ -53,11 +53,16 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `web/sqlite3.wasm` ist eine eingecheckte Binaerdatei, kein Build-Artefakt:
   das `sqlite3`-Package liefert auf pub.dev nur C-Quellen fuer den WASM-Build
   (`assets/wasm/` im Package), keine fertige `.wasm`. Bei einem Versionswechsel
-  von `sqlite3` in `pubspec.yaml` muss `web/sqlite3.wasm` manuell gegen die
+  von `sqlite3` muss `web/sqlite3.wasm` manuell gegen die
   passende `sqlite3.wasm` aus den GitHub-Releases von
   github.com/simolus3/sqlite3.dart ersetzt werden — Tag `sqlite3-<version>`,
-  aktuell `sqlite3-3.7.1`. Ein Versatz zwischen Package und `.wasm` faellt
-  **nicht** beim Kompilieren auf, sondern erst zur Laufzeit im Browser.
+  aktuell `sqlite3-3.9.1`. Das gilt auch, wenn nur `pubspec.lock` die
+  aufgelöste Version anhebt (so blieb vom 16. bis 23.11.2026 die Datei von
+  3.7.1 neben Paket 3.9.1 liegen). Ein Versatz zwischen Package und `.wasm`
+  faellt **nicht** beim Kompilieren auf, sondern erst zur Laufzeit im Browser;
+  `test/data/rules_search/sqlite3_wasm_version_test.dart` vergleicht deshalb
+  die aufgeloeste Version mit dem SHA-256 der Datei (Digest je Version dort
+  eintragen).
 - Die nativen SQLite-Bibliotheken fuer Desktop und Mobile liefert seit
   `sqlite3` 3.x dessen eigener Build-Hook, der SQLite direkt mit der App
   buendelt (unter Windows erscheint es als `sqlite3.dll` im Release-Ordner).

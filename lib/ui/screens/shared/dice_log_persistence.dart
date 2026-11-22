@@ -173,6 +173,9 @@ Future<void> showLoggedProbeDialog({
       protokolliere(diceLogEntryFromResult(result));
     },
     onDiceLogEntry: protokolliere,
+    onExtern: (bestanden) => protokolliere(
+      diceLogEntryFromExternal(angepasst, bestanden: bestanden),
+    ),
     contentUnlocked: ref.read(catalogContentVisibleProvider),
     contentPassword: ref.read(catalogContentPasswordProvider),
     meisterhandwerk: zaubereffekteAnwenden

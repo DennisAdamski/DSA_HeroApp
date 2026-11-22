@@ -4,18 +4,22 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/ort_loader.dart';
 import 'package:dsa_heldenverwaltung/domain/avesmaps_ort.dart';
+import 'package:dsa_heldenverwaltung/domain/avesmaps_route.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/karten_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reiseweg_rules.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/ort_providers.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../../test_support/fake_repository.dart';
+
 import 'package:dsa_heldenverwaltung/ui2/karte/karto_karte.dart';
 import 'package:dsa_heldenverwaltung/ui2/karte/karto_karten_blatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/standort/karto_standort_kachel.dart';
@@ -94,6 +98,35 @@ void main() {
         expect(find.byType(KartoKarte), findsOneWidget);
       });
     }
+
+    testWidgets('zeichnet einen gemerkten Reiseweg statt der Luftlinie', (
+      tester,
+    ) async {
+      final etappen = reiseEtappen(_stationen);
+      final punkte = kartenRoutenPunkte(
+        etappen,
+        wege: <String, AvesmapsRoute>{
+          reisewegAnfrageFuer(etappen.last)!.schluessel: const AvesmapsRoute(
+            gefunden: true,
+            meilen: 700,
+            reisetage: 9,
+            linie: <(double, double)>[(551, 532), (500, 450), (470, 380)],
+          ),
+        },
+      );
+      expect(punkte.last.linie, hasLength(3));
+      await tester.pumpWidget(
+        _rahmen(
+          SizedBox(
+            width: 400,
+            height: 300,
+            child: KartoKarte(orte: _orte, routenPunkte: punkte),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
 
     testWidgets('Tipps treffen Station und Ort, ins Leere nichts', (
       tester,
@@ -275,6 +308,82 @@ void main() {
       expect(await repo.loadHeroById('rondra'), isNotNull);
     });
 
+    testWidgets('Standort hierher setzt den getroffenen Ort', (tester) async {
+      final gesetzt = <String>[];
+      await zeige(
+        tester,
+        start: (heroId) => KartoKartenBlatt(
+          heroId: heroId,
+          mitRoute: false,
+          onStandortSetzen: (standort) async => gesetzt.add(standort),
+        ),
+      );
+      expect(
+        tester.widget<KartoKarte>(find.byType(KartoKarte)).routenPunkte,
+        isEmpty,
+      );
+      // Ohne Route trifft der Tipp auf Gareth den Ort, nicht die Station.
+      await tippeStation(tester, 's1');
+      expect(tester.widget<Text>(_k('karto-karte-info-name')).data, 'Gareth');
+      await tester.tap(_k('karto-karte-info-hierher'));
+      await tester.pumpAndSettle();
+      expect(gesetzt, <String>['Gareth']);
+      expect(_k('karto-karte-info-name'), findsNothing);
+    });
+
+    testWidgets('Hierher reisen öffnet den Reiseplaner mit dem Ort', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        start: (heroId) => KartoKartenBlatt(
+          heroId: heroId,
+          mitRoute: false,
+          onReiseZustand: ({required unterwegs, standort}) async => true,
+        ),
+      );
+      await tippeStation(tester, 's1');
+      expect(tester.widget<Text>(_k('karto-karte-info-name')).data, 'Gareth');
+      await tester.tap(_k('karto-karte-info-reisen'));
+      await tester.pumpAndSettle();
+      expect(find.text('Reise planen'), findsOneWidget);
+      expect(
+        tester.widget<TextField>(_k('karto-reiseplan-nach')).controller!.text,
+        'Gareth',
+      );
+    });
+
+    testWidgets('kein Standort hierher für den Standort selbst', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        start: (heroId) =>
+            KartoKartenBlatt(heroId: heroId, onStandortSetzen: (_) async {}),
+      );
+      // Station 2 liegt in Punin, dem gespeicherten Standort.
+      await tippeStation(tester, 's2');
+      expect(_k('karto-karte-info-name'), findsOneWidget);
+      expect(_k('karto-karte-info-hierher'), findsNothing);
+    });
+
+    testWidgets('die Reiseroute lässt sich ein- und ausblenden', (
+      tester,
+    ) async {
+      await zeige(tester);
+      List<KartenRoutenPunkt> punkte() =>
+          tester.widget<KartoKarte>(find.byType(KartoKarte)).routenPunkte;
+      expect(punkte(), hasLength(2));
+      expect(_k('karto-karte-route'), findsOneWidget);
+      await tester.tap(_k('karto-karte-route-umschalten'));
+      await tester.pump();
+      expect(punkte(), isEmpty);
+      expect(_k('karto-karte-route'), findsNothing);
+      await tester.tap(_k('karto-karte-route-umschalten'));
+      await tester.pump();
+      expect(punkte(), hasLength(2));
+    });
+
     testWidgets('die Lageskizze der Standort-Kachel öffnet das Vollbild', (
       tester,
     ) async {
@@ -292,7 +401,6 @@ void main() {
                 return KartoStandortKachel(
                   standort: werte.state.standort,
                   heroId: heroId,
-                  stationen: werte.hero.reiseStationen,
                   onSpeichern: (_) async {},
                 );
               },
@@ -301,9 +409,18 @@ void main() {
         ),
       );
       expect(_k('karto-standort-skizze'), findsOneWidget);
+      // Die Skizze zeigt den Standort ohne Reiseroute.
+      expect(
+        tester.widget<KartoKarte>(_k('karto-standort-skizze')).routenPunkte,
+        isEmpty,
+      );
       await tester.tap(_k('karto-standort-skizze'));
       await tester.pumpAndSettle();
-      expect(find.byType(KartoKartenBlatt), findsOneWidget);
+      final blatt = tester.widget<KartoKartenBlatt>(
+        find.byType(KartoKartenBlatt),
+      );
+      expect(blatt.mitRoute, isFalse);
+      expect(blatt.onStandortSetzen, isNotNull);
       expect(tester.takeException(), isNull);
     });
   });

@@ -523,7 +523,7 @@ Herleitung herleiteSchildPa({
   );
 }
 
-/// Fernkampfwert: genau die Summanden von `computeRangedAtValue`.
+/// Fernkampfwert: genau die Summanden der Referenzsumme `computeRangedAtValue` (Test).
 Herleitung herleiteFernkampfAt({
   required int fkBasis,
   required int talentAt,

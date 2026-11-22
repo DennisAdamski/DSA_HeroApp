@@ -60,14 +60,17 @@ Oberfläche (`lib/ui/screens/hero_gruppe*`) bietet Erstellen, Beitreten per
 Beitrittscode, Code kopieren/erneuern, Verlassen bzw. Löschen,
 gemeinsame Einträge und gemeinsame Notizen.
 
+Mitglieder entfernt der Besitzer seit 22.11.2026 im Menü der Heldenkarte
+(„Aus der Gruppe entfernen“, erneuert den Beitrittscode und kopiert ihn; Details
+in [sync_konto.md](hinweise/sync_konto.md)).
+
 Noch offen:
 
-1. Mitglieder entfernen in der Oberfläche (Dienst `entferneMitglied` ist da);
-2. Live-Listener statt manuellem „Synchronisieren“;
-3. Gruppen unter Windows (REST-Transport ohne Firestore-SDK; dort bleibt
+1. Live-Listener statt manuellem „Synchronisieren“;
+2. Gruppen unter Windows (REST-Transport ohne Firestore-SDK; dort bleibt
    `isFirestoreAvailable` aus);
-4. Flutter-End-to-End-Test gegen den Firestore-Emulator;
-5. optional: serverseitig gehashte, einmalige Einladungen.
+3. Flutter-End-to-End-Test gegen den Firestore-Emulator;
+4. optional: serverseitig gehashte, einmalige Einladungen.
 
 ## Betrieb
 

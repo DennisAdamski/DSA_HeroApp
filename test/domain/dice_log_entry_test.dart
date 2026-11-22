@@ -198,6 +198,54 @@ void main() {
       expect(ohne.toJson().containsKey('probenVerweis'), isFalse);
     });
 
+    test(
+      'eine extern gewürfelte Probe trägt nur das Ergebnis und überlebt JSON',
+      () {
+        const anfrage = ResolvedProbeRequest(
+          type: ProbeType.talent,
+          title: 'Talentprobe: Klettern',
+          subtitle: 'MU / GE / KK',
+          ruleHint: '',
+          diceSpec: DiceSpec(count: 3, sides: 20),
+          targets: <ProbeTargetValue>[
+            ProbeTargetValue(label: 'MU', value: 13),
+            ProbeTargetValue(label: 'GE', value: 12),
+            ProbeTargetValue(label: 'KK', value: 14),
+          ],
+          verweis: 'talent:tal_klettern',
+        );
+        final bestanden = diceLogEntryFromExternal(anfrage, bestanden: true);
+        final misslungen = diceLogEntryFromExternal(anfrage, bestanden: false);
+
+        expect(bestanden.extern, isTrue);
+        expect(bestanden.success, isTrue);
+        expect(misslungen.success, isFalse);
+        expect(bestanden.diceValues, isEmpty);
+        expect(bestanden.zielwerte, isEmpty);
+        expect(bestanden.restpunkte, isNull);
+        expect(bestanden.probenVerweis, 'talent:tal_klettern');
+
+        final neu = DiceLogEntry.fromJson(bestanden.toJson());
+        expect(neu.extern, isTrue);
+        expect(neu.success, isTrue);
+        expect(neu.diceValues, isEmpty);
+      },
+    );
+
+    test(
+      'extern fehlt im JSON, solange es nicht gesetzt ist (Hash-Schutz)',
+      () {
+        final normal = diceLogEntryFromSimpleCheck(
+          title: 'Eigenschaftsprobe: MU',
+          subtitle: 'MU',
+          roll: 7,
+          targetValue: 12,
+        );
+        expect(normal.extern, isFalse);
+        expect(normal.toJson().containsKey('extern'), isFalse);
+      },
+    );
+
     test('Zielwerte und Restpunkte überstehen JSON', () {
       final entry = diceLogEntryFromResult(
         talentErgebnis(success: false, rest: -2),

@@ -12,7 +12,8 @@ import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../test_support/fake_repository.dart';
 
 // Ein Absturz wird als Schritt simuliert, der nie fertig wird: Der Import
 // läuft nicht abgewartet bis dorthin, danach nimmt ein neues Repository auf

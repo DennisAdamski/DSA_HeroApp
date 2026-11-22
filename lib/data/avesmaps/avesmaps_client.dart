@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:dsa_heldenverwaltung/domain/avesmaps_ort.dart';
 import 'package:dsa_heldenverwaltung/domain/avesmaps_ortsdetails.dart';
+import 'package:dsa_heldenverwaltung/domain/avesmaps_route.dart';
 
 /// Kennung der App gegenüber Avesmaps, so mit dem Betreiber abgesprochen
 /// (Issue 7 im Avesmaps-Repository).
@@ -153,6 +154,43 @@ class AvesmapsClient {
       );
     }
     return details;
+  }
+
+  /// Berechnet den Reiseweg der [anfrage] (`GET /route`).
+  ///
+  /// `gefunden: false` ist eine Antwort, kein Fehler; ein unbekannter Ort
+  /// (404) ergibt ebenfalls einen Weg ohne Fund. Wirft sonst einen
+  /// [AvesmapsFehler].
+  Future<AvesmapsRoute> route(AvesmapsRoutenAnfrage anfrage) async {
+    if (!_uuid.hasMatch(anfrage.vonId) || !_uuid.hasMatch(anfrage.nachId)) {
+      return const AvesmapsRoute.nichtGefunden(AvesmapsRoute.grundOrtUnbekannt);
+    }
+    final Map<String, dynamic> antwort;
+    try {
+      antwort = await _hole(
+        _weg('route', <String, String>{
+          'von': anfrage.vonId,
+          'nach': anfrage.nachId,
+          'optimierung': anfrage.optimierung,
+          if (!anfrage.alleWege) 'wege': anfrage.wege.join(','),
+        }),
+      );
+    } on AvesmapsFehler catch (fehler) {
+      if (fehler.art == AvesmapsFehlerArt.unbekannt) {
+        return const AvesmapsRoute.nichtGefunden(
+          AvesmapsRoute.grundOrtUnbekannt,
+        );
+      }
+      rethrow;
+    }
+    final route = AvesmapsRoute.ausJson(antwort);
+    if (route == null) {
+      throw const AvesmapsFehler(
+        AvesmapsFehlerArt.antwort,
+        'Avesmaps hat keinen lesbaren Reiseweg geliefert.',
+      );
+    }
+    return route;
   }
 
   // Form der Ortskennung laut Schnittstelle; andere Werte beantwortet sie mit

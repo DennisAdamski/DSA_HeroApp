@@ -9,7 +9,9 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_kampfprofil_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../../test_support/fake_repository.dart';
+
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_begleiterkarte.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelraster.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
@@ -172,6 +174,79 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(bestand.aufrufe, ['vertrautenAktionen:hexe:mira']);
+  });
+
+  group('Wundzähler', () {
+    Finder w(String begleiter, String teil) =>
+        find.byKey(ValueKey<String>('karto-begleiter-$begleiter-wunden-$teil'));
+
+    testWidgets('zeigt die gespeicherten Wunden, ohne Eintrag 0', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        begleiter: const [mira, rosse],
+        werte: const {'mira': BegleiterZustand(wunden: 2)},
+      );
+      expect(tester.widget<Text>(w('mira', 'wert')).data, '2');
+      expect(tester.widget<Text>(w('rosse', 'wert')).data, '0');
+    });
+
+    testWidgets('die Knöpfe melden Schritte, Minus ist bei 0 gesperrt', (
+      tester,
+    ) async {
+      final bestand = await zeige(tester, begleiter: const [mira]);
+      await tester.ensureVisible(w('mira', 'minus'));
+      await tester.tap(w('mira', 'minus'));
+      await tester.tap(w('mira', 'plus'));
+      await tester.pumpAndSettle();
+      expect(bestand.aufrufe, ['wunden:hexe:mira:1']);
+    });
+
+    testWidgets('schmal mit Textfaktor 2 ohne Überlauf', (tester) async {
+      await zeige(
+        tester,
+        begleiter: const [mira, rosse],
+        breite: 360,
+        skalierung: 2,
+        werte: const {'mira': BegleiterZustand(wunden: 3)},
+      );
+      await tester.ensureVisible(w('rosse', 'plus'));
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('Proben des Reittiers (Reittiere P2)', () {
+    Finder probe(String begleiter, String art) =>
+        find.byKey(ValueKey<String>('karto-begleiter-$begleiter-probe-$art'));
+
+    testWidgets('nur Reittiere bieten Proben an', (tester) async {
+      await zeige(tester, begleiter: const [mira, rosse]);
+      for (final art in ['reiten', 'reitenImKampf', 'loyalitaet']) {
+        expect(probe('rosse', art), findsOneWidget, reason: art);
+        expect(probe('mira', art), findsNothing, reason: art);
+      }
+    });
+
+    testWidgets('jeder Knopf meldet seine Probe', (tester) async {
+      final bestand = await zeige(tester, begleiter: const [rosse]);
+      for (final art in ['reiten', 'reitenImKampf', 'loyalitaet']) {
+        await tester.ensureVisible(probe('rosse', art));
+        await tester.tap(probe('rosse', art));
+        await tester.pumpAndSettle();
+      }
+      expect(bestand.aufrufe, [
+        'reittierProbe:hexe:rosse:reiten',
+        'reittierProbe:hexe:rosse:reitenImKampf',
+        'reittierProbe:hexe:rosse:loyalitaet',
+      ]);
+    });
+
+    testWidgets('schmal mit Textfaktor 2 ohne Überlauf', (tester) async {
+      await zeige(tester, begleiter: const [rosse], breite: 360, skalierung: 2);
+      await tester.ensureVisible(probe('rosse', 'loyalitaet'));
+      expect(tester.takeException(), isNull);
+    });
   });
 
   testWidgets('breit steht der Abschnitt im Raster neben anderen Kacheln, '

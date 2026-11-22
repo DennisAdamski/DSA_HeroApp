@@ -4,7 +4,9 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_unterwegs.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reittier_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
@@ -244,6 +246,28 @@ class TestBestand implements KartoBestandsAdapter {
   }
 
   @override
+  Future<void> begleiterWundenAendern({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String begleiterId,
+    required int schritt,
+  }) async {
+    aufrufe.add('wunden:$heroId:$begleiterId:$schritt');
+  }
+
+  @override
+  Future<void> reittierProbe({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String begleiterId,
+    required ReittierProbeArt art,
+  }) async {
+    aufrufe.add('reittierProbe:$heroId:$begleiterId:${art.name}');
+  }
+
+  @override
   Future<void> standortSetzen({
     required BuildContext context,
     required WidgetRef ref,
@@ -251,6 +275,18 @@ class TestBestand implements KartoBestandsAdapter {
     required String standort,
   }) async {
     aufrufe.add('standort:$heroId:$standort');
+  }
+
+  @override
+  Future<bool> reiseZustandSetzen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroUnterwegs? unterwegs,
+    String? standort,
+  }) async {
+    aufrufe.add('reise:$heroId:${unterwegs?.ziel ?? '-'}:${standort ?? '-'}');
+    return true;
   }
 
   @override

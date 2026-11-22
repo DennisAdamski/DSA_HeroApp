@@ -8,7 +8,9 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../../../test_support/fake_repository.dart';
+
 import 'package:dsa_heldenverwaltung/ui/screens/app_shell.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/auth/sign_in_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';

@@ -22,7 +22,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   bezahlter Zeit, Profilbindung und Abbau ausschließlich sonstiger FK-Zuschläge.
   `gefecht_ansagefolge_rules.dart` führt eigene misslungene Nahkampf-Ansagen als
   flüchtigen Probenmalus bis einschließlich nächster AT/PA oder Orientieren.
-  Die weiteren Pakete stehen in `docs/gefecht_folgepakete_plan.md`.
+  Die weiteren Pakete stehen in `docs/archiv/gefecht_folgepakete_plan.md`.
   `gefecht_meisterparade_rules.dart` ergänzt die getrennte PA-Ansage und den
   eigenen flüchtigen Erfolgsbonus. Prüfmetadaten binden Erleichterung und einmalige
   Buchung; Schilde benötigen eine konkrete manuelle Ansagegrenze plus aktuelle PA.
@@ -87,7 +87,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   AppBar-Leiste mit Rechenweg (`gefecht_kampfwerte_rules.dart`, inkl. Herleitung der Gefechts-INI).
   Normale Nahkampf-PA benötigt keine allgemeine Paradebestätigung; bekannte
   Verbote und konkrete fehlende Angriffsdaten bleiben in den Kontextregeln wirksam.
-  Der Folgeplan steht in [docs/gefecht_next_plan.md](../gefecht_next_plan.md).
+  Der Folgeplan steht in [docs/archiv/gefecht_next_plan.md](../archiv/gefecht_next_plan.md).
   `gefecht_orientieren_rules.dart` trennt Kampfverluste von geschützten und
   ungeklärten Korrekturen; der Orientierungsdialog nutzt frische Heldendaten.
   `gefecht_kontext.dart` hält ausschließlich flüchtige Kontakt-/Angriffsdaten.
@@ -123,7 +123,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (`gefechtsKlingenVorgaben`) und trägt die einzige Erschwernis ihrer
   Teilproben. Klingenwand/-sturm, Patzer und
   Bruchtest, Manöverfolgen und Fremdwirkung haben je eigene Regelmodule;
-  alles bleibt flüchtig. Stand und Grenzen: [docs/gefecht_abschluss_entwurf.md](../gefecht_abschluss_entwurf.md).
+  alles bleibt flüchtig. Stand und Grenzen: [docs/archiv/gefecht_abschluss_entwurf.md](../archiv/gefecht_abschluss_entwurf.md).
   Bedienung: `gefecht_aktionsknopf.dart` zeigt Status und Hauptgrund
   (`gefechtsHauptgrund`), `gefecht_anordnung.dart` ordnet die Abschnitte,
   `gefecht_schnellleiste.dart` hält schmal Attacke/Parade/Ausweichen/Runde
@@ -137,8 +137,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   erscheint nur als Banner. Inventar und „Gegenstand benutzen“:
   `gefecht_inventar.dart` mit `gefecht_inventar_rules.dart`; abgebucht wird
   erst beim Abschluss nach Bestätigung über `inventar_verbrauch_rules.dart`
-  (`menge` vor `anzahl`, frisch über `updateHero`). Begleiter nur ansehen:
-  `gefecht_begleiter.dart` mit `begleiter_kampfprofil_rules.dart`.
+  (`menge` vor `anzahl`, frisch über `updateHero`). Begleiter
+  (`gefecht_begleiter.dart` mit `begleiter_kampfprofil_rules.dart`): Kampfprofil
+  und laufende Werte zum Nachschlagen, dazu seit V3a Würfelhilfen (AT, PA, TP) je
+  Angriff über `KartoGefechtsAdapter.gefechtsProbe`
+  (`begleiter_gefecht_probe_rules.dart`). Nur Würfel: kein Schreibweg, keine
+  Aktionsmarke, keine Buchung am Gegner (den Treffer überträgt der Spieler);
+  gebundene Vertraute zeigen den Hinweis „Angriffe gelten als magisch“, die
+  Kampfregeln ihrer Art und bei Aurapanzer dessen Wirkung (alles nur Text).
 - **Reittiere** entwickeln sich nur über die ZBA-Ausbildung, nie über AP
   ([docs/reittier_plan.md](../reittier_plan.md), Pakete P1–P3).
   `HeroCompanion.reittierAusbildung` hält Ausgangsstand, gebuchte Schritte,
@@ -176,3 +182,16 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
 - Vor- und Nachteile fragt auch die Vertrautenbindung über `werteMerkmaleAus`
   ab (`hatVorteilMachtvollerVertrauter`, `hatNachteilKeinVertrauter`), nie in
   der Oberfläche und nie über die gespeicherte Liste.
+
+- Zauberwirkungen im Gefecht: Die Kachel `GefechtZauberwirkungen`
+  (`lib/ui2/gefecht/`, unter der Magie-Kachel) zeigt jede laufende Wirkung
+  (`aktiveEffektInstanzen`) mit Quelle, Ziel, Dauer und Schutzvorrat und lässt
+  sie anpassen (Dauer −1, Dauer setzen, Unterdrücken, Beenden, Schutzvorrat,
+  Einsetzen) und anlegen (Zauberwirkung, Attributo-Quelle). Reine
+  Zustandsänderungen laufen frisch über `gefechtsZustand`, alles mit Dialog
+  über `KartoGefechtsAdapter.gefechtsWirkung`; beide nutzen dieselben
+  Bedienwege wie der Dialog „Zauber aktivieren“
+  (`lib/ui/screens/shared/spell_instance_aktionen.dart`). Alte Einzelwirkungen
+  (Axxeleratus, Armatrutz, Legacy-Attributo) erscheinen als „(alt)“ nur zur
+  Anzeige; bedient werden sie über „Alle verwalten“. Eigene Effekt-Definitionen
+  gibt es nicht; der Wirkabschluss legt weiterhin nur das Legacy-Trio an.

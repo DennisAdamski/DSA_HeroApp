@@ -12,7 +12,9 @@ import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
-import 'package:dsa_heldenverwaltung/test_support/in_memory_avatar_file_storage.dart';
+
+import '../../test_support/in_memory_avatar_file_storage.dart';
+
 import 'package:dsa_heldenverwaltung/ui/widgets/avatar_ausschnitt_bild.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/avatar_gallery_image.dart';
 

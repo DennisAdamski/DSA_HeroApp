@@ -22,6 +22,7 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuerblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_marker_kachel.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_begleiterkarte.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_dabei_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
@@ -345,25 +346,45 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
         mitBelastung: !_belastungInDabei,
       ),
     ),
+    // Schreibt nur die Markerliste des Laufzeitzustands, frisch und ohne
+    // Regelwirkung.
+    KartoSpielkachelArt.marker => KartoMarkerKachel(
+      heroId: heroId,
+      marker: werte.state.zustandsmarker,
+    ),
     KartoSpielkachelArt.begleiter => _begleiter(context, werte),
     KartoSpielkachelArt.dabei => _dabei(context, werte),
     KartoSpielkachelArt.abenteuer => _abenteuer(context, werte, leser),
     KartoSpielkachelArt.reiseroute => KartoReiserouteKachel(
       heroId: heroId,
       stationen: werte.hero.reiseStationen,
+      onStandortSetzen: (standort) => bestand.standortSetzen(
+        context: context,
+        ref: ref,
+        heroId: heroId,
+        standort: standort,
+      ),
     ),
-    // Schreibt nur den Standort, über denselben Zustandsweg wie die
-    // Standortzeile der Abenteuer-Kachel.
+    // Schreibt den Standort über denselben Zustandsweg wie die Standortzeile
+    // der Abenteuer-Kachel; Reisen schreiben Reise und Standort gemeinsam.
     KartoSpielkachelArt.standort => KartoStandortKachel(
       standort: werte.state.standort,
       heroId: heroId,
-      stationen: werte.hero.reiseStationen,
+      unterwegs: werte.state.unterwegs,
       onSpeichern: (standort) => bestand.standortSetzen(
         context: context,
         ref: ref,
         heroId: heroId,
         standort: standort,
       ),
+      onReiseZustand: ({required unterwegs, standort}) =>
+          bestand.reiseZustandSetzen(
+            context: context,
+            ref: ref,
+            heroId: heroId,
+            unterwegs: unterwegs,
+            standort: standort,
+          ),
     ),
     // Schreibt nichts am Helden; gewürfelt wird über die Gefechtsbrücke, die
     // selbst ins Würfelprotokoll schreibt.
@@ -825,6 +846,24 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
           begleiterId: begleiter.id,
           pool: pool,
           aenderung: aenderung,
+        ),
+        // Wie die Werte ohne `aktion`-Guard: jeder schnelle Klick zählt.
+        onWunden: (begleiter, schritt) => bestand.begleiterWundenAendern(
+          context: context,
+          ref: ref,
+          heroId: heroId,
+          begleiterId: begleiter.id,
+          schritt: schritt,
+        ),
+        // Nur eine Würfelhilfe, gebucht wird nichts: ohne Editorprüfung.
+        onReittierProbe: (reittier, art) => aktion(
+          () => bestand.reittierProbe(
+            context: context,
+            ref: ref,
+            heroId: heroId,
+            begleiterId: reittier.id,
+            art: art,
+          ),
         ),
         onVertrautenAktionen: (vertrauter) => aktion(() async {
           if (!await vorHeldenbearbeitung() || !context.mounted) return;

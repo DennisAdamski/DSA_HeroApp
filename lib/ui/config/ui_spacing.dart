@@ -7,9 +7,6 @@ const double kDialogFieldSpacing = 12;
 /// Kompakter Inline-Abstand (z.B. zwischen Label und Wert, Buttons).
 const double kDialogInlineSpacing = 8;
 
-/// Standard-Padding fuer Tabellenzellen.
-const double kTableCellPadding = 4;
-
 // ---------------------------------------------------------------------------
 // Dialog-Breitenklassen
 // ---------------------------------------------------------------------------

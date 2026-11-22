@@ -74,3 +74,8 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   damit unbekannte Felder und der Ersteller online stehen bleiben. Felder, die
   `HeldVisitenkarte` nur bei Belegung schreibt (`notizen`,
   `avatarThumbnailBase64`), entfernt `pushGeteilterHeld` deshalb ausdrücklich.
+- `HeroState.unterwegs` (`HeroUnterwegs`, seit 21.11.2026) hält eine laufende
+  Reise; nur bei Belegung im JSON, gelöscht über `copyWith(unterwegs: null)`
+  (Sentinel `keepFieldValue`). `HeroReiseAnreise` trägt seitdem auch Abreise,
+  Reisemittel, Tempo, Wetter sowie `geplanteTage`/`meilen` als Momentaufnahme
+  des Plans, ebenfalls nur bei Belegung.

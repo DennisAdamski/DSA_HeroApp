@@ -544,7 +544,7 @@ Die Gefechtsansicht führt Orientieren, Gegner-/Distanzkontext, Ziehen und
 bestätigte Zauber-/Karmahandlungen über gemeinsame Regelprüfungen. Laufende
 Gefechte bleiben flüchtig; Ressourcen und unterstützte Folgen werden über
 bestehende frische Schreibwege übernommen. Regelquellen und manuelle Grenzen:
-[Gefechtsausbau](docs/gefecht_next_plan.md), [Implementierung](docs/gefecht_implementation.md).
+[Gefechtsausbau](docs/archiv/gefecht_next_plan.md), [Implementierung](docs/gefecht_implementation.md).
 
 Manöver lassen sich nach Angriff, Verteidigung oder Sonstige, Lernstand und
 bekannten Sperren filtern. Finte, Wuchtschlag und Fernkampfansage haben getrennte

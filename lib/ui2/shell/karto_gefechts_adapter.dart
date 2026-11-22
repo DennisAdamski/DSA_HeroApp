@@ -7,6 +7,25 @@ import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 
+/// Bedienung einer Zauberwirkung aus der Gefechtskachel, die einen Dialog
+/// der Bestandsoberfläche braucht.
+enum GefechtsWirkungAktion {
+  /// Neue Zauberwirkung mit belegtem Profil anlegen.
+  zauberHinzufuegen,
+
+  /// Weiteren Attributo als eigene Quelle anlegen.
+  attributoHinzufuegen,
+
+  /// Wirkungsdauer einer Quelle festlegen.
+  dauer,
+
+  /// Einmalige Wirkung einsetzen (Ängste lindern, Schild fängt Treffer auf).
+  einsetzen,
+
+  /// Schutzvorrat eines Zauberschilds korrigieren.
+  schutzvorrat,
+}
+
 /// Gezielt erweiterte Bestandsbrücke für einmalige Proben und Ausrüstung.
 abstract interface class KartoGefechtsAdapter {
   /// Liefert Abbruch oder ein eingefrorenes Ergebnis und protokolliert es.
@@ -100,6 +119,19 @@ abstract interface class KartoGefechtsAdapter {
     required int zfpStern,
     required bool gelungen,
     required String repraesentation,
+  });
+
+  /// Bedient eine Zauberwirkung mit den Eingaben der Bestandsoberfläche.
+  ///
+  /// [instanzId] benennt die gespeicherte Wirkung und entfällt bei den
+  /// Aktionen zum Anlegen. Geschrieben wird frisch über den Zustandsweg;
+  /// Fehler erscheinen im [gefechtsFehlerBereich].
+  Future<void> gefechtsWirkung({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required GefechtsWirkungAktion aktion,
+    String? instanzId,
   });
 
   /// Öffnet den AsP-/KaP-Dialog mit bestätigten Abschlusskosten.

@@ -1,6 +1,6 @@
 # To-do-Liste: Weiterentwicklung der Heldenverwaltung
 
-Stand: 05.11.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
+Stand: 17.11.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
 Aufgaben und der Verlauf der Teilstände stehen unverändert im
 [Archiv](archiv/README.md); Verweise wie „ARCH-05 Teilstand (3)“ in Code und
 Dokumentation meinen den dortigen Text.
@@ -10,22 +10,21 @@ würdest du anpassen?“ (18.09.2026) mit sieben Vorschlägen (ARCH-01 bis ARCH-
 und dem fachlichen Ausbau MAG-EFF und TRANK. Vor einer Umsetzung den jeweiligen
 Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
 
-## Kurzüberblick (05.11.2026)
+## Kurzüberblick (17.11.2026)
 
 | Bereich | Erledigt | Teilweise / offen |
 | --- | --- | --- |
-| Architektur (ARCH) | 01, 03, 05, 06 abgenommen | 02 und 04: Code fertig, manuelle Prüfung fehlt; 07 begleitend |
-| Fachlicher Ausbau | MAG-EFF: 17 Zauberprofile; TRANK: Teilstände 1 und 2 | weitere Zauber zurückgestellt; Elixiere, Verbandszeug offen; Kräutersuche als Regelfunktion vorhanden (ohne Oberfläche) |
-| Spielabend (SPIEL) | 01, 02, 05, 06, 07 | 03 (nicht begonnen), 04 (Produktion) |
+| Architektur (ARCH) | 01 bis 06 abgenommen; alle manuellen Prüfungen erledigt (18.11.) | 04 ebenfalls abgenommen (Lernregel-Reste zurückgestellt); 07 begleitend |
+| Fachlicher Ausbau | MAG-EFF: 17 Zauberprofile; TRANK: Teilstände 1 und 2 | weitere Zauber zurückgestellt; Elixiere, Verbandszeug offen; Kräutersuche als Regelfunktion und Kachel in der Spielansicht (Wildnis, seit 12.–14.11.2026) |
+| Spielabend (SPIEL) | 01 bis 07 | – |
 | Weitere Themen | Gefecht, Gefechtslage 1–7, Reittiere P1, Vertraute V1/V2, Reiseroute Stufe 1, Gruppen v2, Feedback, Redesign R1–R3, Aufräumserie REV-01–16 | siehe [Weitere Themen](#weitere-themen-stand-05112026) |
 
-**Größter Hebel:** Viele Hauptpunkte warten nur noch auf eine **manuelle
-Prüfsitzung mit zwei Geräten bzw. zwei Konten gegen echtes Firebase**. Eine
-Sitzung deckt ab: ARCH-02 (Abweichung durch ältere App, Export → Import,
-Zwei-Geräte-Sync), ARCH-04 (Gruppenvorgabe), ARCH-06 (Geräte- und
-Live-Firebase-Prüfung) und den Großteil von ARCH-07 (Web/IndexedDB, native
-Pfade, `file_picker`). Danach bleiben fachlich vor allem die Lernregeln aus
-ARCH-04, SPIEL-03 und der Produktionsschritt von SPIEL-04.
+**Stand 18.11.2026:** Die manuelle Prüfsitzung (zwei Geräte bzw. Konten gegen
+echtes Firebase) ist abgeschlossen: ARCH-02, ARCH-04 (Gruppenvorgabe), ARCH-06
+und die Plattformprüfungen aus ARCH-07 sind bestanden; ARCH-04 ist abgenommen.
+Alle Spielabend-Punkte (SPIEL-01 bis 07) sind erledigt. Fachlich bleiben nur die
+zurückgestellten Ausbauthemen (MAG-EFF, TRANK, Reittiere P2/P3, Vertraute V3b/V3c,
+Reiseroute, Gruppen v2) und die optionalen Lernregeln aus ARCH-04.
 
 ## Fachlicher Ausbau: MAG-EFF – Zaubereffekte
 
@@ -143,14 +142,35 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   und zählen mit −/+ (ohne „Benutzen“; `dabeiBegleiterVerbrauch`). **Grenze:**
   die optionale Reiseregel „BE aus zusätzlicher Last je 25 %“ (Erschöpfung im
   Marsch) ist nicht eingerechnet. SPIEL-02 damit abgeschlossen.
-- [ ] **SPIEL-03 — Zustände und Dauer.** Beobachtung: „Aktive Effekte“ kennt Zauber,
+- [x] **SPIEL-03 — Zustände und Dauer.** Beobachtung: „Aktive Effekte“ kennt Zauber,
   aber keine schnellen Marker für Betäubung, Furcht oder Schmerz; der
   Kampfrundenzähler ist flüchtig und zählt keine Effektdauern herunter.
-  Vorschlag: freie Zustandsmarker mit optionaler Dauer, die beim Rundenwechsel
-  herunterzählen. Offen: persistenter Rundenzähler (bisher bewusst nicht gebaut,
-  siehe [redesign_acceptance.md](redesign_acceptance.md)); ohne Regelautomatik.
-- [ ] **SPIEL-04 — Regelnachschlag ohne Vorarbeit.** **Teilstand 23.10.2026
-  (Cloud-Weg, auf der Test-Site geprüft, Produktion offen):** Entscheidung: Anbieten erst
+  **Umgesetzt 18.11.2026** (Details in [ui_oberflaeche.md](hinweise/ui_oberflaeche.md)):
+  eigene Kachel „Zustandsmarker“ (`KartoSpielkachelArt.marker`, hinter „Zustand“)
+  mit freien Markern, optionaler Dauer in Runden, Notiz und Namensvorschlägen
+  (Betäubung, Furcht, Schmerz, Verwirrung, Lähmung, Blind). Neues Modell
+  `ZustandsMarker` (`id`, `name`, `rest`, `notiz`) in
+  `HeroState.zustandsmarker`, nur bei Belegung im JSON (Hash-Pins und
+  Bestandshelden unverändert); die Regeln stehen in
+  `lib/rules/derived/zustandsmarker_rules.dart` (höchstens 30 Marker, Dauer
+  0 bis 999). **Ohne Regelautomatik:** ein Marker ändert keine Werte oder
+  Proben, „Nächste Runde“ in der Kachelkopfzeile zählt die Dauer aller
+  laufenden Marker um eins herunter, ein abgelaufener Marker (0) bleibt stehen,
+  bis er entfernt wird. Jeder Schritt schreibt frisch nur die Markerliste
+  (`updateHeroState`) und zählt vom gespeicherten Wert. Sync: Die Liste fließt
+  über die Marker-ID zusammen, `rest` ist Zähler (`zaehlerInMaps`; zählen beide
+  Geräte, gilt jeder Schritt). **Bewusst nicht gebaut:** ein persistenter
+  Rundenzähler und die Kopplung an den flüchtigen Gefechtsrundenwechsel (zwei
+  Geräte oder ein Doppelklick würden doppelt zählen, bei Gruppeninitiative
+  müssten mehrere Zustände geschrieben werden); die Kachel zählt deshalb
+  eigenständig, die Runde zählt der Spieler. Tests:
+  `test/domain/zustands_marker_test.dart`, `test/rules/zustandsmarker_rules_test.dart`,
+  `test/ui2/spielen/karto_marker_kachel_test.dart`.
+- [x] **SPIEL-04 — Regelnachschlag ohne Vorarbeit.** **Abgeschlossen 18.11.2026:**
+  Prüfung auf der Produktions-Site bestanden (Nutzer); die inhaltliche Durchsicht
+  und der Ausbau des Kompendiums laufen als laufende Redaktion weiter
+  ([kurzregeln_redaktion.md](kurzregeln_redaktion.md)). **Teilstand 23.10.2026
+  (Cloud-Weg, auf der Test-Site geprüft):** Entscheidung: Anbieten erst
   nach dem Entsperren, nur mit Login, Laden im Hintergrund. Gebaut:
   `dsa-rules-cli publish` (Fassung ohne Vektoren und Quellpfade, gzip, rund
   47 MB), Cloud Function `rulesIndexApi` (Konto, App Check, Passwortnachweis,
@@ -162,10 +182,12 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   Fassung (`index-2ee077a64054`, 47,2 MB) liegt in `rules/`. Auf
   `heldensync-test.web.app` (entsperrt, angemeldet) lief der Hintergrund-
   Download bis 117 von 117 MB, die Suche öffnete sich von selbst und lieferte
-  Treffer, nach dem Neuladen blieb die Wissensbasis erhalten. **Offen:**
-  `rulesIndexApi` (Produktion) deployen und `RULES_INDEX_PRODUCTION_ENABLED`
-  setzen, Prüfung auf der Produktions-Site; Desktop läuft über den lokalen
-  Index (App Check kennt dort nur den Debugprovider). **Teilstand davor:**
+  Treffer, nach dem Neuladen blieb die Wissensbasis erhalten. **Produktion
+  (18.11.2026):** `rulesIndexApi` ist deployt und freigeschaltet
+  (`RULES_INDEX_PRODUCTION_ENABLED=true`), der Web-Build auf
+  `heldensync-ccf0b.web.app` trägt die Produktions-URL, die Prüfung dort ist
+  bestanden. Desktop läuft über den lokalen Index (App Check kennt dort nur den
+  Debugprovider). **Teilstand davor:**
   Leerzustand des Regeln-Dialogs überarbeitet (Server-Download als Hauptweg,
   ehrlicher Hinweis ohne Server, Stand der Wissensbasis, Download auch auf Web
   mit Verweis auf den Upload bei CORS-Fehler; Details in
@@ -210,9 +232,11 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   den Karten, Suchknopf mit Suchfeld in Abschnitt und Blatt. Die Dialoge für
   Abenteuer-Notizen und -Personen im Notizen-Tab der Verwaltung
   (Bestandsoberfläche) bearbeiten Ort und Datum jetzt ebenfalls (14.11.2026,
-  Test in `hero_workspace_edit_mode_test.dart`). **Offen:** Suche über die
-  allgemeinen Notizen des Helden
-  (`HeroSheet.notes`). *Erledigt 05.11.2026:* Umlautfaltung (`suchFaltung`,
+  Test in `hero_workspace_edit_mode_test.dart`). Die allgemeinen Notizen des
+  Helden (`HeroSheet.notes`, nur im klassischen Notizen-Tab „Chroniken“)
+  haben seit 21.11.2026 ein Suchfeld (`filtereNotizIndizes`,
+  `notizen_suche_rules.dart`; filtert nur die Leseansicht, beim Bearbeiten
+  stehen alle da). *Erledigt 05.11.2026:* Umlautfaltung (`suchFaltung`,
   REV-08: „ö“, „oe“ und „o“ fallen zusammen); das Datum ist strukturiert
   gespeichert (`HeroAdventureDateValue`, REV-01).
 - [x] **SPIEL-07 — Spielansicht selbst anordnen.** Beobachtung: Die feste
@@ -248,12 +272,13 @@ verlinkten Plan; hier nur Status und offene Punkte.
 
 | Thema | Status | Offen |
 | --- | --- | --- |
-| Gefecht ([Implementierung](gefecht_implementation.md), [Folgepakete](gefecht_folgepakete_plan.md)) | umgesetzt, Review und Restschulden abgeschlossen | – |
+| Gefecht ([Implementierung](gefecht_implementation.md), [Folgepakete](archiv/gefecht_folgepakete_plan.md)) | umgesetzt, Review und Restschulden abgeschlossen | – |
 | [Gefechtslage](gefecht_lage_konzept.md) | Schritte 1–7 umgesetzt (16.10.2026) | Konzentration auf einen Gegner (Paradesperre), Bedienung der Taktik |
-| [Reittiere](reittier_plan.md) | P1 umgesetzt (08.10.2026) | P2 Spielansicht (u. a. Wunden der Begleiter), P3 Reiterkampf |
-| [Vertraute](vertraute_plan.md) | V1 und V2 umgesetzt (08.10.2026) | V3 Gefecht |
-| [Reiseroute](reiseroute_plan.md) | Stufe 1 umgesetzt (03.11.2026): Stationsliste, Spielkachel, Zeitleiste. Avesmaps hat am 12.11.2026 geantwortet: Ortsdaten und Route über die Entwickler-API v1 erlaubt, Kacheln nicht. Seit 13.11.2026: Ortsauswahl mit Avesmaps-Orten und Kartenposition, Tabellenansicht im Blatt, Standort-Kachel mit Ortsdetails (D), Aventurien-Karte im Avesmaps-Stil mit Route und Vollbild, Kachelwerkzeug und Karten-Site vorbereitet | Zugang zur Karten-API und Kacheln veröffentlichen, Sichtprüfung im Web, Reisewege zwischen Stationen, Verweis am Standort |
-| [Gruppen v2](gruppen_sharing_offene_schritte.md) | abgesichert, Legacy-Pfad `gruppen/*` gesperrt | Mitglieder in der Oberfläche entfernen, Live-Listener, Windows-Transport, Emulator-Test, optional einmalige Einladungen |
+| [Reittiere](reittier_plan.md) | P1 umgesetzt (08.10.2026), P2a Proben auf der Reittierkarte und P2b freier Wundzähler (18.11.2026) | P2 Rest (echte Wundregeln für Tiere, Pferdeangriffe würfeln, Rittmeister-Boni), P3 Reiterkampf |
+| [Vertraute](vertraute_plan.md) | V1 und V2 umgesetzt (08.10.2026), V3a Würfelhilfen im Gefecht (18.11.2026) | V3b Schaden an Begleiter buchen, V3c Initiative und Aktionen |
+| [Reiseroute](reiseroute_plan.md) | Stufe 1 umgesetzt (03.11.2026): Stationsliste, Spielkachel, Zeitleiste. Avesmaps hat am 12.11.2026 geantwortet: Ortsdaten und Route über die Entwickler-API v1 erlaubt, Kacheln nicht. Seit 13.11.2026: Ortsauswahl mit Avesmaps-Orten und Kartenposition, Tabellenansicht im Blatt, Standort-Kachel mit Ortsdetails (D), Aventurien-Karte im Avesmaps-Stil mit Route und Vollbild, Kachelwerkzeug und Karten-Site vorbereitet. 19.11.2026: Kartenbild auf Test. 20.11.2026: Standort auf der Karte setzen, Reisewege (B2) mit Wahl je Etappe. 21.11.2026: Reiseplaner (B3) mit Zeitrechnung nach Regelwerk und „Unterwegs“ | Abnahme des Kartenbilds vor `main`, Sichtprüfung im Web (auch Reiseplaner), Verweis am Standort |
+| [Gruppen v2](gruppen_sharing_offene_schritte.md) | abgesichert, Legacy-Pfad `gruppen/*` gesperrt; Mitglieder entfernen in der Oberfläche (22.11.2026) | Live-Listener, Windows-Transport, Emulator-Test, optional einmalige Einladungen |
+| Zuletzt (13.–17.11.2026) | Sync: Windows fragt nur Geändertes ab, alte Tombstones verschwinden (SYNC-11); Katalog: Regeltexte in Alchimika, Vertrautenmagie und Paketen verschlüsselt (KAT-01); Heldensiegel (Bildsiegel, [Assets](heldensiegel_assets.md)); Spielen: Heldenbogen-Kacheln, Kompassrose; Gefecht: laufende Zaubereffekte pro Held (17.11.) | – |
 | [Feedback als GitHub-Issue](feedback_github_plan.md) | in Produktion (16.10.2026) | – |
 | [Redesign R1–R3](redesign_implementation.md) | umgesetzt, [Abnahme](redesign_acceptance.md) | – |
 | Meisterhandwerk ([Hinweise](hinweise/katalog_sonderfertigkeiten.md)) | AsP-Einsatz bei Proben auf das gewählte Talent (03.11.2026) | – |
@@ -307,16 +332,15 @@ Die IDs entsprechen den sieben Punkten der ursprünglichen Empfehlung.
 Verbesserungen und „Begleitend“ fortlaufende Absicherung.
 
 - [x] **ARCH-01 — Oberfläche nach Spielsituationen organisieren** · Aufbau (abgenommen 15.10.2026)
-- [ ] **ARCH-02 — Regelrelevante Eigenschaften strukturiert speichern** · Grundlage
+- [x] **ARCH-02 — Regelrelevante Eigenschaften strukturiert speichern** · Grundlage (abgenommen 18.11.2026)
 - [x] **ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf** · Grundlage (abgenommen 07.10.2026)
-- [ ] **ARCH-04 — Versionierte Regelprofile und erklärbare Berechnungen** · Aufbau
+- [x] **ARCH-04 — Versionierte Regelprofile und erklärbare Berechnungen** · Aufbau (abgenommen 18.11.2026)
 - [x] **ARCH-05 — Schreibende Aktionen fachlich aufteilen** · Grundlage (abgenommen 07.10.2026)
 - [x] **ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren** · Aufbau (technisch abgenommen 12.10.2026)
 - [ ] **ARCH-07 — Nutzerabläufe und Datenmigrationen absichern** · Begleitend
 
 Reihenfolge war: Fixtures (ARCH-07), dann ARCH-02/03, ARCH-05, ARCH-04, ARCH-06 und
-zuletzt ARCH-01. Heute offen sind ARCH-02 (manuelle Prüfung), ARCH-04
-(Regelprofil-Restpunkte) und ARCH-07 (begleitend). Der Oberflächen-Neubau läuft
+zuletzt ARCH-01. Heute offen ist nur noch ARCH-07 (begleitend). Der Oberflächen-Neubau läuft
 nach den [Redesign-Plänen R1–R3](redesign_implementation.md).
 
 ## ARCH-01 — Oberfläche nach Spielsituationen organisieren
@@ -357,24 +381,23 @@ Rücknahme am Protokolleintrag.
   `beschreibeKartoSync` (`lib/ui2/shell/karto_sync_anzeige.dart`); Tipp öffnet
   die Einstellungen. Ohne Konto entfällt der Eintrag bewusst, einen eigenen
   „Offline“-Zustand gibt es nicht. *(19.10.2026, `test/ui2/shell/karto_sync_anzeige_test.dart`.)*
-- Ein persistenter Kampfrundenzähler bleibt bewusst aus, das Gefecht führt
+- Ein persistenter Kampfrundenzähler bleibt bewusst aus (auch die Marker von
+  SPIEL-03 zählen eigenständig), das Gefecht führt
   Runden flüchtig.
 - Die Spielerrolle des Spielmodus-Konzepts bleibt; eine Spielleiterverwaltung
   ist kein impliziter Bestandteil.
 
 ## ARCH-02 — Regelrelevante Eigenschaften strukturiert speichern
 
-**Status: alle Unterpunkte umgesetzt, Hauptpunkt offen bis zur manuellen
-Bedienprüfung.** Vor- und Nachteile (28.09.2026) und Herkunftsmerkmale
+**Status: abgenommen (manuelle Bedienprüfung vollständig, 18.11.2026).** Vor- und Nachteile (28.09.2026) und Herkunftsmerkmale
 (12./13.10.2026) sind strukturiert gespeichert; die Liste führt, die Textfelder
 sind nur Projektion für ältere Apps. Verlauf, Entscheidungen, Commits und
 Grenzen: [Archiv](archiv/arch-02.md), dazu
 [Spezifikation](superpowers/specs/2026-10-10-arch02-herkunftsmerkmale-design.md)
 und [Plan](superpowers/plans/2026-10-10-arch02-herkunftsmerkmale.md).
 
-**Offen:** Manuelle Bedienprüfung auf einem echten Gerät, danach
-ARCH-02-Gesamtstatus prüfen und abhaken. Nicht automatisiert geprüft sind
-Gerätebedienung (360 px, Textfaktor 2) und Live-Sync mit Firebase.
+**Offen:** nichts. Die manuelle Bedienprüfung (Gerätebedienung, Live-Sync mit
+Firebase) ist am 18.11.2026 abgeschlossen.
 
 *Automatisierte Abnahme wiederholt (16.10.2026).* `flutter analyze --no-pub`
 ohne Befund; Gesamtsuite seriell (`--concurrency=1`, eigenes
@@ -392,13 +415,13 @@ alle Punkte bestanden sind, ARCH-02 oben abhaken:
   Dialogen und Merkmalsblatt.
 - [x] Offene Planung: Bearbeiten fragt nach, „Abbrechen“ erhält die Sitzung,
   UI2-Merkmalsblatt ist schreibgeschützt.
-- [ ] Abweichung durch ältere App (Textfeld geändert): Bearbeiten gesperrt bis
-  „Text übernehmen“ oder „Liste behalten“; nichts wird still aufgelöst.
-- [ ] Export → Import desselben Helden: Herkunft, Stufen, Varianten und
-  Freitexte identisch.
-- [ ] Live-Sync mit zwei Geräten (Firebase): gleiche Änderung in einer Gruppe
+- [x] Abweichung durch ältere App (Textfeld geändert): Bearbeiten gesperrt bis
+  „Text übernehmen“ oder „Liste behalten“; nichts wird still aufgelöst. *(18.11.2026)*
+- [x] Export → Import desselben Helden: Herkunft, Stufen, Varianten und
+  Freitexte identisch. *(18.11.2026)*
+- [x] Live-Sync mit zwei Geräten (Firebase): gleiche Änderung in einer Gruppe
   auf beiden Geräten ergibt einen sichtbaren Konflikt, verschiedene Gruppen
-  führen still zusammen.
+  führen still zusammen. *(18.11.2026)*
 
 *Stand der Bedienprüfung (23.10.2026).* Die vier ersten Punkte wurden mit dem
 Testhelden „x_Laila al-Beychaliban (Test)“ im Edge-Debugfenster
@@ -449,9 +472,9 @@ ihre Basis, Modifikatoren, Bedingungen und Quellen.
 `lib/rules/derived/modifier_source_breakdown.dart` und
 [Katalog-Workflow](catalog_import_workflow.md).
 
-- [ ] Profilzuordnung, Versionierung und Auflösung definieren; Bestandshelden
+- [x] Profilzuordnung, Versionierung und Auflösung definieren; Bestandshelden
   mit ihrem bisher wirksamen Regelsatz übernehmen. *(Modell und Auflösung
-  Teilstand 12, Erstübernahme per Knopf Teilstand 14; Gruppenvorgabe offen.)*
+  Teilstand 12, Erstübernahme per Knopf Teilstand 14, Gruppenvorgabe Teilstand 16.)*
 - [x] Vorschau für Profil-/Paketupdates implementieren: geänderte Werte und
   Erwerbsvoraussetzungen anzeigen, erst durch Übernahme verbindlich machen.
   *(Teilstand 13 ohne, Teilstand 14 mit Oberfläche.)*
@@ -478,7 +501,8 @@ Wirkungsquellen. Gruppenvererbung gegenüber einer festen Profilkopie, Aufbewahr
 alter Paketstände und Verhalten bei fehlenden Paketen klären. Import/Export und
 Sync müssen die reproduzierbare Profilzuordnung mittragen.
 
-**Status: Herleitungen und Regelprofil umgesetzt, Hauptpunkt offen.** Die
+**Status: abgenommen (18.11.2026).** Herleitungen, Regelprofil und
+Gruppenvorgabe sind umgesetzt und manuell geprüft. Die
 Teilstände 1–15 (13.–18.10.2026) mit Entscheidungen, Prüfungen und Grenzen stehen
 im [Archiv](archiv/arch-04.md):
 
@@ -562,8 +586,13 @@ im [Archiv](archiv/arch-04.md):
   die Gefechtsumbauten (Zuschläge, Ansagefolge, Mirakelbonus).
 - [x] Eigenschaftsprobe als Ausweichen (Zuschlag ≥ 7, WdS S. 15): entfällt
   (Nutzerentscheidung 18.10.2026), bleibt Meisterentscheid am Tisch.
-- [ ] Bewusst offen aus den Lernregeln: zweite Repräsentation desselben Zaubers,
-  Hexalogien für eigene Katalogzauber, Selbststudium und Lehrmeister-Gebühren.
+- [x] Bewusst offen aus den Lernregeln (Entscheidung 18.11.2026: **zurückgestellt,
+  blockiert die Abnahme nicht**): zweite Repräsentation desselben Zaubers
+  (Expertenregel, WdZ S. 74), Hexalogien für eigene Katalogzauber, Selbststudium
+  und Lehrmeister-Gebühren (optionale Regeln). Sie sind optionale Regelausbauten
+  ohne Auswirkung auf Profil, Herleitung oder Sync und werden bei Bedarf als
+  eigene Aufgabe aufgenommen; Einzelheiten im [Archiv](archiv/arch-04.md)
+  (Teilstand 11, „Bewusst offen“).
 - [x] Gedächtnis-Vorteile bei Sonderfertigkeiten (16.11.2026): SF-Erwerb,
   Ritualkenntnis und Spezialisierungen von Wissenstalenten rechnen ¾ bzw. ½
   ein (`kGedaechtnisSonderfertigkeitIds`, Objektrituale über „(OR)“). Noch
@@ -577,11 +606,12 @@ im [Archiv](archiv/arch-04.md):
   hergeleitete Lernspalte, die AsP-Kosten stehen als Katalogtext im Regelhinweis.
   Keines davon ist ein ZfW\*-Schritt.
 
-**Abnahme:** Profilzuordnung inkl. Gruppenvorgabe ist umgesetzt (22.10.2026).
-Der Hauptpunkt bleibt offen, bis die Gruppenvorgabe mit zwei Konten gegen echtes
-Firebase geprüft ist (Rules veröffentlichen: `firebase deploy --only
-firestore:rules`) und der Punkt „bewusst offen aus den Lernregeln“ entschieden
-oder abgenommen ist.
+**Abnahme:** Profilzuordnung inkl. Gruppenvorgabe ist umgesetzt (22.10.2026) und
+mit zwei Konten gegen echtes Firebase manuell geprüft (18.11.2026). Der
+Punkt „bewusst offen aus den Lernregeln“ (zweite Repräsentation, Hexalogien,
+Selbststudium/Lehrmeister-Gebühren) ist am 18.11.2026 als zurückgestellt
+entschieden. **ARCH-04 ist damit abgenommen.** Offen bleibt nur der Erwerbsdialog
+aus Teilstand 10/11, der kein Abnahmekriterium ist.
 
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 
@@ -614,7 +644,7 @@ Konfliktentscheidungen (`SyncKonfliktVorgang`, `KonfliktWiederanlauf`).
 
 **Offen:**
 
-- [ ] Geräte- und Live-Firebase-Prüfung (nur manuell möglich).
+- [x] Geräte- und Live-Firebase-Prüfung (nur manuell möglich). *(18.11.2026)*
 - Bekannte Grenzen: Bogen und Zustand liegen online in zwei getrennten
   Schreibzugriffen; Online-Tombstone mit „Nur Online“, Löschkonflikte,
   eigenständige Zustandskonflikte und Avatare sind nicht abgedeckt.
@@ -668,8 +698,9 @@ Zwei-Geräte-Sync-Tests; die Befunde B1–B13 sind alle behoben. Umsetzungsstand
 Befundtabelle und Aktualisierungen: [Archiv](archiv/arch-07.md); Regeln in der
 [Teststrategie](test_strategy.md#bestandsfixtures-arch-07).
 
-**Offen:** die manuellen Plattformprüfungen aus der Teststrategie (Web/IndexedDB,
-native Speicherpfade, `file_picker`, Konto-Sync gegen echtes Firebase).
+**Manuelle Plattformprüfungen** aus der Teststrategie (Web/IndexedDB, native
+Speicherpfade, `file_picker`, Konto-Sync gegen echtes Firebase): abgeschlossen
+am 18.11.2026.
 
 **Abdeckungsaudit neuer Modelle (16.10.2026).** Geprüft wurde, ob jedes seit der
 Grundausstattung additiv eingeführte Modell die ARCH-07-Anforderungen erfüllt

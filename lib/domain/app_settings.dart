@@ -62,11 +62,8 @@ class AppSettings {
     this.tableColumnWidths = const <String, Map<String, double>>{},
     this.catalogContentPassword,
     this.rulesIndexRemoteConfig = const RulesIndexRemoteConfig(),
-    Set<String> disabledHouseRulePackIds = const <String>{},
-    @Deprecated('Use disabledHouseRulePackIds instead')
-    Set<String>? disabledHouseRuleSourceKeys,
-  }) : disabledHouseRulePackIds =
-           disabledHouseRuleSourceKeys ?? disabledHouseRulePackIds;
+    this.disabledHouseRulePackIds = const <String>{},
+  });
 
   final bool debugModus;
   final bool dunkelModus;
@@ -116,10 +113,6 @@ class AppSettings {
   /// Deaktivierte Hausregel-Pakete (Opt-out). Leeres Set = alles aktiv.
   final Set<String> disabledHouseRulePackIds;
 
-  /// Rueckwaertskompatibler Alias fuer alte Source-Key-Settings.
-  @Deprecated('Use disabledHouseRulePackIds instead')
-  Set<String> get disabledHouseRuleSourceKeys => disabledHouseRulePackIds;
-
   /// Erstellt eine angepasste Kopie der Einstellungen.
   AppSettings copyWith({
     bool? debugModus,
@@ -139,8 +132,6 @@ class AppSettings {
     Object? catalogContentPassword = keepFieldValue,
     RulesIndexRemoteConfig? rulesIndexRemoteConfig,
     Set<String>? disabledHouseRulePackIds,
-    @Deprecated('Use disabledHouseRulePackIds instead')
-    Set<String>? disabledHouseRuleSourceKeys,
   }) {
     return AppSettings(
       debugModus: debugModus ?? this.debugModus,
@@ -169,9 +160,7 @@ class AppSettings {
       rulesIndexRemoteConfig:
           rulesIndexRemoteConfig ?? this.rulesIndexRemoteConfig,
       disabledHouseRulePackIds:
-          disabledHouseRuleSourceKeys ??
-          disabledHouseRulePackIds ??
-          this.disabledHouseRulePackIds,
+          disabledHouseRulePackIds ?? this.disabledHouseRulePackIds,
     );
   }
 

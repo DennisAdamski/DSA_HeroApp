@@ -21,28 +21,61 @@ Orte, Route. Hintergrund und Entscheidungen stehen in
     `https://heldensync-karten.web.app`);
   - Lizenzeintrag, Datenschutztext;
   - Werkzeug `tool/avesmaps_karte_kacheln.py` (mit synthetischem Bild getestet).
-- Es fehlen nur die Schritte unten.
+- 19.11.2026: Zugang erhalten. Das Paket kommt nur per Anfrage mit
+  `Authorization`-Kopf, dafür gibt es `tool/avesmaps_karte_laden.py` (gegen einen
+  Fake-Server getestet).
+- 19.11.2026: Paket `modern` mit 32768 px geladen. Revision `e62449359a41`
+  ergibt 5461 Kacheln (z0–6) mit 173 MB. Web-Builds in CI und
+  `tool/deploy_web.ps1` setzen `KARTEN_KACHELN`. Offen sind die Sichtprüfung
+  auf Test und die Abnahme vor `main`.
 
 ## Ablauf
 
-### 1 · Zugang sofort nutzen
+### 1 · Paket laden
 
-Der Zugang ist ein Link oder ein Schlüssel `avk_…`. Er hat eine Frist und eine
-begrenzte Zahl an Abrufen, also gleich nach Erhalt einmal laden.
+Der Zugang ist ein Schlüssel `avk_…` oder ein Link
+`https://avesmaps.de/paket#<token>`. Beide wirken nur im Kopf einer Anfrage
+(`Authorization: Bearer …`), ein einfacher Browser-Download reicht also nicht.
+Er hat eine Frist und eine begrenzte Zahl an Abrufen, also gleich nach Erhalt
+einmal laden.
 
-- Den Schlüssel nie ins Repository, in `docs/` oder in ein Skript legen. Am
-  besten den Link im Browser öffnen.
-- Im Paketfenster von Avesmaps „Paket laden“ wählen.
-  - Serie: `modern` (ohne Beschriftung im Bild). Den Rest zeichnet die App selbst.
-  - Größe: 16384 px; 32768 px nur, wenn z6 wirklich nötig ist, siehe unten.
-- Das `paket.zip` **außerhalb** des Repositorys speichern, etwa in
-  `~/Downloads`. Weder Paket noch Kacheln gehören ins öffentliche Repository.
+```bash
+python -I tool/avesmaps_karte_laden.py
+```
+
+- Das Werkzeug fragt den Zugang verdeckt ab, alternativ aus der
+  Umgebungsvariable `AVESMAPS_KARTEN_SCHLUESSEL`. Es nimmt Schlüssel, Token
+  oder den ganzen Link.
+  - Den Zugang nie als Argument, ins Repository, nach `docs/` oder in ein Skript
+    legen.
+  - Das Werkzeug selbst im eigenen Terminal ausführen, nicht über einen Agenten.
+- **Mit Schlüssel:**
+  - Das Werkzeug zeigt die Karten im Umfang des Schlüssels (`GET
+    /api/v1/karten`).
+  - Vorgeschlagen ist die PNG der Serie `modern` mit 16384 px (ohne Beschriftung
+    im Bild; den Rest zeichnet die App selbst). 32768 px nur, wenn z6 wirklich
+    nötig ist, siehe unten.
+  - Geladen wird `GET /api/v1/karten/<id>.zip`.
+  - Wer die Kennung kennt, spart mit `--karte <id>` den Listenabruf.
+- **Mit Link:** Das Werkzeug öffnet `GET /api/karten-paket/oeffnen` und lädt das
+  Paket über die zurückgegebene Ticket-Adresse (24 Stunden gültig).
+- **Ablage:** Ziel ist `~/Downloads/avesmaps-paket.zip` (`--ziel` für ein
+  anderes); Ziele im Repository lehnt das Werkzeug ab. Weder Paket noch Kacheln
+  gehören ins öffentliche Repository.
+- **Abbruch:** Ein abgebrochener Download bleibt als `.part` liegen. Der nächste
+  Aufruf setzt ihn per `Range` fort.
+- **Prüfung:** Am Ende kontrolliert das Werkzeug das ZIP und die Prüfsummen der
+  Karten.
+- **Abrufe:** Jeder Aufruf zählt bei Avesmaps als Abruf, auch die Liste. Das
+  Werkzeug wiederholt nichts von sich aus. Fehler erscheinen mit Status und
+  `code` (401 Schlüssel ungültig, 403 `not_in_scope`, 410 abgelaufen, 429 mit
+  Wartezeit).
 
 ### 2 · Kacheln schneiden
 
 ```bash
 python -m pip install pillow            # einmalig; alternativ pyvips
-python -I tool/avesmaps_karte_kacheln.py --paket ~/Downloads/paket.zip
+python -I tool/avesmaps_karte_kacheln.py --paket ~/Downloads/avesmaps-paket.zip
 ```
 
 Ergebnis unter `build/karten/` (`/build/` ist ignoriert):

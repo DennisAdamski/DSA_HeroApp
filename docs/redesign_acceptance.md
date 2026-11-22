@@ -182,7 +182,7 @@ Der SDK-Cache benötigt Zugriff außerhalb des Repositorys. Es wurde kein
 | Mockup-Funktion | Stand nach dem UI-Paket | Getrennter Folgeumfang |
 |---|---|---|
 | Schaden und Rücknahme | **Erledigt:** geführter Ablauf (ARCH-05), Rücknahme am Protokolleintrag (ARCH-06) | – |
-| Gemeinsamer Kampfrundenzähler | Flüchtige Rundenleiste im Gefecht (`ui2/gefecht/`); Effektlaufzeiten manuell | Persistenter Zähler bewusst nicht gebaut; nur bei neuem Auftrag |
+| Gemeinsamer Kampfrundenzähler | Flüchtige Rundenleiste im Gefecht (`ui2/gefecht/`); Effektlaufzeiten manuell; Zustandsmarker (SPIEL-03) zählen ihre Dauer über „Nächste Runde“ in ihrer Kachel | Persistenter Zähler bewusst nicht gebaut; nur bei neuem Auftrag |
 | Persönliche Favoriten | **Erledigt (22.10.2026):** Abschnitt „Häufige Proben“ im Spielbereich, Stern in der Probensuche; `HeroSheet.probenFavoriten` (ARCH-01) | Filter Alle/Talente/Zauber des Mockups nicht gebaut |
 | Strukturierte Merkmale | Umgesetzt mit ARCH-02: Modell, Migration, Wirkung über die Katalog-ID und UI2-Merkmalsblatt mit Karten wie im Mockup | Herkunftsmerkmale (Rasse/Kultur/Profession) als Folgeschritt |
 | Identische Inventarinstanzen | Bestehende Inventar-/Kampfzuordnung | ARCH-03: Instanz-IDs und Migration |

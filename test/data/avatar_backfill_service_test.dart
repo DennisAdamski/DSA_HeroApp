@@ -9,8 +9,9 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
-import 'package:dsa_heldenverwaltung/test_support/in_memory_avatar_file_storage.dart';
-import 'package:dsa_heldenverwaltung/test_support/in_memory_cloud_avatar_storage.dart';
+
+import '../test_support/in_memory_avatar_file_storage.dart';
+import '../test_support/in_memory_cloud_avatar_storage.dart';
 
 void main() {
   late InMemoryAvatarFileStorage storage;

@@ -7,7 +7,8 @@ import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../test_support/fake_repository.dart';
 
 // Verweis Slot → Instanz beim Speichern (ARCH-03): `saveHero` setzt
 // `inventarInstanzId` an jedem verknüpften Slot; Umbenennen, Umsortieren und

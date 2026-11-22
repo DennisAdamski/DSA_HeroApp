@@ -4360,6 +4360,38 @@
       "rationale": "Testdatei und lib/rules/derived/reiseroute_rules.dart gelesen: reine Produktlogik (Sortierung, Kalenderarithmetik über aventurian_age_rules, Listenänderungen per copyWith). Das Regelwerk trifft zur Reiseroute keine Aussage; der Kalenderaufbau ist im Eintrag zu aventurian_age_rules_test belegt, der Maßstab von drei Meilen je Karteneinheit stammt aus der Avesmaps-API-Dokumentation und wird hier nicht als Regel behauptet.",
       "sources": []
     },
+    "test/rules/derived/reiseweg_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft die Reisewege zwischen Stationen: Eine Anfrage an Avesmaps entsteht nur mit Kennung an beiden Enden und verschiedenen Orten und nimmt die Anreise der Zielstation (unbekannte Wegarten entfallen). Die Vorgabe (alle Wege, schnellste) schreibt kein Feld, die Station schreibt die Anreise nur bei Belegung. Texte nennen Wegarten nach Anteil (Umsteigen und Unbekanntes entfallen), Reisezeit in Vierteltagen bzw. Stunden und im Abstand den Weg statt der Luftlinie; Kartenpunkte tragen den gemerkten Weg.",
+      "rationale": "Testdatei und lib/rules/derived/reiseweg_rules.dart gelesen: Anfragebau, Formatierung und Zuordnung von Antworten der Avesmaps-Reiseschnittstelle. Gerechnet werden Wege und Reisezeiten bei Avesmaps; das Regelwerk trifft zu diesen Anzeigen keine Aussage.",
+      "sources": []
+    },
+    "test/rules/derived/reisezeit_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Prüft die Reisedauer nach Regelwerk: Tagesstrecken zu Fuß 30 (Eilmarsch 45) und beritten 40 (Eilritt 60) Meilen nach Basisregelwerk S. 192, Fuhrwerk 30 und Kutsche 50 Meilen mit höchstens ×1,25 in Eile nach Geographia Aventurica S. 123. Geländemodifikatoren Reichsstraße ×1,1, Straße ×1, Karrenweg und Pfad ×0,8, offenes Gelände querfeldein ×0,75 sowie Wettermodifikatoren (×0,9 bis ×0,3) werden mit der Tagesstrecke multipliziert; das Beispiel des Basisregelwerks (Eilmarsch 45 × Karrenweg 0,8 = 36 Meilen) ergibt einen Tag. Eile gilt nur auf befestigten Wegen und entfällt bei Dauerregen, Sturm, heftigem Schauer und Orkan; Kutschen fahren auf Pfaden und querfeldein wie Fußgänger. Wasser: Flusskahn als Mittel aus stromauf 20 und stromab 40 Meilen, Lastensegler 120 Meilen. Produktlogik ohne Regelbehauptung: Zusammenfassung der Herleitung je Wegart, Aufrunden auf ganze Tage, Ankunftsdatum, Reittier als Vorschlag, Stationen der Reiseroute, Reisetag und Lage einer laufenden Reise.",
+      "sources": [
+        {
+          "title": "Basisregelwerk (2. Auflage) – Reisegeschwindigkeit, Tagesstrecken, Gelände- und Wettermodifikatoren",
+          "pages": "PDF S. 192",
+          "mcpChunks": [
+            729,
+            730
+          ],
+          "checkedOn": "2026-11-21"
+        },
+        {
+          "title": "Geographia Aventurica (2. Auflage) – Basisgeschwindigkeit, Modifikatoren nach Geländearten und Wetter, Eilmarsch",
+          "pages": "PDF S. 123",
+          "mcpChunks": [
+            1195,
+            1196
+          ],
+          "checkedOn": "2026-11-21"
+        }
+      ]
+    },
     "test/rules/derived/standort_rules_test.dart": {
       "kind": "product_contract",
       "status": "verified",
@@ -9549,6 +9581,13 @@
         }
       ]
     },
+    "test/rules/notizen_suche_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Sichert die Filtersuche über die allgemeinen Notizen eines Helden: leerer Suchtext liefert alle, Suche in Titel, Beschreibung, Ort und Datum, Umlautfaltung, alle Wörter müssen vorkommen, Originalindizes in Listenreihenfolge.",
+      "rationale": "Reine Produktlogik der Oberflächensuche mit erfundenen Beispielnotizen; die Tests enthalten keine DSA-Regelbehauptung (keine Kosten, Werte oder Regeltexte), daher keine MCP-Suche nötig.",
+      "sources": []
+    },
     "test/rules/probe_engine_rules_test.dart": {
       "kind": "official",
       "status": "conflict",
@@ -9801,6 +9840,20 @@
         "result": "confirmed",
         "note": "Reisebericht (Hausregel) S. 1-7 (Chunk 25661, 25662) erneut gelesen: Teilanforderungen (Dickkopf: Klettern und Schwimmen beides notwendig), Sammlungen mit Haken ab 5 (Stadtkenner) und ab 6 (Sektenkenner), Gruppenfolge Bezwinger der Elemente I-III, Meta-Einträge wie Alle Kampferfahrungen gemacht."
       }
+    },
+    "test/rules/begleiter_gefecht_probe_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Sichert die Wuerfelhilfen fuer Begleiterangriffe im Gefecht (Vertraute V3a) ab: AT-Probe (1W20 gegen die wirksame AT inklusive Steigerung), PA-Probe (wirksame PA), TP-Wurf aus dem Wuerfelausdruck der TP-Angabe; ohne AT, PA oder lesbare TP gibt es keine Probe. Gebundene Vertraute tragen den Hinweis, dass ihre Angriffe als magisch gelten, andere Begleiter nicht.",
+      "rationale": "Datei und lib/rules/derived/begleiter_gefecht_probe_rules.dart vollstaendig gelesen. Die Werte (AT 10 + 2 gesteigert, PA 5, 1W6, 1W6+3) sind Beispieleingaben; die Wirkwertrechnung ist in begleiter_wirkwert_rules_test.dart geprueft. Der Satz 'Angriffe gelten als magisch' steht in WdZ S. 125 (Vertraute, laut docs/vertraute_plan.md per dsa-rules MCP belegt); hier wird nur geprueft, dass der Hinweis fuer gebundene Vertraute erscheint, keine Regelwirkung (Immunitaeten, Aurapanzer) behauptet.",
+      "sources": []
+    },
+    "test/rules/reittier_probe_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Sichert die Reittierproben der Spielansicht (Reittiere P2) ab: Die Reiten-Probe des Helden uebernimmt den Stufenmodifikator des Reittiers als situative Erschwernis (erprobt erleichtert, als Kampfzeile mit Zuschlaegen fuer laendlich ausgebildete Tiere, geschultes Kampfpferd im Kampf staerker erleichtert, Magierpferd fuer Zauberkundige), nennt im Regelhinweis die Bestandteile und laesst sich nicht ueber die Probensuche ohne Modifikator wiederholen; ohne erfasste Ausbildung gilt kein Modifikator, ohne gefuehrtes Talent oder Katalogeintrag gibt es einen Hinweis. Die LO-Probe wuerfelt 1W20 auf die wirksame Loyalitaet inklusive Ausbildung. Nur Reittiere bieten die Proben an.",
+      "rationale": "Datei und lib/rules/derived/reittier_probe_rules.dart vollstaendig gelesen. Die Stufenmodifikatoren (erprobt -1, geschult -2, Kampfpferd im Kampf -3, laendlich im Kampf +3, Magierpferd -1) und LO +4 des leichten Streitrosses stammen aus ZBA S. 35 und der Variantentabelle und sind in test/rules/reittier_ausbildung_rules_test.dart sowie dem Katalogtest verifiziert; hier wird nur geprueft, dass sie mit dem App-Vorzeichen (Erschwernis wird negativer Modifikator) in den Probenrequest gelangen. Wann eine LO-Probe faellig ist und was ein Misslingen bedeutet, ist nicht Teil der App (Meisterentscheid, vgl. WdZ S. 124 fuer Vertraute); die Probe ist eine Wuerfelhilfe.",
+      "sources": []
     },
     "test/rules/reittier_ausbilderprobe_rules_test.dart": {
       "kind": "product_contract",
@@ -11705,6 +11758,13 @@
       "status": "verified",
       "summary": "Sichert den Block 'Dabei' der Spielansicht (SPIEL-02) ab: welche Inventareintraege als Verbrauchsgegenstand zaehlen (nur manuelle, vom Helden getragene, nicht abgelegte, nicht mit dem Kampf verknuepfte), Name, Mengentext und Aenderbarkeit, die Mengenschritte (vom gespeicherten Wert, Instanz-ID, Grenzen 0 bis 9999, Freitext und Abweichung werden abgewiesen, Hash-relevante Felder bleiben unberuehrt), die Geldschritte (D/S/K-Aufschluesselung, Betrag lesen, Abzug nur bis zum Bestand, Fehler statt stillem Kappen bei 0) und die Entscheidung, wann 'Benutzen' angeboten wird (hinterlegte Vitalwirkung oder Katalogelixier), sowie die Verbrauchsgegenstaende von Begleitern (Auswahl mit Traeger Begleiter, Gruppierung je Begleiter, Verwaiste, Menge zaehlt vom gespeicherten Wert ohne den Traeger zu aendern).",
       "rationale": "Datei und lib/rules/derived/spiel_dabei_rules.dart vollstaendig gelesen. Es geht um Auswahl-, Schreib- und Verlustfreiheitslogik eines App-Blocks; Gegenstaende (Fackel, Proviant, Heiltrank) und Mengen sind Beispieleingaben ohne Regelbezug, das Buch kennt weder Verbrauchsgegenstands-Arten noch Hoechstmengen. Die einzigen Zahlen mit Regelbezug sind die Muenzfaktoren (1 Dukat = 10 Silbertaler = 1.000 Kreuzer; 12,53 -> 12 D / 5 S / 30 K); sie stuetzen sich auf die bereits verifizierte Umrechnung in test/rules/currency_rules_test.dart (Basisregelwerk S. 265, MCP-Chunks 902 bis 905), hier werden sie nur angewendet. Per MCP erneut gesucht nach 'Dukat Silbertaler Kreuzer Umrechnung Muenzen': Treffer ist u. a. Geographia Aventurica, Chunk 1232 (Masse, Geld, Gewichte), bereits in der verifizierten Umrechnung belegt; keine abweichende Aussage gefunden.",
+      "sources": []
+    },
+    "test/rules/zustandsmarker_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Sichert die freien Zustandsmarker der Spielansicht (SPIEL-03) ab: Anlegen (Name und Notiz gekuerzt, leerer Name oder leere ID aendern nichts, vorhandene ID nicht doppelt, Dauer 0 bis 999, volle Liste mit Hoechstzahl 30 endet mit Fehler statt stillem Verwerfen), Aendern, Entfernen, die Dauerschritte einzelner Marker vom gespeicherten Wert aus (Grenzen, ohne Dauer und fehlende Marker aendern nichts) und das Herunterzaehlen aller laufenden Marker um eine Runde (abgelaufene Marker bleiben stehen und werden nicht negativ; ohne zaehlbaren Marker dieselbe Instanz). Es wird immer nur die Markerliste veraendert.",
+      "rationale": "Datei und lib/rules/derived/zustandsmarker_rules.dart vollstaendig gelesen. Es geht um eine freie Merkhilfe am Spieltisch ohne Regelwirkung: Namen wie Betaeubung, Furcht oder Schmerz sind Beispieleingaben, Dauern in Runden sind Spielerangaben. Das Regelwerk kennt keine solche Markerliste, keine Hoechstzahl und keine Hoechstdauer; die Grenzen (30 Marker, 999 Runden, Textlaengen) sind Entwurfsentscheidungen der App. Die Runden werden bewusst nicht in Zeiteinheiten umgerechnet. Nichts davon ist aus dem Buch ableitbar, daher kein Buchbeleg.",
       "sources": []
     },
     "test/rules/tragkraft_rules_test.dart": {

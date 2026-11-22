@@ -87,6 +87,7 @@ docs/superpowers/
 .superpowers\brainstorm
 
 # Python build artefacts (fuer tool/mcp_dsa_rules)
+.venv/
 tool/mcp_dsa_rules/.venv/
 tool/mcp_dsa_rules/**/__pycache__/
 tool/mcp_dsa_rules/.pytest_cache/

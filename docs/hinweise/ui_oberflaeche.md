@@ -67,7 +67,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Adaptermethoden, damit die Brücke für dieselben Werte keine zweite
   Providerbeobachtung aufmacht. Die Reihenfolge folgt der Häufigkeit am
   Tisch: Ressourcen, Häufige Proben,
-  Eigenschaften, Kampf, Effekte, Zustand (und Begleiter), Dabei, Abenteuer
+  Eigenschaften, Kampf, Effekte, Zustand, Zustandsmarker (und Begleiter), Dabei, Abenteuer
   samt Standort, Vor- und Nachteile, Würfelprotokoll. Das ist nur die
   Standardanordnung; jede Kachel lässt sich verschieben (Kachelraster, unten).
   Die Schnellaktionen sind **keine Kachel**: sie stehen fest im Seitenkopf
@@ -352,6 +352,17 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Eingabedialog ist `zeigeStandortDialog`; gespeichert wird über
   `standortSetzen`. Tests überschreiben `avesmapsOrteSpeicherProvider` statt
   den Heldenspeicher zu öffnen.
+  **Reiseplaner (21.11.2026):** „Reise planen“ in der Standort-Kachel und
+  „Hierher reisen“ in der Karten-Infotafel öffnen `KartoReiseplaner`
+  (`ui2/spielen/karto_reiseplaner.dart`); die Abläufe (Ankommen,
+  Aufbrechen, Angekommen, Anhalten, Abbrechen) liegen in
+  `karto_reise_ablauf.dart` und schreiben erst den Bogen, dann über
+  `reiseZustandSetzen` den Zustand (Reise und Standort in einem Dokument,
+  ohne Brückenstation). Plantage und Herleitung rechnet
+  `reisezeit_rules.dart`, nie das Widget; Reisemittel, Eile und Wetter wählt
+  `KartoReiseplanWahl` (auch im Reisewegdialog). Ist der Held `unterwegs`,
+  zeigt die Kachel Reisetag und Knöpfe, die Karte den Reisenden an der
+  geschätzten Lage auf dem Weg.
   **Karte (13.11.2026):** `lib/ui2/karte/` zeichnet die Aventurien-Karte im
   Stil von Avesmaps selbst (`KartoKarte`, `CustomPainter`, keine
   Kartenbibliothek); die Lageskizze der Standort-Kachel ist ein nicht
@@ -430,6 +441,29 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `Wrap` nebeneinander stehen; die Datenlage (`ActiveSpellEffectChip`: Name,
   Bonus, Restlaufzeit) trägt keine weitere Darstellung, ein Füllinhalt wäre
   unehrlich.
+- **Reittierproben (Reittiere P2a):** Die Karte eines Reittiers in der
+  Begleiter-Kachel trägt die Knöpfe „Reiten-Probe“, „Reiten im Kampf“ und
+  „LO-Probe“ (Rückruf `onReittierProbe`, Brücke `reittierProbe`); Aufbau und
+  Grenzen in [reittier_plan.md](../reittier_plan.md#p2a-proben-auf-der-reittierkarte-18112026).
+- **Wundzähler der Begleiter (Reittiere P2b):** Jede Begleiterkarte hat eine Zeile
+  „Wunden“ mit − und + (freier Zähler `BegleiterZustand.wunden`, höchstens 9, ohne
+  Regelwirkung); Details und Grenzen in [reittier_plan.md](../reittier_plan.md).
+- **Zustandsmarker (SPIEL-03):** `KartoMarkerKachel`
+  (`lib/ui2/spielen/karto_marker_kachel.dart`) zeigt freie Marker
+  (`HeroState.zustandsmarker`, Modell `ZustandsMarker`) mit Name, Notiz und
+  optionaler Dauer in Runden; − und + zählen die Dauer eines Markers, ✕ entfernt
+  ihn, der Name öffnet den Änderungsdialog, „Neuer Marker“ den Anlegedialog mit
+  Namensvorschlägen. „Nächste Runde“ (nur sichtbar, solange ein Marker läuft)
+  zählt alle laufenden Marker um eins herunter. Reine Merkhilfe **ohne
+  Regelwirkung**: ein abgelaufener Marker (0, „abgelaufen“) bleibt stehen, nichts
+  wird automatisch entfernt oder gebucht; es gibt keinen persistenten
+  Rundenzähler und keine Kopplung an die flüchtige Gefechtsrunde. Die Kachel
+  schreibt über `heroActionsProvider.updateHeroState` frisch nur die Markerliste
+  (Regeln in `zustandsmarker_rules.dart`, vom gespeicherten Wert aus, höchstens 30
+  Marker); eine offene Planung sperrt den Zustand nicht. Bei schmaler Kachel oder
+  großer Schrift rückt die Dauer in eine eigene Zeile, in `weit` stehen die
+  Marker in zwei Spalten. Der Sync führt die Liste über die Marker-ID zusammen und
+  behandelt `rest` als Zähler.
 - **Vor- und Nachteile bearbeitet UI2 im Merkmalsblatt**
   (`lib/ui2/merkmale/`), nach dem Muster des Abenteuerblatts: modal, eigener
   Schreibweg über `HeroActions.updateHero` und `aendereMerkmale`
@@ -688,6 +722,15 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Treffer im eigenen Abenteuer bearbeitet man direkt, Treffer in anderen öffnen
   deren Blatt (im Abschnitt über `onAbenteuerOeffnen` und damit den
   Editorschutz, im Blatt direkt). Die Suche liest nur und schreibt nie.
+  **Suche in den allgemeinen Chroniken (21.11.2026):** Die freien Notizen am Helden
+  (`HeroSheet.notes`) gibt es nur im klassischen Notizen-Tab (`lib/ui/`). Dessen
+  Abschnitt „Freie Chroniken“ hat in der Leseansicht ein Suchfeld (Key
+  `notes-note-search`, Leeren `notes-note-search-clear`). Die Regel
+  `filtereNotizIndizes` (`lib/rules/derived/notizen_suche_rules.dart`) liefert
+  Originalindizes: Titel, Beschreibung, Ort und Datum, `suchFaltung`, jedes Wort
+  muss vorkommen. Beim Bearbeiten entfällt die Suche, alle Chroniken stehen da
+  (eine neue leere bliebe sonst verborgen); Bearbeiten und Löschen laufen
+  über den Originalindex. Die Suche liest nur.
   **Zuletzt gewürfelt (SPIEL-01, Teilstand):** Unter den Schnellaktionen im Seitenkopf
   steht ein Streifen mit bis zu `kZuletztGewuerfeltMax` (6) Marken
   (`KartoZuletztGewuerfelt`, `karto_zuletzt_gewuerfelt.dart`). Welche Proben

@@ -353,17 +353,4 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
       aenderung: quittiereEigenschaftsHinweis,
     );
   }
-
-  Widget _buildParserWarningsSection(HeroSheet hero) {
-    return _SectionCard(
-      title: 'Parser-Warnungen',
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: hero.unknownModifierFragments
-            .map((entry) => Chip(label: Text(entry)))
-            .toList(growable: false),
-      ),
-    );
-  }
 }

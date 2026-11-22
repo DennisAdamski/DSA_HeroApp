@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:dsa_heldenverwaltung/domain/avesmaps_route.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reisezeit_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reiseweg_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
+import 'package:dsa_heldenverwaltung/state/avesmaps_routen_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
@@ -39,6 +43,7 @@ class KartoReiserouteKachel extends ConsumerStatefulWidget {
     super.key,
     required this.heroId,
     required this.stationen,
+    this.onStandortSetzen,
   });
 
   /// ID im gemeinsam genutzten Heldenspeicher.
@@ -46,6 +51,9 @@ class KartoReiserouteKachel extends ConsumerStatefulWidget {
 
   /// Gespeicherte Stationen in Erfassungsreihenfolge.
   final List<HeroReiseStation> stationen;
+
+  /// Setzt den Standort aus der Karte heraus; `null` bietet es nicht an.
+  final KartoStandortSetzer? onStandortSetzen;
 
   @override
   ConsumerState<KartoReiserouteKachel> createState() =>
@@ -92,6 +100,9 @@ class _KartoReiserouteKachelState extends ConsumerState<KartoReiserouteKachel>
           else
             KartoReiseZeitleiste(
               etappen: juengste,
+              wege:
+                  ref.watch(avesmapsReisewegeProvider).asData?.value ??
+                  const <String, AvesmapsRoute>{},
               notizZeilen: weit ? kReiserouteNotizWeit : kReiserouteNotizKurz,
               onStation: bedienbar ? stationBearbeiten : null,
               mitKartenlink: weit,
@@ -101,8 +112,11 @@ class _KartoReiserouteKachelState extends ConsumerState<KartoReiserouteKachel>
               alignment: Alignment.centerRight,
               child: TextButton(
                 key: const ValueKey<String>('karto-reise-alle'),
-                onPressed: () =>
-                    zeigeReiseroute(context: context, heroId: widget.heroId),
+                onPressed: () => zeigeReiseroute(
+                  context: context,
+                  heroId: widget.heroId,
+                  onStandortSetzen: widget.onStandortSetzen,
+                ),
                 child: Text(
                   etappen.length > anzahl
                       ? 'Ganze Route (${etappen.length})'
@@ -121,6 +135,7 @@ class _KartoReiserouteKachelState extends ConsumerState<KartoReiserouteKachel>
 Future<void> zeigeReiseroute({
   required BuildContext context,
   required String heroId,
+  KartoStandortSetzer? onStandortSetzen,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -134,7 +149,10 @@ Future<void> zeigeReiseroute({
     ),
     builder: (context) => FractionallySizedBox(
       heightFactor: .9,
-      child: KartoReiserouteBlatt(heroId: heroId),
+      child: KartoReiserouteBlatt(
+        heroId: heroId,
+        onStandortSetzen: onStandortSetzen,
+      ),
     ),
   );
 }
@@ -156,10 +174,17 @@ enum KartoReiseAnsicht {
 /// Avesmaps an.
 class KartoReiserouteBlatt extends ConsumerStatefulWidget {
   /// Blatt für den Helden [heroId].
-  const KartoReiserouteBlatt({super.key, required this.heroId});
+  const KartoReiserouteBlatt({
+    super.key,
+    required this.heroId,
+    this.onStandortSetzen,
+  });
 
   /// ID im gemeinsam genutzten Heldenspeicher.
   final String heroId;
+
+  /// Setzt den Standort aus der Karte heraus; `null` bietet es nicht an.
+  final KartoStandortSetzer? onStandortSetzen;
 
   @override
   ConsumerState<KartoReiserouteBlatt> createState() =>
@@ -177,6 +202,24 @@ class _KartoReiserouteBlattState extends ConsumerState<KartoReiserouteBlatt>
   String? _abenteuerId;
 
   KartoReiseAnsicht _ansicht = KartoReiseAnsicht.tabelle;
+
+  bool _holtWege = false;
+  String? _wegeMeldung;
+
+  Future<void> _wegeHolen(List<AvesmapsRoutenAnfrage> anfragen) async {
+    setState(() {
+      _holtWege = true;
+      _wegeMeldung = null;
+    });
+    final ergebnis = await ref
+        .read(avesmapsReisewegeProvider.notifier)
+        .hole(anfragen);
+    if (!mounted) return;
+    setState(() {
+      _holtWege = false;
+      _wegeMeldung = ergebnis.fehler;
+    });
+  }
 
   @override
   void initState() {
@@ -210,6 +253,16 @@ class _KartoReiserouteBlattState extends ConsumerState<KartoReiserouteBlatt>
         if (stationen.any((s) => s.adventureId == a.id)) a,
     ];
     final bedienbar = !gesperrt && !schreibt;
+    final wege =
+        ref.watch(avesmapsReisewegeProvider).asData?.value ??
+        const <String, AvesmapsRoute>{};
+    // Ohne Abruf (Tests, ausgeschaltet) gibt es nichts zu berechnen.
+    final fehlendeWege = ref.watch(avesmapsClientProvider) == null
+        ? const <AvesmapsRoutenAnfrage>[]
+        : <AvesmapsRoutenAnfrage>[
+            for (final anfrage in reisewegAnfragen(etappen))
+              if (!wege.containsKey(anfrage.schluessel)) anfrage,
+          ];
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -226,7 +279,11 @@ class _KartoReiserouteBlattState extends ConsumerState<KartoReiserouteBlatt>
               key: const ValueKey<String>('karto-reise-blatt-karte'),
               tooltip: 'Auf der Karte zeigen',
               icon: const Icon(Icons.map_outlined),
-              onPressed: () => zeigeKarte(context, heroId: heroId),
+              onPressed: () => zeigeKarte(
+                context,
+                heroId: heroId,
+                onStandortSetzen: widget.onStandortSetzen,
+              ),
             ),
             const SizedBox(width: Abstand.knapp),
             FilledButton.icon(
@@ -249,6 +306,28 @@ class _KartoReiserouteBlattState extends ConsumerState<KartoReiserouteBlatt>
           ].join(' · '),
           style: texte.legende.copyWith(color: karto.schriftLeise),
         ),
+        if (fehlendeWege.isNotEmpty || _holtWege) ...[
+          const SizedBox(height: Abstand.normal),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              key: const ValueKey<String>('karto-reise-wege-berechnen'),
+              onPressed: _holtWege ? null : () => _wegeHolen(fehlendeWege),
+              icon: _holtWege
+                  ? const SizedBox.square(
+                      dimension: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.alt_route),
+              label: Text(
+                fehlendeWege.length == 1
+                    ? 'Reiseweg berechnen'
+                    : 'Reisewege berechnen (${fehlendeWege.length})',
+              ),
+            ),
+          ),
+        ],
+        if (_wegeMeldung != null) _Fehler(_wegeMeldung!),
         if (gesperrt)
           Padding(
             padding: const EdgeInsets.only(top: Abstand.normal),
@@ -317,6 +396,8 @@ class _KartoReiserouteBlattState extends ConsumerState<KartoReiserouteBlatt>
             etappen: etappen,
             abenteuer: held.adventures,
             onStation: bedienbar ? stationBearbeiten : null,
+            wege: wege,
+            onReiseweg: bedienbar ? reisewegWaehlen : null,
           )
         else
           KartoReiseZeitleiste(
@@ -324,6 +405,8 @@ class _KartoReiserouteBlattState extends ConsumerState<KartoReiserouteBlatt>
             onStation: bedienbar ? stationBearbeiten : null,
             mitKartenlink: true,
             orte: ref.watch(ortsverzeichnisProvider),
+            wege: wege,
+            onReiseweg: bedienbar ? reisewegWaehlen : null,
           ),
         const SizedBox(height: Abstand.block),
         Text(
@@ -347,6 +430,8 @@ class KartoReiseZeitleiste extends StatelessWidget {
     this.notizZeilen,
     this.mitKartenlink = false,
     this.orte = const <OrtEintrag>[],
+    this.wege = const <String, AvesmapsRoute>{},
+    this.onReiseweg,
   });
 
   /// Darzustellende Etappen, bereits zeitlich geordnet.
@@ -365,6 +450,12 @@ class KartoReiseZeitleiste extends StatelessWidget {
   /// Ortsverzeichnis für die Links; leer, solange es nicht geladen ist.
   final List<OrtEintrag> orte;
 
+  /// Gemerkte Reisewege; mit Weg stehen dessen Meilen und Reisezeit da.
+  final Map<String, AvesmapsRoute> wege;
+
+  /// Öffnet die Wahl des Reisewegs einer Etappe; `null` bietet sie nicht an.
+  final ValueChanged<ReiseEtappe>? onReiseweg;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -378,6 +469,11 @@ class KartoReiseZeitleiste extends StatelessWidget {
             notizZeilen: notizZeilen,
             mitKartenlink: mitKartenlink,
             orte: orte,
+            weg: reisewegFuer(etappen[i], wege),
+            onReiseweg:
+                onReiseweg == null || reisewegAnfrageFuer(etappen[i]) == null
+                ? null
+                : () => onReiseweg!(etappen[i]),
             onTap: onStation == null
                 ? null
                 : () => onStation!(etappen[i].station),
@@ -396,9 +492,13 @@ class _ZeitleistenEintrag extends StatelessWidget {
     required this.mitKartenlink,
     required this.orte,
     required this.onTap,
+    this.weg,
+    this.onReiseweg,
   });
 
   final ReiseEtappe etappe;
+  final AvesmapsRoute? weg;
+  final VoidCallback? onReiseweg;
   final bool erster;
   final bool letzter;
   final int? notizZeilen;
@@ -416,7 +516,7 @@ class _ZeitleistenEintrag extends StatelessWidget {
     final ort = station.ort.trim();
     final notiz = station.notiz.trim();
     final datum = reiseStationDatumText(station);
-    final abstand = erster ? null : reiseEtappenAbstandText(etappe);
+    final abstand = erster ? null : reiseEtappenText(etappe, weg: weg);
     final link = mitKartenlink && kartenlinkSinnvoll(ort, orte)
         ? avesmapsLink(ort)
         : null;
@@ -434,6 +534,14 @@ class _ZeitleistenEintrag extends StatelessWidget {
             Text(
               abstand,
               style: texte.marke.copyWith(color: karto.schriftStumm),
+            ),
+          if (onReiseweg != null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: KartoReisewegKnopf(
+                key: ValueKey<String>('karto-reise-weg-${station.id}'),
+                onPressed: onReiseweg!,
+              ),
             ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,

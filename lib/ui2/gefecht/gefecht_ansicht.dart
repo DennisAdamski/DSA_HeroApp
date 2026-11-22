@@ -17,6 +17,7 @@ import 'gefecht_gegner.dart';
 import 'gefecht_initiative.dart';
 import 'gefecht_beenden.dart';
 import 'gefecht_reserve.dart';
+import 'gefecht_zauberwirkungen.dart';
 import 'gefecht_patzer.dart';
 import 'gefecht_klingen.dart';
 
@@ -248,7 +249,14 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                               angriff: angriff,
                               verteidigung: verteidigung,
                               manoever: manoever,
-                              magie: magie,
+                              magie: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  magie,
+                                  const SizedBox(height: 16),
+                                  _zauberwirkungen(),
+                                ],
+                              ),
                               weitere: [
                                 _weitere(s, snapshot, katalog),
                                 GefechtReservekarte(
@@ -274,6 +282,17 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                                 GefechtBegleiter(
                                   begleiter: snapshot.hero.companions,
                                   zustaende: snapshot.state.begleiterZustaende,
+                                  gesperrt: _busy,
+                                  // Nur Würfel: kein Schreibweg, nichts wird
+                                  // am Gegner gebucht.
+                                  onProbe: (request) => _run(
+                                    () => _bruecke.gefechtsProbe(
+                                      context: context,
+                                      ref: ref,
+                                      heroId: widget.heroId,
+                                      request: request,
+                                    ),
+                                  ),
                                 ),
                               ],
                               ausruestung: Column(

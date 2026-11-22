@@ -164,6 +164,17 @@ aus dem Tag `sqlite3-3.6.0` ist byte-identisch mit der aus `sqlite3-3.5.2`
 (SHA-256 `13d3f11d…6688a4`); `web/sqlite3.wasm` musste deshalb nicht getauscht
 werden, entspricht aber nachweislich dem neuen Tag.
 
+### Nachtrag 2026-11-23: sqlite3 3.9.1
+
+`pubspec.lock` löst `package:sqlite3` seit dem 16.11.2026 auf 3.9.1 auf
+(Abhängigkeitsupdate ohne Änderung der Untergrenze), `web/sqlite3.wasm` war
+aber noch die Datei aus `sqlite3-3.7.1`. Sie ist jetzt durch die aus dem Tag
+`sqlite3-3.9.1` ersetzt (SHA-256 `e7451780…f7ec3d9`, vorher `87c1869b…f64303`),
+die Untergrenze in `pubspec.yaml` steht auf `^3.9.1`. Damit das nicht wieder
+unbemerkt auseinanderläuft, prüft
+`test/data/rules_search/sqlite3_wasm_version_test.dart` den Digest der Datei
+gegen die aufgelöste Version.
+
 ### Nachtrag 2026-10-22: sqlite3 3.7.1
 
 `package:sqlite3` steht auf 3.7.1 (Dependabot #237, hier um die passende

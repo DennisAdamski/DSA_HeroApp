@@ -18,7 +18,8 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/externe_helden_providers.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../test_support/fake_repository.dart';
 
 const _attribute = Attributes(
   mu: 12,
@@ -413,6 +414,141 @@ void main() {
       expect((await heldenSpeicher.loadHeroById('hero'))!.gruppen, isEmpty);
     },
   );
+  group('Mitglied aus der Gruppe entfernen (nur Besitzer)', () {
+    // Besitzer ist 'ich'; jeder Beitretende bekommt eine eigene UID.
+    Future<GruppenSyncService> besitzerDienst() async {
+      final codes = <String>['GEHEIM123456', 'NEUERCODE001'];
+      final besitzer = GruppenSyncService(
+        firestore: firestore,
+        uidProvider: () => 'ich',
+        idGenerator: () => 'g',
+        joinCodeGenerator: () => codes.removeAt(0),
+      );
+      await besitzer.erstelleGruppe('Runde');
+      return besitzer;
+    }
+
+    Future<void> tritt(String uid, String heroId, String name) async {
+      final dienstDesMitglieds = GruppenSyncService(
+        firestore: firestore,
+        uidProvider: () => uid,
+      );
+      await dienstDesMitglieds.tritteBei(
+        const GruppenBeitrittscode(groupId: 'g', joinCode: 'GEHEIM123456'),
+      );
+      await dienstDesMitglieds.pushVisitenkarte('g', _karte(heroId, name));
+    }
+
+    test('löst die UID auf, erneuert den Code und gleicht ab', () async {
+      dienst = await besitzerDienst();
+      await tritt('freund', 'hero-freund', 'Rondra');
+      await tritt('anderer', 'hero-anderer', 'Gorm');
+      await aufbau(const [
+        HeroGruppenMitgliedschaft(
+          gruppenCode: 'g',
+          gruppenName: 'Runde',
+          kontoGruppe: true,
+        ),
+      ]);
+      final actions = container.read(heroActionsProvider);
+      await actions.syncGruppen('hero');
+      expect((await gruppeVon('g')).externeHeldIds, hasLength(2));
+
+      final neuerCode = await actions.entferneGruppenMitglied(
+        heroId: 'hero',
+        gruppenCode: 'g',
+        quelleHeroId: 'hero-freund',
+      );
+
+      expect(neuerCode, 'g.NEUERCODE001');
+      expect(
+        (await firestore.doc('groups_v2/g/members/freund').get()).exists,
+        isFalse,
+      );
+      expect(
+        (await firestore.doc('groups_v2/g/hero_snapshots/freund').get()).exists,
+        isFalse,
+      );
+      // Die anderen Mitglieder und der Besitzer bleiben.
+      expect(
+        (await firestore.doc('groups_v2/g/members/anderer').get()).exists,
+        isTrue,
+      );
+      expect(
+        (await firestore.doc('groups_v2/g/members/ich').get()).exists,
+        isTrue,
+      );
+      expect(
+        (await firestore.doc('groups_v2/g').get()).data()?['joinCode'],
+        'NEUERCODE001',
+      );
+      // Der Abgleich hat die Karte aus der Liste des Helden genommen.
+      expect((await gruppeVon('g')).externeHeldIds, ['hero-anderer']);
+    });
+
+    test('entfernt nichts, wenn die Karte nicht eindeutig ist', () async {
+      dienst = await besitzerDienst();
+      await tritt('a', 'doppelt', 'Erste');
+      await tritt('b', 'doppelt', 'Zweite');
+      await aufbau(const [
+        HeroGruppenMitgliedschaft(gruppenCode: 'g', kontoGruppe: true),
+      ]);
+      final actions = container.read(heroActionsProvider);
+
+      await expectLater(
+        actions.entferneGruppenMitglied(
+          heroId: 'hero',
+          gruppenCode: 'g',
+          quelleHeroId: 'doppelt',
+        ),
+        throwsA(isA<GruppenException>()),
+      );
+      await expectLater(
+        actions.entferneGruppenMitglied(
+          heroId: 'hero',
+          gruppenCode: 'g',
+          quelleHeroId: 'unbekannt',
+        ),
+        throwsA(isA<GruppenException>()),
+      );
+
+      for (final uid in ['a', 'b']) {
+        expect(
+          (await firestore.doc('groups_v2/g/members/$uid').get()).exists,
+          isTrue,
+        );
+      }
+      expect(
+        (await firestore.doc('groups_v2/g').get()).data()?['joinCode'],
+        'GEHEIM123456',
+      );
+    });
+
+    test('der Besitzer selbst ist kein Ziel', () async {
+      dienst = await besitzerDienst();
+      await dienst.pushVisitenkarte('g', _karte('hero', 'Alrik'));
+      await aufbau(const [
+        HeroGruppenMitgliedschaft(gruppenCode: 'g', kontoGruppe: true),
+      ]);
+
+      await expectLater(
+        container
+            .read(heroActionsProvider)
+            .entferneGruppenMitglied(
+              heroId: 'hero',
+              gruppenCode: 'g',
+              quelleHeroId: 'hero',
+            ),
+        throwsA(isA<GruppenException>()),
+      );
+
+      expect(
+        (await firestore.doc('groups_v2/g/members/ich').get()).exists,
+        isTrue,
+      );
+    });
+  });
+
   group('Primäre Gruppe und Regelprofil (ARCH-04)', () {
     final profil = HeroRegelProfil(
       catalogVersion: 'house_rules_v1',

@@ -32,3 +32,25 @@ Future<HeroState?> aendereBegleiterPool({
         mitBegleiterPool(aktuell, begleiter, pool, aenderung),
   );
 }
+
+/// Ändert den Wundzähler eines Begleiters im gespeicherten Zustand und meldet
+/// Fehler sichtbar.
+///
+/// [schritt] wird auf den **gespeicherten** Wert angewendet
+/// (`mitBegleiterWundenSchritt`), nie auf den angezeigten.
+Future<HeroState?> aendereBegleiterWunden({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String heroId,
+  required String begleiterId,
+  required int schritt,
+}) {
+  return aendereZustandMitMeldung(
+    context: context,
+    ref: ref,
+    heroId: heroId,
+    was: 'Wunden',
+    aenderung: (aktuell) =>
+        mitBegleiterWundenSchritt(aktuell, begleiterId, schritt),
+  );
+}

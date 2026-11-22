@@ -93,9 +93,11 @@ Einmalig: `firebase hosting:sites:create heldensync-karten`.
 
 Ablauf je Kartenfassung:
 
-1. Zugang bei Avesmaps (Karten-API, Issue 7). Das `paket.zip` im Browser über
-   den Zugangslink laden; Schlüssel nie in Skripte oder ins Repository. Der
-   Zugang hat eine Frist und eine begrenzte Zahl an Abrufen.
+1. Zugang bei Avesmaps (Karten-API, Issue 7). Das Paket mit
+   `python -I tool/avesmaps_karte_laden.py` laden (fragt den Zugang verdeckt ab,
+   speichert nach `~/Downloads/avesmaps-paket.zip`). Den Schlüssel nie in
+   Skripte oder ins Repository legen. Der Zugang hat eine Frist und eine
+   begrenzte Zahl an Abrufen.
 2. Schneiden (Pillow oder pyvips nötig):
    `python -I tool/avesmaps_karte_kacheln.py --paket <pfad>/paket.zip`.
    Ergebnis unter `build/karten/`: `aktuell.json` und `<revision>/{z}/{x}/{y}.webp`

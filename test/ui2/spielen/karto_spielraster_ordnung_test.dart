@@ -53,6 +53,32 @@ void main() {
       expect(ids, contains('wildnis'));
     });
 
+    test('Zustandsmarker folgt dem Zustand und ergänzt eine gespeicherte '
+        'Anordnung hinter ihm', () {
+      expect(KartoSpielkachelArt.marker.id, 'marker');
+      expect(KartoSpielkachelArt.marker.standard, SpielkachelBreite.schmal);
+      expect(
+        KartoSpielkachelArt.values.indexOf(KartoSpielkachelArt.marker),
+        KartoSpielkachelArt.values.indexOf(KartoSpielkachelArt.zustand) + 1,
+      );
+      // Ein Held, der die Kachel noch nicht kennt: seine Reihenfolge bleibt,
+      // der Marker kommt hinter seine Vorgängerin.
+      final ohneMarker = loeseSpielansichtAuf(
+        const HeroSpielansicht(
+          kacheln: [
+            HeroSpielkachel(id: 'zustand'),
+            HeroSpielkachel(id: 'protokoll'),
+            HeroSpielkachel(id: 'ressourcen'),
+          ],
+        ),
+        verfuegbar: _alle,
+      );
+      final ids = _ids(ohneMarker);
+      expect(ids.take(3), ['zustand', 'protokoll', 'ressourcen']);
+      expect(ids, contains('marker'));
+      expect(ids.indexOf('marker'), greaterThan(2));
+    });
+
     test('Standort folgt der Reiseroute und ergänzt eine gespeicherte '
         'Anordnung hinter ihr', () {
       expect(KartoSpielkachelArt.standort.id, 'standort');

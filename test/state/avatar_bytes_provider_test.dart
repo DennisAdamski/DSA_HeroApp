@@ -11,8 +11,9 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
-import 'package:dsa_heldenverwaltung/test_support/in_memory_avatar_file_storage.dart';
+
+import '../test_support/fake_repository.dart';
+import '../test_support/in_memory_avatar_file_storage.dart';
 
 void main() {
   late InMemoryAvatarFileStorage storage;

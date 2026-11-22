@@ -20,7 +20,9 @@ import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
-import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+
+import '../../test_support/fake_repository.dart';
+
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_karten.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelraster.dart';
@@ -583,6 +585,7 @@ void main() {
         'kampf',
         'effekte',
         'zustand',
+        'marker',
         'dabei',
         'abenteuer',
         'standort',
@@ -1427,6 +1430,7 @@ void main() {
 
     testWidgets('der Vergrößern-Dialog zeigt fünf Stationen', (tester) async {
       await zeige(tester, held: mitStationen(null), breite: 1280);
+      await tester.ensureVisible(k('karto-kachel-reiseroute-vergroessern'));
       await tester.tap(k('karto-kachel-reiseroute-vergroessern'));
       await tester.pumpAndSettle();
       expect(
