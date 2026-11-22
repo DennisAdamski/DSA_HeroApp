@@ -13,10 +13,23 @@ fi
 FLUTTER_DIR="$HOME/flutter"
 FLUTTER_BIN="$FLUTTER_DIR/bin/flutter"
 
-# Flutter installieren, falls nicht vorhanden
-if ! command -v flutter &>/dev/null && [ ! -f "$FLUTTER_BIN" ]; then
-  echo "Installiere Flutter SDK (stable)..."
-  git clone https://github.com/flutter/flutter.git -b stable --depth 1 "$FLUTTER_DIR"
+# Flutter-Version wie in CI (einzige Quelle: flutter-version in der Workflow-
+# Datei). Der stable-Branch wandert weiter, neuere Versionen melden andere
+# Lints (flutter analyze bricht Pre-Push ab) und ändern pubspec.lock.
+FLUTTER_VERSION="$(grep -m1 -oE 'flutter-version: *[0-9.]+' \
+  "$CLAUDE_PROJECT_DIR/.github/workflows/flutter-tests.yml" \
+  | grep -oE '[0-9.]+$' || true)"
+FLUTTER_VERSION="${FLUTTER_VERSION:-3.47.1}"
+
+if [ ! -f "$FLUTTER_BIN" ]; then
+  echo "Installiere Flutter SDK $FLUTTER_VERSION..."
+  git clone https://github.com/flutter/flutter.git -b "$FLUTTER_VERSION" \
+    --depth 1 "$FLUTTER_DIR"
+elif [ "$(git -C "$FLUTTER_DIR" describe --tags --exact-match 2>/dev/null || true)" != "$FLUTTER_VERSION" ]; then
+  # Vorhandene Installation (z. B. früherer stable-Klon) auf die Version heben.
+  echo "Stelle Flutter SDK auf $FLUTTER_VERSION um..."
+  git -C "$FLUTTER_DIR" fetch --depth 1 origin tag "$FLUTTER_VERSION"
+  git -C "$FLUTTER_DIR" checkout --quiet "$FLUTTER_VERSION"
 fi
 
 # Flutter zum PATH hinzufügen (persistent für die gesamte Session)

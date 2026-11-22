@@ -942,6 +942,48 @@ class HeroActions {
     return code.text;
   }
 
+  /// Entfernt das Mitglied, dessen Heldenkarte [quelleHeroId] trägt, aus der
+  /// Gruppe (nur Besitzer) und gibt den neuen Beitrittscode zurück.
+  ///
+  /// Der Held kennt von seinen Mitgliedern nur die Karte, nicht die UID. Die
+  /// UID wird deshalb frisch aus der Gruppe aufgelöst; die Karte eines anderen
+  /// Mitglieds kann dieselbe Held-ID behaupten, daher wird bei keinem oder
+  /// mehr als einem Treffer nichts entfernt. Der Besitzer selbst ist nie
+  /// ein Ziel. Danach gleicht die Aktion die Gruppe des Helden ab, damit das
+  /// entfernte Mitglied aus der Liste verschwindet.
+  Future<String> entferneGruppenMitglied({
+    required String heroId,
+    required String gruppenCode,
+    required String quelleHeroId,
+  }) async {
+    _requireGruppenSyncAvailable();
+    final syncService = _ref.read(gruppenSyncServiceProvider);
+    final inhalt = await syncService.ladeInhalt(gruppenCode);
+    final treffer = inhalt.mitglieder
+        .where(
+          (m) =>
+              m.uid != syncService.eigeneUid && m.karte.heroId == quelleHeroId,
+        )
+        .toList(growable: false);
+    if (treffer.length != 1) {
+      throw const GruppenException(
+        'Das Mitglied konnte nicht eindeutig bestimmt werden. Gleiche die '
+        'Gruppe ab und versuche es erneut.',
+      );
+    }
+    final code = await syncService.entferneMitglied(
+      gruppenCode,
+      treffer.single.uid,
+    );
+    try {
+      await _syncGruppe(heroId, gruppenCode);
+    } on GruppenException {
+      // Das Mitglied ist entfernt und der Code erneuert; ein fehlgeschlagener
+      // Abgleich lässt sich mit „Synchronisieren“ nachholen.
+    }
+    return code.text;
+  }
+
   /// Macht [gruppenCode] zur primären Gruppe des Helden (ARCH-04).
   ///
   /// Ein Held kann mehreren Gruppen angehören, folgt aber nur dem Regelprofil

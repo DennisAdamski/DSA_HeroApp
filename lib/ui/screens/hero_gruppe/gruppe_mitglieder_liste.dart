@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/domain/externer_held.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/externe_helden_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
@@ -16,6 +18,7 @@ class GruppeMitgliederListe extends ConsumerWidget {
     required this.heroId,
     required this.gruppenCode,
     this.kontoGruppe = true,
+    this.syncAvailable = false,
   });
 
   final String heroId;
@@ -24,11 +27,23 @@ class GruppeMitgliederListe extends ConsumerWidget {
   /// `false` bei Altgruppen: Dort ist alles nur lokal und entfernbar.
   final bool kontoGruppe;
 
+  /// Ob Cloud-Sync-Aktionen derzeit erlaubt sind (Mitglieder entfernen).
+  final bool syncAvailable;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mitglieder = ref.watch(
       gruppenMitgliederProvider((heroId: heroId, gruppenCode: gruppenCode)),
     );
+    // Nur der Besitzer einer Konto-Gruppe entfernt Mitglieder.
+    final istBesitzer =
+        kontoGruppe &&
+        syncAvailable &&
+        (ref
+                .watch(gruppenAnsichtProvider(gruppenCode))
+                .valueOrNull
+                ?.istBesitzer ??
+            false);
 
     if (mitglieder.isEmpty) {
       return Padding(
@@ -62,6 +77,9 @@ class GruppeMitgliederListe extends ConsumerWidget {
             onEntfernen: !kontoGruppe || held.istManuell
                 ? () => _entferneHeld(context, ref, held.id)
                 : null,
+            onAusGruppeEntfernen: istBesitzer && held.istVerknuepft
+                ? () => _entferneMitglied(context, ref, held)
+                : null,
           ),
       ],
     );
@@ -87,13 +105,82 @@ class GruppeMitgliederListe extends ConsumerWidget {
           externerHeldId: externerHeldId,
         );
   }
+
+  Future<void> _entferneMitglied(
+    BuildContext context,
+    WidgetRef ref,
+    ExternerHeld held,
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: heroId,
+    );
+    if (!darfBearbeiten || !context.mounted) {
+      return;
+    }
+    final bestaetigt = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('${held.name} aus der Gruppe entfernen?'),
+        content: const Text(
+          'Das Mitglied verliert den Zugriff auf die Gruppe, seine Heldenkarte '
+          'verschwindet daraus. Der Beitrittscode wird erneuert, damit es '
+          'nicht sofort wieder beitreten kann; der neue Code wird in die '
+          'Zwischenablage kopiert.',
+        ),
+        actions: [
+          TextButton(
+            key: const ValueKey<String>('gruppe-mitglied-entfernen-abbrechen'),
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            key: const ValueKey<String>('gruppe-mitglied-entfernen-ok'),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Entfernen'),
+          ),
+        ],
+      ),
+    );
+    if (bestaetigt != true) {
+      return;
+    }
+    try {
+      final code = await ref
+          .read(heroActionsProvider)
+          .entferneGruppenMitglied(
+            heroId: heroId,
+            gruppenCode: gruppenCode,
+            quelleHeroId: held.quelleHeroId!,
+          );
+      await Clipboard.setData(ClipboardData(text: code));
+      ref.invalidate(gruppenAnsichtProvider(gruppenCode));
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            '${held.name} wurde entfernt. Neuer Beitrittscode kopiert.',
+          ),
+        ),
+      );
+    } on Exception catch (error) {
+      messenger.showSnackBar(SnackBar(content: Text('Fehler: $error')));
+    }
+  }
 }
 
 class _ExternerHeldKarte extends StatelessWidget {
-  const _ExternerHeldKarte({required this.held, required this.onEntfernen});
+  const _ExternerHeldKarte({
+    required this.held,
+    required this.onEntfernen,
+    required this.onAusGruppeEntfernen,
+  });
 
   final ExternerHeld held;
   final VoidCallback? onEntfernen;
+
+  /// Nur für den Besitzer: das Mitglied dieser Karte aus der Gruppe werfen.
+  final VoidCallback? onAusGruppeEntfernen;
 
   @override
   Widget build(BuildContext context) {
@@ -176,20 +263,32 @@ class _ExternerHeldKarte extends StatelessWidget {
                 ],
               ),
             ),
-            if (onEntfernen != null)
+            if (onEntfernen != null || onAusGruppeEntfernen != null)
               PopupMenuButton<String>(
+                key: ValueKey<String>('gruppe-mitglied-menue-${held.id}'),
                 onSelected: (value) {
                   if (value == 'entfernen') onEntfernen!();
+                  if (value == 'ausGruppe') onAusGruppeEntfernen!();
                 },
                 itemBuilder: (_) => [
-                  const PopupMenuItem(
-                    value: 'entfernen',
-                    child: ListTile(
-                      leading: Icon(Icons.person_remove_outlined),
-                      title: Text('Entfernen'),
-                      dense: true,
+                  if (onEntfernen != null)
+                    const PopupMenuItem(
+                      value: 'entfernen',
+                      child: ListTile(
+                        leading: Icon(Icons.person_remove_outlined),
+                        title: Text('Entfernen'),
+                        dense: true,
+                      ),
                     ),
-                  ),
+                  if (onAusGruppeEntfernen != null)
+                    const PopupMenuItem(
+                      value: 'ausGruppe',
+                      child: ListTile(
+                        leading: Icon(Icons.person_off_outlined),
+                        title: Text('Aus der Gruppe entfernen'),
+                        dense: true,
+                      ),
+                    ),
                 ],
               ),
           ],

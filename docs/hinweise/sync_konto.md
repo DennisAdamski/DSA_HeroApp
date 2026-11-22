@@ -188,9 +188,18 @@ harten Regeln und den Themenindex.
   damit `loescheGruppe` nach einem Abbruch wiederholbar bleibt. Es entwertet
   zuerst den Beitrittscode; `entferneMitglied` erneuert ihn ebenfalls.
   Regeln: `functions/test/firestore_rules.rules.ts` (`npm run test:rules`,
-  Java 21). Offen: Mitglieder entfernen (Dienst `entferneMitglied` vorhanden,
-  keine Oberfläche), Live-Listener statt manuellem „Synchronisieren“, Gruppen
-  unter Windows (REST-Transport ohne Firestore-SDK).
+  Java 21). **Mitglieder entfernen (22.11.2026):** Der Besitzer wählt im Menü der
+  Heldenkarte „Aus der Gruppe entfernen“ (`GruppeMitgliederListe`, nur mit
+  Sync und nur an Mitgliedskarten, nicht an gemeinsamen Einträgen). Die Aktion
+  `entferneGruppenMitglied` (`hero_actions.dart`) löst die UID **frisch** aus
+  `hero_snapshots` über die Held-ID der Karte auf, denn `ExternerHeld` speichert
+  keine UID (kein Modellfeld): Bei keinem oder mehreren Treffern entfernt sie
+  nichts (eine Karte kann fremde Held-IDs behaupten), der Besitzer ist nie
+  Ziel. Dann `entferneMitglied` (Karte, Mitgliedseintrag, neuer Code) und ein
+  Abgleich der Gruppe; ein Abgleichfehler kippt das Ergebnis nicht. Die Regeln
+  bleiben die Grenze (Besitzer löscht fremde Einträge). Offen: Live-Listener
+  statt manuellem „Synchronisieren“, Gruppen unter Windows (REST-Transport ohne
+  Firestore-SDK).
 - Unlesbare Online-Dokumente werden einzeln übersprungen (`dekodiereEinzeln`
   in beiden Gateways), und `syncNow` gleicht jeden Helden für sich ab: Ein
   einzelner Fehlschlag (kein Fehler der Leitung) steht danach im Sync-Status,

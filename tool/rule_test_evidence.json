@@ -9581,6 +9581,13 @@
         }
       ]
     },
+    "test/rules/notizen_suche_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Sichert die Filtersuche über die allgemeinen Notizen eines Helden: leerer Suchtext liefert alle, Suche in Titel, Beschreibung, Ort und Datum, Umlautfaltung, alle Wörter müssen vorkommen, Originalindizes in Listenreihenfolge.",
+      "rationale": "Reine Produktlogik der Oberflächensuche mit erfundenen Beispielnotizen; die Tests enthalten keine DSA-Regelbehauptung (keine Kosten, Werte oder Regeltexte), daher keine MCP-Suche nötig.",
+      "sources": []
+    },
     "test/rules/probe_engine_rules_test.dart": {
       "kind": "official",
       "status": "conflict",
