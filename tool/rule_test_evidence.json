@@ -4367,6 +4367,31 @@
       "rationale": "Testdatei und lib/rules/derived/reiseweg_rules.dart gelesen: Anfragebau, Formatierung und Zuordnung von Antworten der Avesmaps-Reiseschnittstelle. Gerechnet werden Wege und Reisezeiten bei Avesmaps; das Regelwerk trifft zu diesen Anzeigen keine Aussage.",
       "sources": []
     },
+    "test/rules/derived/reisezeit_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Prüft die Reisedauer nach Regelwerk: Tagesstrecken zu Fuß 30 (Eilmarsch 45) und beritten 40 (Eilritt 60) Meilen nach Basisregelwerk S. 192, Fuhrwerk 30 und Kutsche 50 Meilen mit höchstens ×1,25 in Eile nach Geographia Aventurica S. 123. Geländemodifikatoren Reichsstraße ×1,1, Straße ×1, Karrenweg und Pfad ×0,8, offenes Gelände querfeldein ×0,75 sowie Wettermodifikatoren (×0,9 bis ×0,3) werden mit der Tagesstrecke multipliziert; das Beispiel des Basisregelwerks (Eilmarsch 45 × Karrenweg 0,8 = 36 Meilen) ergibt einen Tag. Eile gilt nur auf befestigten Wegen und entfällt bei Dauerregen, Sturm, heftigem Schauer und Orkan; Kutschen fahren auf Pfaden und querfeldein wie Fußgänger. Wasser: Flusskahn als Mittel aus stromauf 20 und stromab 40 Meilen, Lastensegler 120 Meilen. Produktlogik ohne Regelbehauptung: Zusammenfassung der Herleitung je Wegart, Aufrunden auf ganze Tage, Ankunftsdatum, Reittier als Vorschlag, Stationen der Reiseroute, Reisetag und Lage einer laufenden Reise.",
+      "sources": [
+        {
+          "title": "Basisregelwerk (2. Auflage) – Reisegeschwindigkeit, Tagesstrecken, Gelände- und Wettermodifikatoren",
+          "pages": "PDF S. 192",
+          "mcpChunks": [
+            729,
+            730
+          ],
+          "checkedOn": "2026-11-21"
+        },
+        {
+          "title": "Geographia Aventurica (2. Auflage) – Basisgeschwindigkeit, Modifikatoren nach Geländearten und Wetter, Eilmarsch",
+          "pages": "PDF S. 123",
+          "mcpChunks": [
+            1195,
+            1196
+          ],
+          "checkedOn": "2026-11-21"
+        }
+      ]
+    },
     "test/rules/derived/standort_rules_test.dart": {
       "kind": "product_contract",
       "status": "verified",

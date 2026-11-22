@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_unterwegs.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reittier_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
@@ -241,6 +242,21 @@ abstract interface class KartoBestandsAdapter {
     required WidgetRef ref,
     required String heroId,
     required String standort,
+  });
+
+  /// Hält eine Reise im Laufzeitzustand fest.
+  ///
+  /// Schreibt frisch über `aendereZustandMitMeldung` genau ein Dokument:
+  /// [unterwegs] ersetzt die laufende Reise (`null` beendet sie), ein
+  /// gesetzter [standort] zugleich den Standort. Anders als [standortSetzen]
+  /// legt der Weg keine Station an; die schreibt der Reiseablauf selbst am
+  /// Bogen. Liefert, ob gespeichert wurde.
+  Future<bool> reiseZustandSetzen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroUnterwegs? unterwegs,
+    String? standort,
   });
 
   /// Öffnet die Vertrautenaktionen (Vereinigung, Zauber würfeln, Proben …).

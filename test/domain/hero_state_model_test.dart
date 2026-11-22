@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_unterwegs.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/domain/zustands_buchung.dart';
@@ -338,6 +339,36 @@ void main() {
         'currentLep': 3,
         'wunden': 2,
       });
+    });
+  });
+
+  group('unterwegs', () {
+    const leer = HeroState(
+      currentLep: 12,
+      currentAsp: 7,
+      currentKap: 0,
+      currentAu: 16,
+    );
+    const reise = HeroUnterwegs(ziel: 'Punin', vonOrt: 'Gareth');
+
+    test('ohne Reise fehlt der Schlüssel und der Hash bleibt', () {
+      expect(leer.unterwegs, isNull);
+      expect(leer.toJson().containsKey('unterwegs'), isFalse);
+      final geladen = HeroState.fromJson(leer.toJson());
+      expect(geladen.unterwegs, isNull);
+      expect(heroStateContentHash(geladen), heroStateContentHash(leer));
+    });
+
+    test('Roundtrip, andere Änderungen behalten die Reise, null löscht', () {
+      final mit = leer.copyWith(unterwegs: reise);
+      final geladen = HeroState.fromJson(mit.toJson());
+      expect(geladen.unterwegs!.ziel, 'Punin');
+      expect(geladen.unterwegs!.vonOrt, 'Gareth');
+      expect(heroStateContentHash(mit), isNot(heroStateContentHash(leer)));
+      expect(mit.copyWith(currentLep: 3).unterwegs, isNotNull);
+      final beendet = mit.copyWith(unterwegs: null);
+      expect(beendet.toJson().containsKey('unterwegs'), isFalse);
+      expect(heroStateContentHash(beendet), heroStateContentHash(leer));
     });
   });
 

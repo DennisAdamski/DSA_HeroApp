@@ -1,7 +1,9 @@
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_unterwegs.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
@@ -30,6 +32,7 @@ class HeroState {
     this.begleiterZustaende = const <String, BegleiterZustand>{},
     this.standort = '',
     this.zustandsmarker = const <ZustandsMarker>[],
+    this.unterwegs,
     this.lastModified,
     this.unbekannteFelder = const <String, Object?>{},
   });
@@ -52,6 +55,7 @@ class HeroState {
       begleiterZustaende = const <String, BegleiterZustand>{},
       standort = '',
       zustandsmarker = const <ZustandsMarker>[],
+      unterwegs = null,
       unbekannteFelder = const <String, Object?>{};
 
   /// Maximale Anzahl persistierter Wuerfelprotokoll-Eintraege pro Held.
@@ -113,6 +117,13 @@ class HeroState {
   /// Bestandszustände ihren Inhalts-Hash behalten.
   final List<ZustandsMarker> zustandsmarker;
 
+  /// Laufende Reise („unterwegs nach …“), oder `null`, wenn der Held an
+  /// seinem [standort] ist.
+  ///
+  /// Nur bei Belegung im JSON, damit Bestandszustände ihren Inhalts-Hash
+  /// behalten.
+  final HeroUnterwegs? unterwegs;
+
   /// Zeitpunkt der letzten Speicherung, analog zu `HeroSheet.lastModified`.
   ///
   /// Rein informativ: Der Wert bleibt aus `heroStateContentHash` und damit aus
@@ -144,6 +155,7 @@ class HeroState {
     'begleiterZustaende',
     'standort',
     'zustandsmarker',
+    'unterwegs',
     'lastModified',
   };
 
@@ -164,6 +176,7 @@ class HeroState {
     Map<String, BegleiterZustand>? begleiterZustaende,
     String? standort,
     List<ZustandsMarker>? zustandsmarker,
+    Object? unterwegs = keepFieldValue,
     DateTime? lastModified,
   }) {
     return HeroState(
@@ -183,6 +196,9 @@ class HeroState {
       begleiterZustaende: begleiterZustaende ?? this.begleiterZustaende,
       standort: standort ?? this.standort,
       zustandsmarker: zustandsmarker ?? this.zustandsmarker,
+      unterwegs: identical(unterwegs, keepFieldValue)
+          ? this.unterwegs
+          : unterwegs as HeroUnterwegs?,
       lastModified: lastModified ?? this.lastModified,
       unbekannteFelder: unbekannteFelder,
     );
@@ -256,6 +272,7 @@ class HeroState {
         'zustandsmarker': zustandsmarker
             .map((marker) => marker.toJson())
             .toList(growable: false),
+      if (unterwegs != null) 'unterwegs': unterwegs!.toJson(),
       if (lastModified != null)
         'lastModified': lastModified!.toUtc().toIso8601String(),
     };
@@ -319,6 +336,11 @@ class HeroState {
       zustandsmarker: rawMarker == null
           ? const <ZustandsMarker>[]
           : ZustandsMarker.listeAusJson(rawMarker),
+      unterwegs: json['unterwegs'] is Map
+          ? HeroUnterwegs.fromJson(
+              (json['unterwegs'] as Map).cast<String, dynamic>(),
+            )
+          : null,
       lastModified: DateTime.tryParse(json['lastModified'] as String? ?? ''),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );

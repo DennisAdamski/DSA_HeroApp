@@ -36,6 +36,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_tragkraft_bonus.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_unterwegs.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
@@ -586,6 +587,12 @@ final _begleiterAbenteuerNotizen = <_Modell>[
     voll: () => const HeroReiseAnreise(
       wege: <String>['land', 'fluss'],
       optimierung: 'kuerzeste',
+      abreise: HeroAdventureDateValue(day: '1', month: 'boron', year: '1043'),
+      mittel: 'beritten',
+      tempo: 'eil',
+      wetter: 'leicht',
+      geplanteTage: 5.15,
+      meilen: 144,
     ).toJson(),
     lade: (json) => HeroReiseAnreise.fromJson(json).toJson(),
     bearbeite: (json) =>
@@ -1118,6 +1125,26 @@ final _zustand = <_Modell>[
             .copyWith(name: 'Furcht', rest: 1, notiz: 'Geist')
             .toJson(),
     unbekannt: (json) => ZustandsMarker.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroUnterwegs',
+    schluessel: HeroUnterwegs.jsonSchluessel,
+    voll: () => const HeroUnterwegs(
+      ziel: 'Punin',
+      zielOrtId: 'p',
+      zielKartenX: 3,
+      zielKartenY: 4,
+      vonOrt: 'Gareth',
+      vonOrtId: 'g',
+      vonKartenX: 1,
+      vonKartenY: 2,
+      adventureId: 'a1',
+      anreise: HeroReiseAnreise(mittel: 'fuss', geplanteTage: 4),
+    ).toJson(),
+    lade: (json) => HeroUnterwegs.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroUnterwegs.fromJson(json).copyWith(ziel: 'Vinsalt').toJson(),
+    unbekannt: (json) => HeroUnterwegs.fromJson(json).unbekannteFelder,
   ),
 ];
 

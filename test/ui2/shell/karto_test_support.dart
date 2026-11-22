@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_unterwegs.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reittier_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
@@ -274,6 +275,18 @@ class TestBestand implements KartoBestandsAdapter {
     required String standort,
   }) async {
     aufrufe.add('standort:$heroId:$standort');
+  }
+
+  @override
+  Future<bool> reiseZustandSetzen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroUnterwegs? unterwegs,
+    String? standort,
+  }) async {
+    aufrufe.add('reise:$heroId:${unterwegs?.ziel ?? '-'}:${standort ?? '-'}');
+    return true;
   }
 
   @override

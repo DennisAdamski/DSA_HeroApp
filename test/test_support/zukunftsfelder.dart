@@ -17,6 +17,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -24,6 +25,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_unterwegs.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
@@ -741,6 +743,14 @@ Zukunftsheld zustandMitZukunftsfeldern(Map<String, dynamic> zustandJson) {
   _pruefe(basis['wpiZustand'] is Map, 'Wundenzustand');
   _pruefe(!basis.containsKey('begleiterZustaende'), 'keine Begleiterwerte');
   _pruefe(!basis.containsKey('zustandsmarker'), 'keine Zustandsmarker');
+  _pruefe(!basis.containsKey('unterwegs'), 'nicht unterwegs');
+  basis['unterwegs'] = const HeroUnterwegs(
+    ziel: 'Punin',
+    anreise: HeroReiseAnreise(
+      abreise: HeroAdventureDateValue(day: '1', month: 'boron', year: '1043'),
+      geplanteTage: 4,
+    ),
+  ).toJson();
   basis['zustandsmarker'] = <Object?>[
     const ZustandsMarker(id: 'm1', name: 'Betäubung', rest: 3).toJson(),
   ];
@@ -773,6 +783,9 @@ Zukunftsheld zustandMitZukunftsfeldern(Map<String, dynamic> zustandJson) {
       'wpiZustand',
       'begleiterZustaende/$zukunftsBegleiter',
       'zustandsmarker/0',
+      'unterwegs',
+      'unterwegs/anreise',
+      'unterwegs/anreise/abreise',
       'diceLog/0',
     ],
     werte: const <String, Object?>{

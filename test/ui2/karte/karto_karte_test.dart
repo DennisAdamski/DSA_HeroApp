@@ -331,6 +331,28 @@ void main() {
       expect(_k('karto-karte-info-name'), findsNothing);
     });
 
+    testWidgets('Hierher reisen öffnet den Reiseplaner mit dem Ort', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        start: (heroId) => KartoKartenBlatt(
+          heroId: heroId,
+          mitRoute: false,
+          onReiseZustand: ({required unterwegs, standort}) async => true,
+        ),
+      );
+      await tippeStation(tester, 's1');
+      expect(tester.widget<Text>(_k('karto-karte-info-name')).data, 'Gareth');
+      await tester.tap(_k('karto-karte-info-reisen'));
+      await tester.pumpAndSettle();
+      expect(find.text('Reise planen'), findsOneWidget);
+      expect(
+        tester.widget<TextField>(_k('karto-reiseplan-nach')).controller!.text,
+        'Gareth',
+      );
+    });
+
     testWidgets('kein Standort hierher für den Standort selbst', (
       tester,
     ) async {

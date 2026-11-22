@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reisezeit_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseweg_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
@@ -515,7 +516,7 @@ class _ZeitleistenEintrag extends StatelessWidget {
     final ort = station.ort.trim();
     final notiz = station.notiz.trim();
     final datum = reiseStationDatumText(station);
-    final abstand = erster ? null : reiseEtappenAbstandText(etappe, weg: weg);
+    final abstand = erster ? null : reiseEtappenText(etappe, weg: weg);
     final link = mitKartenlink && kartenlinkSinnvoll(ort, orte)
         ? avesmapsLink(ort)
         : null;
