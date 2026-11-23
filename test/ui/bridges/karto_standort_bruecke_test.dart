@@ -5,7 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_unterwegs.dart';
+import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
+import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
@@ -28,10 +31,18 @@ const _nebel = HeroAdventureEntry(
 void main() {
   const adapter = KartoBestandsAdapterImpl();
 
-  Future<(FakeRepository, ProviderContainer, void Function(String))> baue(
+  late BuildContext kontext;
+  late WidgetRef widgetRef;
+
+  Future<
+    (FakeRepository, ProviderContainer, void Function(String, {String ortId}))
+  >
+  baue(
     WidgetTester tester, {
     String standort = 'Gareth',
+    String standortOrtId = '',
     List<HeroReiseStation> stationen = const <HeroReiseStation>[],
+    List<OrtEintrag>? orte,
     bool planOffen = false,
   }) async {
     final held = testHero().copyWith(
@@ -40,12 +51,18 @@ void main() {
     );
     final repo = FakeRepository(
       heroes: [held],
-      states: {'rondra': const HeroState.empty().copyWith(standort: standort)},
+      states: {
+        'rondra': const HeroState.empty().copyWith(
+          standort: standort,
+          standortOrtId: standortOrtId,
+        ),
+      },
     );
     final container = ProviderContainer(
       overrides: [
         heroRepositoryProvider.overrideWithValue(repo),
         rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+        if (orte != null) ortsverzeichnisProvider.overrideWithValue(orte),
       ],
     );
     addTearDown(container.dispose);
@@ -54,8 +71,6 @@ void main() {
           .read(advancementSessionProvider('rondra').notifier)
           .start(hero: held, catalog: testCatalog);
     }
-    late BuildContext kontext;
-    late WidgetRef widgetRef;
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
@@ -72,12 +87,13 @@ void main() {
         ),
       ),
     );
-    void setze(String neu) {
+    void setze(String neu, {String ortId = ''}) {
       adapter.standortSetzen(
         context: kontext,
         ref: widgetRef,
         heroId: 'rondra',
         standort: neu,
+        ortId: ortId,
       );
     }
 
@@ -144,5 +160,142 @@ void main() {
       find.textContaining('Standort gespeichert, Reiseroute nicht ergänzt'),
       findsOneWidget,
     );
+  });
+
+  group('Verweis am Standort', () {
+    OrtEintrag ort(String name, String id, double x) => OrtEintrag(
+      name: name,
+      art: OrtArt.siedlung,
+      ortId: id,
+      kartenX: x,
+      kartenY: 1,
+    );
+    final orte = <OrtEintrag>[
+      ort('Gareth', 'g', 1),
+      ort('Kronling', 'k1', 2),
+      ort('Kronling', 'k2', 3),
+    ];
+
+    testWidgets('die gewählte Kennung landet am Standort und an der Station', (
+      tester,
+    ) async {
+      final (repo, _, setze) = await baue(tester, orte: orte);
+
+      setze('Kronling', ortId: 'k2');
+      await tester.pumpAndSettle();
+
+      final zustand = (await repo.loadHeroState('rondra'))!;
+      expect(zustand.standort, 'Kronling');
+      expect(zustand.standortOrtId, 'k2');
+      final station = (await repo.loadHeroById('rondra'))!
+          .reiseStationen
+          .single;
+      expect(station.ortId, 'k2');
+      expect(station.kartenX, 3);
+    });
+
+    testWidgets('ein eindeutiger Name verknüpft ohne Auswahl', (tester) async {
+      final (repo, _, setze) = await baue(
+        tester,
+        standort: 'Kronling',
+        standortOrtId: 'k1',
+        orte: orte,
+      );
+
+      setze('Gareth');
+      await tester.pumpAndSettle();
+      expect((await repo.loadHeroState('rondra'))!.standortOrtId, 'g');
+
+      // Mehrdeutig und ohne Auswahl: kein Verweis.
+      setze('Kronling');
+      await tester.pumpAndSettle();
+      expect((await repo.loadHeroState('rondra'))!.standortOrtId, isEmpty);
+    });
+
+    testWidgets('gleicher Name ohne Verzeichnis behält den Verweis', (
+      tester,
+    ) async {
+      final (repo, _, setze) = await baue(
+        tester,
+        standort: 'Kronling',
+        standortOrtId: 'k2',
+        orte: const <OrtEintrag>[],
+      );
+
+      setze(' Kronling ');
+      await tester.pumpAndSettle();
+      expect((await repo.loadHeroState('rondra'))!.standortOrtId, 'k2');
+
+      setze('Havena');
+      await tester.pumpAndSettle();
+      final zustand = (await repo.loadHeroState('rondra'))!;
+      expect(zustand.standort, 'Havena');
+      expect(zustand.standortOrtId, isEmpty);
+    });
+
+    testWidgets('eine Kennung gilt auch ohne geladenes Verzeichnis', (
+      tester,
+    ) async {
+      // Etwa ein gewählter Treffer der Online-Suche.
+      final (repo, _, setze) = await baue(tester, orte: const <OrtEintrag>[]);
+
+      setze('Havena', ortId: 'h');
+      await tester.pumpAndSettle();
+      expect((await repo.loadHeroState('rondra'))!.standortOrtId, 'h');
+
+      setze('');
+      await tester.pumpAndSettle();
+      final zustand = (await repo.loadHeroState('rondra'))!;
+      expect(zustand.standort, isEmpty);
+      expect(zustand.standortOrtId, isEmpty);
+    });
+
+    testWidgets('eine Reise schreibt den Verweis des Ziels mit', (
+      tester,
+    ) async {
+      final (repo, _, _) = await baue(
+        tester,
+        standort: 'Gareth',
+        standortOrtId: 'g',
+        orte: orte,
+      );
+
+      // Aufbrechen: Standort und Verweis bleiben.
+      await adapter.reiseZustandSetzen(
+        context: kontext,
+        ref: widgetRef,
+        heroId: 'rondra',
+        unterwegs: const HeroUnterwegs(ziel: 'Kronling'),
+      );
+      await tester.pumpAndSettle();
+      var zustand = (await repo.loadHeroState('rondra'))!;
+      expect(zustand.standortOrtId, 'g');
+
+      // Ankommen: neuer Standort mit dem Verweis des Ziels.
+      await adapter.reiseZustandSetzen(
+        context: kontext,
+        ref: widgetRef,
+        heroId: 'rondra',
+        unterwegs: null,
+        standort: 'Kronling',
+        standortOrtId: 'k2',
+      );
+      await tester.pumpAndSettle();
+      zustand = (await repo.loadHeroState('rondra'))!;
+      expect(zustand.standort, 'Kronling');
+      expect(zustand.standortOrtId, 'k2');
+
+      // Anhalten an einer Rast: kein Verweis.
+      await adapter.reiseZustandSetzen(
+        context: kontext,
+        ref: widgetRef,
+        heroId: 'rondra',
+        unterwegs: null,
+        standort: 'Rast bei Kronling',
+      );
+      await tester.pumpAndSettle();
+      zustand = (await repo.loadHeroState('rondra'))!;
+      expect(zustand.standortOrtId, isEmpty);
+    });
   });
 }

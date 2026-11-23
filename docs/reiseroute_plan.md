@@ -10,7 +10,7 @@ und später auf einer Aventurien-Karte.
 | --- | --- | --- |
 | 0 | Anfrage an Avesmaps (Ortsverzeichnis, Kacheln, CORS, Namensnennung) | beantwortet (12.11.2026): Ortsdaten und Route ja, Kacheln nein |
 | 1 | Stationsliste am Helden, Spielkachel „Reiseroute“, Blatt mit Zeitleiste | umgesetzt |
-| 2 | Ortssuche mit Koordinaten, Reisewege, Karte mit Route und Pins | A2, A1, Tabellenansicht, Ortsdetails (D), Standort-Kachel und Aventurien-Karte im Avesmaps-Stil (C2, C3 vorbereitet) umgesetzt (13.11.2026); Reisewege (B2) umgesetzt (20.11.2026), Reiseplaner (B3) umgesetzt (21.11.2026), Kartenbild (C3) live (23.11.2026) |
+| 2 | Ortssuche mit Koordinaten, Reisewege, Karte mit Route und Pins | A2, A1, Tabellenansicht, Ortsdetails (D), Standort-Kachel und Aventurien-Karte im Avesmaps-Stil (C2, C3 vorbereitet) umgesetzt (13.11.2026); Reisewege (B2) umgesetzt (20.11.2026), Reiseplaner (B3) umgesetzt (21.11.2026), Kartenbild (C3) live, Verweis am Standort und Rücklinks über die Ortsdetails (23.11.2026) |
 
 ## Stufe 1 (umgesetzt)
 
@@ -185,7 +185,8 @@ zwischenspeichern:
 wozu: `datum`, `ort`, `adventureId`, `notiz`. Der Ort ist verknüpft über
 `ortId` (Avesmaps-`id`) und `kartenX`/`kartenY` als Schnappschuss bei der
 Auswahl. Alle Felder gab es schon; am Heldendokument hat sich nichts geändert.
-Der Standort im Zustand bleibt Text. Eine gespeicherte Verbindung zwischen
+Der Standort im Zustand ist Text, seit 23.11.2026 mit Verweis
+(`HeroState.standortOrtId`, siehe unten). Eine gespeicherte Verbindung zwischen
 Stationen (Anreise mit Weglänge und Reisetagen) ist zurückgestellt, bis die
 grafische Darstellung ansteht; bis dahin gilt die Luftlinie.
 
@@ -250,9 +251,37 @@ eigenen Kacheln lit. f).
 `test/ui2/spielen/karto_reiseroute_test.dart`,
 `test/ui2/spielen/karto_ort_feld_test.dart`.
 
-**Offen.** Verweis am Standort (`HeroState`). Erledigt: Anreise zwischen
-Stationen (B2), grafische Darstellung (C2) und die Sichtprüfung im Web gegen
-die echte Schnittstelle (22.11.2026).
+**Erledigt.** Anreise zwischen Stationen (B2), grafische Darstellung (C2),
+Sichtprüfung im Web gegen die echte Schnittstelle (22.11.2026) und der
+Verweis am Standort (23.11.2026, nächster Abschnitt).
+
+### Verweis am Standort (umgesetzt 23.11.2026)
+
+**Ziel.** Gleichnamige Orte („Kronling“, Klammerzusätze bei Avesmaps) am
+Standort unterscheiden und den Standort ohne Namensabgleich auf die Karte,
+in den Reiseplaner und in neue Stationen tragen.
+
+- **Modell:** additives Feld `HeroState.standortOrtId` (Avesmaps-Kennung).
+  Nur bei Belegung und mit Standort im JSON, Bestandszustände behalten ihren
+  Hash. `copyWith` löst den Verweis, wenn sich der Text ohne neuen Verweis
+  ändert. Sync: eigenes Feld oberster Ebene, normale Dreiwege-Zusammenführung.
+- **Schreiben** (`standortSetzen(ortId:)`, `reiseZustandSetzen(standortOrtId:)`,
+  Regel `standortOrtIdNachWechsel`): Eine ausdrückliche Wahl gilt (Vorschlag
+  der Ortseingabe, „Standort hierher“, Ankunft einer Reise), sonst ein
+  eindeutiger Name; ein gleichbleibender Name ohne Verweis behält den alten,
+  ein neuer Name und „Entfernen“ lösen ihn. Die Rast beim Anhalten hat keinen
+  Verweis. Die Station beim Ortswechsel übernimmt die Wahl (`gewaehlt`), eine
+  neue Station mit dem vorbelegten Standort dessen Verweis
+  (`standortVerweisFuer`).
+- **Lesen:** `ortZumStandort(ortId:)` und `eintragZumVerweis` nehmen den
+  Verweis nur, solange er zum Namen passt (Name oder voller Wiki-Seitenname).
+  Ältere App-Fassungen ändern den Text, ohne das Feld zu kennen; ihr alter
+  Verweis bleibt in `unbekannteFelder` erhalten, wird aber übergangen.
+- **Tests:** `hero_state_model_test.dart` (Gruppe `standortOrtId`),
+  `standort_rules_test.dart`, `standort_lage_rules_test.dart`,
+  `reiseroute_rules_test.dart`, `karto_standort_bruecke_test.dart`,
+  `karto_standort_test.dart`, `karto_reiseroute_test.dart`,
+  `karto_reiseplaner_test.dart`, `karto_karte_test.dart`.
 
 ### Automatische Station beim Standortwechsel (umgesetzt 16.11.2026)
 
@@ -296,8 +325,14 @@ Rücklink-Regel der Seite: Seitenname hinter `/wiki/` aus `wiki.url` als
 - Datenschutzerklärung Abschnitt 6 und Verzeichnis der Verarbeitungstätigkeiten
   nennen die Kachel und den Abruf der Ortsdetails.
 
-**Offen.** Rücklinks der Reiseroute über die Ortsdetails (Sichtprüfung im
-Web erledigt, 22.11.2026). Die Lageskizze ist inzwischen ein Ausschnitt der Aventurien-Karte (siehe
+**Rücklinks über die Ortsdetails (umgesetzt 23.11.2026).** Verknüpfte
+Stationen und ein verknüpfter Standort öffnen genau ihren Ort
+(`ortsKartenLink`): mit geladenen Ortsdetails `?siedlung=<Seitenname aus
+wiki.url>`, sonst `?place=<Kennung>` (geprüft: avesmaps.de öffnet so die
+Infotafel des Orts). Listen laden dafür keine Details nach
+(`kartoGeladeneWikiUrl`); die Infotafel einer verknüpften Station in der
+Karte lädt sie beim Tippen (eine Anfrage je Nutzeraktion) und zeigt Gebiete
+und „Auf Avesmaps“. Orte ohne Verweis behalten den Link über den Namen. Die Lageskizze ist inzwischen ein Ausschnitt der Aventurien-Karte (siehe
 unten).
 
 ### Aventurien-Karte im Avesmaps-Stil (umgesetzt 13.11.2026)

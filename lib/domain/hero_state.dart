@@ -31,6 +31,7 @@ class HeroState {
     this.buchungen = const <ZustandsBuchung>[],
     this.begleiterZustaende = const <String, BegleiterZustand>{},
     this.standort = '',
+    this.standortOrtId = '',
     this.zustandsmarker = const <ZustandsMarker>[],
     this.unterwegs,
     this.lastModified,
@@ -54,6 +55,7 @@ class HeroState {
       buchungen = const <ZustandsBuchung>[],
       begleiterZustaende = const <String, BegleiterZustand>{},
       standort = '',
+      standortOrtId = '',
       zustandsmarker = const <ZustandsMarker>[],
       unterwegs = null,
       unbekannteFelder = const <String, Object?>{};
@@ -110,6 +112,18 @@ class HeroState {
   /// Inhalts-Hash behalten.
   final String standort;
 
+  /// Avesmaps-Kennung des Orts, auf den [standort] verweist; leer ohne
+  /// Verweis.
+  ///
+  /// Gesetzt, wenn der Standort aus dem Ortsverzeichnis gewählt wurde (oder
+  /// der Name eindeutig ist), damit gleichnamige Orte unterscheidbar bleiben.
+  /// Der Verweis gehört zum Text: Ändert [copyWith] den Standort ohne neuen
+  /// Verweis, entfällt er. Leser prüfen ihn trotzdem gegen den Namen
+  /// (`eintragZumVerweis`), weil ältere App-Fassungen den Text ändern, ohne
+  /// das Feld zu kennen. Nur bei Belegung (und mit Standort) im JSON, damit
+  /// Bestandszustände ihren Inhalts-Hash behalten.
+  final String standortOrtId;
+
   /// Freie Zustandsmarker (SPIEL-03), etwa „Betäubung“ oder „Furcht“, mit
   /// optionaler Dauer in Runden.
   ///
@@ -154,6 +168,7 @@ class HeroState {
     'buchungen',
     'begleiterZustaende',
     'standort',
+    'standortOrtId',
     'zustandsmarker',
     'unterwegs',
     'lastModified',
@@ -175,6 +190,7 @@ class HeroState {
     List<ZustandsBuchung>? buchungen,
     Map<String, BegleiterZustand>? begleiterZustaende,
     String? standort,
+    String? standortOrtId,
     List<ZustandsMarker>? zustandsmarker,
     Object? unterwegs = keepFieldValue,
     DateTime? lastModified,
@@ -195,6 +211,11 @@ class HeroState {
       buchungen: buchungen ?? this.buchungen,
       begleiterZustaende: begleiterZustaende ?? this.begleiterZustaende,
       standort: standort ?? this.standort,
+      standortOrtId:
+          standortOrtId ??
+          (standort != null && standort.trim() != this.standort.trim()
+              ? ''
+              : this.standortOrtId),
       zustandsmarker: zustandsmarker ?? this.zustandsmarker,
       unterwegs: identical(unterwegs, keepFieldValue)
           ? this.unterwegs
@@ -268,6 +289,8 @@ class HeroState {
             eintrag.key: eintrag.value.toJson(),
         },
       if (standort.trim().isNotEmpty) 'standort': standort,
+      if (standort.trim().isNotEmpty && standortOrtId.isNotEmpty)
+        'standortOrtId': standortOrtId,
       if (zustandsmarker.isNotEmpty)
         'zustandsmarker': zustandsmarker
             .map((marker) => marker.toJson())
@@ -333,6 +356,9 @@ class HeroState {
                   ),
             }),
       standort: json['standort'] is String ? json['standort'] as String : '',
+      standortOrtId: json['standortOrtId'] is String
+          ? json['standortOrtId'] as String
+          : '',
       zustandsmarker: rawMarker == null
           ? const <ZustandsMarker>[]
           : ZustandsMarker.listeAusJson(rawMarker),

@@ -54,6 +54,7 @@ class KartoStandortKachel extends ConsumerWidget {
   const KartoStandortKachel({
     super.key,
     required this.standort,
+    this.standortOrtId = '',
     required this.onSpeichern,
     this.oeffneLink = oeffneExtern,
     this.heroId,
@@ -64,8 +65,12 @@ class KartoStandortKachel extends ConsumerWidget {
   /// Gespeicherter Standort; leer, solange keiner festgehalten ist.
   final String standort;
 
-  /// Speichert den bereinigten Standort; ein leerer Text entfernt ihn.
-  final Future<void> Function(String standort) onSpeichern;
+  /// Gespeicherter Verweis auf den Avesmaps-Ort (`HeroState.standortOrtId`);
+  /// unterscheidet gleichnamige Orte, solange er zum Namen passt.
+  final String standortOrtId;
+
+  /// Speichert den neuen Standort; ein leerer Text entfernt ihn.
+  final KartoStandortSetzer onSpeichern;
 
   /// Öffnet Links außerhalb der App; in Tests ersetzbar.
   final KartoLinkOeffner oeffneLink;
@@ -88,7 +93,12 @@ class KartoStandortKachel extends ConsumerWidget {
     final angefordert = ref.watch(avesmapsOrteAnforderungProvider);
     final abrufbar = ref.watch(avesmapsClientProvider) != null;
     final eintrag = findeOrt(name, verzeichnis);
-    final ort = ortZumStandort(name, verzeichnis, avesmaps);
+    final ort = ortZumStandort(
+      name,
+      verzeichnis,
+      avesmaps,
+      ortId: standortOrtId,
+    );
     final details = ort == null
         ? null
         : ref.watch(avesmapsOrtsdetailsProvider(ort.id)).asData?.value;

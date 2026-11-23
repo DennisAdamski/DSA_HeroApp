@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reisezeit_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseweg_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/standort_lage_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
 import 'package:dsa_heldenverwaltung/state/avesmaps_routen_providers.dart';
@@ -20,6 +21,7 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reise_tabelle.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseroute_schreiben.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_standort.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
@@ -483,7 +485,7 @@ class KartoReiseZeitleiste extends StatelessWidget {
   }
 }
 
-class _ZeitleistenEintrag extends StatelessWidget {
+class _ZeitleistenEintrag extends ConsumerWidget {
   const _ZeitleistenEintrag({
     required this.etappe,
     required this.erster,
@@ -509,7 +511,7 @@ class _ZeitleistenEintrag extends StatelessWidget {
   static const double _marke = 26;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final karto = context.karto;
     final texte = Theme.of(context).textTheme;
     final station = etappe.station;
@@ -517,8 +519,15 @@ class _ZeitleistenEintrag extends StatelessWidget {
     final notiz = station.notiz.trim();
     final datum = reiseStationDatumText(station);
     final abstand = erster ? null : reiseEtappenText(etappe, weg: weg);
-    final link = mitKartenlink && kartenlinkSinnvoll(ort, orte)
-        ? avesmapsLink(ort)
+    // Verknüpfte Stationen öffnen genau ihren Ort: mit Seitennamen, wenn die
+    // Ortsdetails schon geladen sind, sonst über die Kennung.
+    final link = mitKartenlink
+        ? ortsKartenLink(
+            name: ort,
+            ortId: station.ortId,
+            wikiUrl: kartoGeladeneWikiUrl(ref, station.ortId),
+            orte: orte,
+          )
         : null;
     final wikiLink = mitKartenlink ? wikiAventuricaLink(ort, orte) : null;
 
@@ -556,6 +565,7 @@ class _ZeitleistenEintrag extends StatelessWidget {
               ),
               if (link != null)
                 IconButton(
+                  key: ValueKey<String>('karto-reise-karte-${station.id}'),
                   tooltip: 'Auf Avesmaps zeigen',
                   visualDensity: VisualDensity.compact,
                   icon: const Icon(Icons.open_in_new, size: 18),

@@ -185,6 +185,7 @@ void main() {
       String alt = 'Gareth',
       String neu = 'Havena',
       List<OrtEintrag> orte = const <OrtEintrag>[],
+      OrtEintrag? gewaehlt,
     }) => reiseStationFuerStandortwechsel(
       held: held,
       alterStandort: alt,
@@ -192,6 +193,7 @@ void main() {
       id: 'neu',
       jetzt: jetzt,
       orte: orte,
+      gewaehlt: gewaehlt,
     );
 
     test('legt eine Station mit Datum und laufendem Abenteuer an', () {
@@ -248,6 +250,32 @@ void main() {
       )!.reiseStationen.single;
       expect(ohne.ortId, isEmpty);
       expect(ohne.kartenX, isNull);
+    });
+
+    test('ein gewählter Ort verknüpft auch gleichnamige Orte', () {
+      OrtEintrag kronling(String id, double x) => OrtEintrag(
+        name: 'Kronling',
+        art: OrtArt.siedlung,
+        ortId: id,
+        kartenX: x,
+        kartenY: 1,
+      );
+      final orte = [kronling('k1', 1), kronling('k2', 2)];
+      final ohneWahl = wechsel(
+        _held(),
+        neu: 'Kronling',
+        orte: orte,
+      )!.reiseStationen.single;
+      expect(ohneWahl.ortId, isEmpty, reason: 'der Name allein ist mehrdeutig');
+
+      final mitWahl = wechsel(
+        _held(),
+        neu: 'Kronling',
+        orte: orte,
+        gewaehlt: orte.last,
+      )!.reiseStationen.single;
+      expect(mitWahl.ortId, 'k2');
+      expect(mitWahl.kartenX, 2);
     });
   });
 

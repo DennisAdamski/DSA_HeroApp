@@ -161,7 +161,8 @@ Future<_Aufbau> _zeige(
               dicht: false,
               child: KartoStandortKachel(
                 standort: standort,
-                onSpeichern: (neu) async => aufbau.gespeichert.add(neu),
+                onSpeichern: (neu) async =>
+                    aufbau.gespeichert.add(neu.standort),
                 oeffneLink: (uri) async {
                   aufbau.geoeffnet.add(uri);
                   return true;

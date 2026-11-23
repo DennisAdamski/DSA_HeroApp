@@ -334,5 +334,129 @@ void main() {
         'h',
       );
     });
+
+    test('die Auswahl gilt auch über ihren vollen Wiki-Seitennamen', () {
+      final auweiler = OrtEintrag(
+        name: 'Auweiler',
+        art: OrtArt.siedlung,
+        seite: 'Auweiler (Darpatien)',
+        ortId: 'a',
+        kartenX: 1,
+        kartenY: 2,
+      );
+      expect(
+        ortsVerweisFuer(
+          'Auweiler (Darpatien)',
+          const <OrtEintrag>[],
+          gewaehlt: auweiler,
+        )?.ortId,
+        'a',
+      );
+    });
+  });
+
+  // Zwei gleichnamige Orte und ein Wiki-Eintrag mit Klammerzusatz bei
+  // Avesmaps (verbunden über den vollen Seitennamen).
+  final verweisOrte = verbindeOrtsverzeichnisse(
+    <OrtEintrag>[
+      OrtEintrag(
+        name: 'Auweiler',
+        art: OrtArt.siedlung,
+        seite: 'Auweiler (Darpatien)',
+      ),
+    ],
+    const <AvesmapsOrt>[
+      AvesmapsOrt(id: 'k1', name: 'Kronling', x: 1, y: 2),
+      AvesmapsOrt(id: 'k2', name: 'Kronling', x: 3, y: 4),
+      AvesmapsOrt(id: 'au', name: 'Auweiler (Darpatien)', x: 5, y: 6),
+    ],
+  );
+
+  group('eintragZumVerweis', () {
+    test('findet den Ort, solange der Name passt', () {
+      expect(eintragZumVerweis(' kronling ', 'k2', verweisOrte)?.ortId, 'k2');
+      expect(eintragZumVerweis('Auweiler', 'au', verweisOrte)?.ortId, 'au');
+      expect(
+        eintragZumVerweis('Auweiler (Darpatien)', 'au', verweisOrte)?.ortId,
+        'au',
+        reason: 'der Avesmaps-Name ist der volle Wiki-Seitenname',
+      );
+    });
+
+    test('ein Verweis, der nicht zum Namen passt, gilt nicht', () {
+      expect(eintragZumVerweis('Gareth', 'k2', verweisOrte), isNull);
+      expect(eintragZumVerweis('Kronling', 'fremd', verweisOrte), isNull);
+      expect(eintragZumVerweis('Kronling', '', verweisOrte), isNull);
+      expect(eintragZumVerweis('', 'k2', verweisOrte), isNull);
+      expect(eintragZumVerweis('Kronling', 'k2', const []), isNull);
+    });
+  });
+
+  group('standortOrtIdNachWechsel', () {
+    final k2 = verweisOrte.firstWhere((o) => o.ortId == 'k2');
+
+    String nach({
+      String alt = 'Gareth',
+      String altId = 'g',
+      required String neu,
+      OrtEintrag? verweis,
+    }) => standortOrtIdNachWechsel(
+      alterStandort: alt,
+      alteOrtId: altId,
+      neuerStandort: neu,
+      verweis: verweis,
+    );
+
+    test('der Verweis der Eingabe gilt vor allem anderen', () {
+      expect(nach(neu: 'Kronling', verweis: k2), 'k2');
+      expect(
+        nach(alt: 'Kronling', altId: 'k1', neu: 'Kronling', verweis: k2),
+        'k2',
+      );
+    });
+
+    test('ohne Verweis bleibt der alte bei gleichem Namen', () {
+      expect(nach(neu: ' gareth '), 'g');
+    });
+
+    test('ein neuer Name ohne Verweis und ein leerer Standort lösen ihn', () {
+      expect(nach(neu: 'Havena'), '');
+      expect(nach(neu: '   '), '');
+      expect(nach(neu: '', verweis: k2), '');
+    });
+  });
+
+  group('standortVerweisFuer', () {
+    test('ein Ort gleichen Namens übernimmt den Verweis des Standorts', () {
+      final verweis = standortVerweisFuer(
+        'kronling',
+        standort: 'Kronling',
+        standortOrtId: 'k2',
+        orte: verweisOrte,
+      );
+      expect(verweis?.ortId, 'k2');
+      expect(verweis?.kartenX, 3);
+    });
+
+    test('ein anderer Name oder ein ungültiger Verweis übernimmt nichts', () {
+      expect(
+        standortVerweisFuer(
+          'Gareth',
+          standort: 'Kronling',
+          standortOrtId: 'k2',
+          orte: verweisOrte,
+        ),
+        isNull,
+      );
+      expect(
+        standortVerweisFuer(
+          'Kronling',
+          standort: 'Kronling',
+          standortOrtId: '',
+          orte: verweisOrte,
+        ),
+        isNull,
+      );
+    });
   });
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
@@ -10,7 +11,9 @@ void main() {
   Future<void> zeige(
     WidgetTester tester, {
     String standort = '',
+    String standortOrtId = '',
     required List<String> gespeichert,
+    List<KartoStandortWahl>? wahlen,
     List<Uri>? geoeffnet,
     bool oeffnenGelingt = true,
     List<OrtEintrag> orte = const <OrtEintrag>[],
@@ -20,21 +23,27 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
-      MaterialApp(
-        theme: buildKartoTheme(
-          brightness: Brightness.light,
-          centerAppBarTitle: false,
-        ),
-        home: Scaffold(
-          body: SingleChildScrollView(
-            child: KartoStandortZeile(
-              standort: standort,
-              orte: orte,
-              onSpeichern: (text) async => gespeichert.add(text),
-              oeffneLink: (uri) async {
-                geoeffnet?.add(uri);
-                return oeffnenGelingt;
-              },
+      ProviderScope(
+        child: MaterialApp(
+          theme: buildKartoTheme(
+            brightness: Brightness.light,
+            centerAppBarTitle: false,
+          ),
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: KartoStandortZeile(
+                standort: standort,
+                standortOrtId: standortOrtId,
+                orte: orte,
+                onSpeichern: (wahl) async {
+                  gespeichert.add(wahl.standort);
+                  wahlen?.add(wahl);
+                },
+                oeffneLink: (uri) async {
+                  geoeffnet?.add(uri);
+                  return oeffnenGelingt;
+                },
+              ),
             ),
           ),
         ),
@@ -220,5 +229,115 @@ void main() {
 
     expect(schluessel('karto-spiel-standort-wiki'), findsNothing);
     expect(schluessel('karto-spiel-standort-karte'), findsOneWidget);
+  });
+
+  group('Verweis am Standort', () {
+    // Zwei gleichnamige Orte: nur die Auswahl unterscheidet sie.
+    final doppelt = <OrtEintrag>[
+      OrtEintrag(
+        name: 'Kronling',
+        art: OrtArt.siedlung,
+        region: 'Garetien',
+        ortId: 'kronling-garetien',
+        kartenX: 520,
+        kartenY: 510,
+      ),
+      OrtEintrag(
+        name: 'Kronling',
+        art: OrtArt.siedlung,
+        region: 'Weiden',
+        ortId: 'kronling-weiden',
+        kartenX: 480,
+        kartenY: 640,
+      ),
+    ];
+
+    testWidgets('die Auswahl liefert die Kennung mit', (tester) async {
+      final wahlen = <KartoStandortWahl>[];
+      await zeige(tester, gespeichert: [], wahlen: wahlen, orte: doppelt);
+
+      await tester.tap(schluessel('karto-spiel-standort-aendern'));
+      await tester.pumpAndSettle();
+      await tester.enterText(schluessel('karto-spiel-standort-feld'), 'kron');
+      await tester.pumpAndSettle();
+      await tester.tap(schluessel('karto-ort-vorschlag-1'));
+      await tester.pumpAndSettle();
+      await tester.tap(schluessel('karto-spiel-standort-speichern'));
+      await tester.pumpAndSettle();
+
+      expect(wahlen, hasLength(1));
+      expect(wahlen.single.standort, 'Kronling');
+      expect(<String>[
+        'kronling-garetien',
+        'kronling-weiden',
+      ], contains(wahlen.single.ortId));
+    });
+
+    testWidgets('ein danach geänderter Text verliert die Kennung', (
+      tester,
+    ) async {
+      final wahlen = <KartoStandortWahl>[];
+      await zeige(tester, gespeichert: [], wahlen: wahlen, orte: doppelt);
+
+      await tester.tap(schluessel('karto-spiel-standort-aendern'));
+      await tester.pumpAndSettle();
+      await tester.enterText(schluessel('karto-spiel-standort-feld'), 'kron');
+      await tester.pumpAndSettle();
+      await tester.tap(schluessel('karto-ort-vorschlag-0'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        schluessel('karto-spiel-standort-feld'),
+        'Kronling am Fluss',
+      );
+      await tester.tap(schluessel('karto-spiel-standort-speichern'));
+      await tester.pumpAndSettle();
+
+      expect(wahlen.single, const KartoStandortWahl('Kronling am Fluss'));
+    });
+
+    testWidgets('der Kartenlink öffnet genau den verknüpften Ort', (
+      tester,
+    ) async {
+      final geoeffnet = <Uri>[];
+      await zeige(
+        tester,
+        standort: 'Kronling',
+        standortOrtId: 'kronling-weiden',
+        gespeichert: [],
+        geoeffnet: geoeffnet,
+        orte: doppelt,
+      );
+
+      await tester.tap(schluessel('karto-spiel-standort-karte'));
+      await tester.pump();
+
+      expect(
+        geoeffnet.single.toString(),
+        'https://avesmaps.de/?place=kronling-weiden',
+      );
+    });
+
+    testWidgets('ein Verweis, der nicht zum Namen passt, gilt nicht', (
+      tester,
+    ) async {
+      // Etwa von einer älteren App, die den Text ohne den Verweis änderte.
+      final geoeffnet = <Uri>[];
+      await zeige(
+        tester,
+        standort: 'Gareth',
+        standortOrtId: 'kronling-weiden',
+        gespeichert: [],
+        geoeffnet: geoeffnet,
+        orte: <OrtEintrag>[...doppelt, ...verzeichnis],
+      );
+
+      await tester.tap(schluessel('karto-spiel-standort-karte'));
+      await tester.pump();
+
+      expect(
+        geoeffnet.single.toString(),
+        'https://avesmaps.de/?siedlung=Gareth',
+      );
+    });
   });
 }

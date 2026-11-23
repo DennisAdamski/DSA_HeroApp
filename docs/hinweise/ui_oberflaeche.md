@@ -352,6 +352,17 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Eingabedialog ist `zeigeStandortDialog`; gespeichert wird über
   `standortSetzen`. Tests überschreiben `avesmapsOrteSpeicherProvider` statt
   den Heldenspeicher zu öffnen.
+  **Verweis am Standort (23.11.2026):** `zeigeStandortDialog` liefert eine
+  `KartoStandortWahl` (Text plus Kennung eines gewählten Vorschlags, solange
+  sein Name im Feld steht); „Standort hierher“ der Karte und die Ankunft einer
+  Reise bringen die Kennung ihres Orts mit. Alle Standort-Schreiber nehmen
+  `KartoStandortSetzer` bzw. `reiseZustandSetzen(standortOrtId:)`. Leser
+  (`ortZumStandort(ortId:)`, `eintragZumVerweis`) prüfen den Verweis gegen den
+  Namen. Rücklinks verknüpfter Orte (`ortsKartenLink`) öffnen `?place=<id>`
+  bzw. mit geladenen Ortsdetails `?siedlung=<Seitenname>`;
+  `kartoGeladeneWikiUrl` liest Details nur, wenn sie schon geladen sind, und
+  löst keinen Abruf aus. Die Infotafel einer verknüpften Station lädt ihre
+  Details (eine Anfrage je Tipp).
   **Reiseplaner (21.11.2026):** „Reise planen“ in der Standort-Kachel und
   „Hierher reisen“ in der Karten-Infotafel öffnen `KartoReiseplaner`
   (`ui2/spielen/karto_reiseplaner.dart`); die Abläufe (Ankommen,

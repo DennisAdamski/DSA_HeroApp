@@ -278,7 +278,9 @@ bool _gleicherOrt(String a, String b) =>
 /// wenn sich der Ort nicht ändert oder wenn die zeitlich letzte Station schon
 /// diesen Ort trägt (zweiter Schutz gegen doppelte Einträge). Datum und
 /// Abenteuer kommen aus [reiseStationVorschlag]; den Kartenverweis (`ortId`,
-/// Position) trägt die Station nur, wenn [orte] den Ort eindeutig kennt.
+/// Position) trägt die Station, wenn der Standort ausdrücklich gewählt wurde
+/// ([gewaehlt], der Aufrufer verbürgt, dass er zum Namen gehört) oder [orte]
+/// den Ort eindeutig kennt.
 HeroSheet? reiseStationFuerStandortwechsel({
   required HeroSheet held,
   required String alterStandort,
@@ -286,13 +288,16 @@ HeroSheet? reiseStationFuerStandortwechsel({
   required String id,
   required DateTime jetzt,
   List<OrtEintrag> orte = const <OrtEintrag>[],
+  OrtEintrag? gewaehlt,
 }) {
   final neu = bereinigeStandort(neuerStandort);
   if (neu.isEmpty || _gleicherOrt(alterStandort, neu)) return null;
   final sortiert = sortiereReiseStationen(held.reiseStationen);
   if (sortiert.isNotEmpty && _gleicherOrt(sortiert.last.ort, neu)) return null;
   final vorschlag = reiseStationVorschlag(held: held, standort: neu, id: id);
-  final verweis = ortsVerweisFuer(neu, orte);
+  final verweis = gewaehlt != null && gewaehlt.hatKartenposition
+      ? gewaehlt
+      : ortsVerweisFuer(neu, orte);
   final station = vorschlag.copyWith(
     ortId: verweis?.ortId,
     kartenX: verweis?.kartenX,

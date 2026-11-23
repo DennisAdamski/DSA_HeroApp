@@ -6,6 +6,8 @@ import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseweg_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reisezeit_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
+import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseroute_dialog.dart';
@@ -46,11 +48,21 @@ mixin KartoReiserouteSchreiben<T extends ConsumerStatefulWidget>
       ),
     );
     if (eingabe == null || eingabe.loeschen) return;
+    // Bleibt der vorbelegte Standort stehen, gilt sein Verweis, auch wenn der
+    // Name allein mehrdeutig ist.
+    final standortVerweis = eingabe.hatOrtsVerweis
+        ? null
+        : standortVerweisFuer(
+            eingabe.ort,
+            standort: werte.state.standort,
+            standortOrtId: werte.state.standortOrtId,
+            orte: ref.read(ortsverzeichnisProvider),
+          );
     final station = vorschlag.copyWith(
       ort: eingabe.ort,
-      ortId: eingabe.ortId,
-      kartenX: eingabe.kartenX,
-      kartenY: eingabe.kartenY,
+      ortId: standortVerweis?.ortId ?? eingabe.ortId,
+      kartenX: standortVerweis?.kartenX ?? eingabe.kartenX,
+      kartenY: standortVerweis?.kartenY ?? eingabe.kartenY,
       datum: eingabe.datum,
       notiz: eingabe.notiz,
       adventureId: eingabe.adventureId,

@@ -22,6 +22,7 @@ import '../../test_support/fake_repository.dart';
 
 import 'package:dsa_heldenverwaltung/ui2/karte/karto_karte.dart';
 import 'package:dsa_heldenverwaltung/ui2/karte/karto_karten_blatt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_standort.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/standort/karto_standort_kachel.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
@@ -293,6 +294,32 @@ void main() {
       expect(_k('karto-karte-info-name'), findsNothing);
     });
 
+    testWidgets('eine verknüpfte Station öffnet genau ihren Ort', (
+      tester,
+    ) async {
+      final geoeffnet = <Uri>[];
+      await zeige(
+        tester,
+        start: (heroId) => KartoKartenBlatt(
+          heroId: heroId,
+          oeffneLink: (uri) async {
+            geoeffnet.add(uri);
+            return true;
+          },
+        ),
+      );
+
+      await tippeStation(tester, 's1');
+      await tester.tap(_k('karto-karte-info-avesmaps'));
+      await tester.pumpAndSettle();
+
+      // Ohne geladene Ortsdetails über die Kennung, nicht über den Namen.
+      expect(
+        geoeffnet.single.toString(),
+        'https://avesmaps.de/?place=$_garethId',
+      );
+    });
+
     testWidgets('während einer Planung ist Bearbeiten gesperrt', (
       tester,
     ) async {
@@ -309,13 +336,13 @@ void main() {
     });
 
     testWidgets('Standort hierher setzt den getroffenen Ort', (tester) async {
-      final gesetzt = <String>[];
+      final gesetzt = <KartoStandortWahl>[];
       await zeige(
         tester,
         start: (heroId) => KartoKartenBlatt(
           heroId: heroId,
           mitRoute: false,
-          onStandortSetzen: (standort) async => gesetzt.add(standort),
+          onStandortSetzen: (wahl) async => gesetzt.add(wahl),
         ),
       );
       expect(
@@ -327,7 +354,10 @@ void main() {
       expect(tester.widget<Text>(_k('karto-karte-info-name')).data, 'Gareth');
       await tester.tap(_k('karto-karte-info-hierher'));
       await tester.pumpAndSettle();
-      expect(gesetzt, <String>['Gareth']);
+      // Der Ort der Karte bringt seine Kennung mit.
+      expect(gesetzt, <KartoStandortWahl>[
+        const KartoStandortWahl('Gareth', ortId: _garethId),
+      ]);
       expect(_k('karto-karte-info-name'), findsNothing);
     });
 
@@ -339,7 +369,11 @@ void main() {
         start: (heroId) => KartoKartenBlatt(
           heroId: heroId,
           mitRoute: false,
-          onReiseZustand: ({required unterwegs, standort}) async => true,
+          onReiseZustand: ({
+            required unterwegs,
+            standort,
+            standortOrtId = '',
+          }) async => true,
         ),
       );
       await tippeStation(tester, 's1');

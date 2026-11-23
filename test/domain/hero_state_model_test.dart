@@ -421,4 +421,73 @@ void main() {
       expect(geladen.unbekannteFelder.keys, ['zukunft']);
     });
   });
+
+  group('standortOrtId', () {
+    const leer = HeroState(
+      currentLep: 12,
+      currentAsp: 7,
+      currentKap: 0,
+      currentAu: 16,
+    );
+
+    test('ohne Verweis fehlt der Schlüssel und der Hash bleibt', () {
+      final mit = leer.copyWith(standort: 'Gareth');
+      expect(mit.standortOrtId, '');
+      expect(mit.toJson().containsKey('standortOrtId'), isFalse);
+    });
+
+    test('Roundtrip mit Verweis', () {
+      final mit = leer.copyWith(standort: 'Gareth', standortOrtId: 'gareth-id');
+      final json = mit.toJson();
+      expect(json['standortOrtId'], 'gareth-id');
+      expect(HeroState.fromJson(json).standortOrtId, 'gareth-id');
+      expect(
+        heroStateContentHash(mit),
+        isNot(heroStateContentHash(leer.copyWith(standort: 'Gareth'))),
+      );
+    });
+
+    test('ohne Standort wird kein Verweis geschrieben', () {
+      final nur = leer.copyWith(standortOrtId: 'gareth-id');
+      expect(nur.toJson().containsKey('standortOrtId'), isFalse);
+      expect(heroStateContentHash(nur), heroStateContentHash(leer));
+    });
+
+    test('ein neuer Text ohne neuen Verweis löst den alten', () {
+      final mit = leer.copyWith(standort: 'Gareth', standortOrtId: 'gareth-id');
+      expect(mit.copyWith(standort: 'Havena').standortOrtId, '');
+      expect(mit.copyWith(standort: '').standortOrtId, '');
+      expect(
+        mit.copyWith(standort: ' Gareth ').standortOrtId,
+        'gareth-id',
+        reason: 'derselbe Text behält den Verweis',
+      );
+      expect(mit.copyWith(currentLep: 3).standortOrtId, 'gareth-id');
+      expect(
+        mit
+            .copyWith(standort: 'Havena', standortOrtId: 'havena-id')
+            .standortOrtId,
+        'havena-id',
+      );
+    });
+
+    test('ein Wert falschen Typs wird tolerant als leer gelesen', () {
+      final geladen = HeroState.fromJson(<String, dynamic>{
+        ...leer.toJson(),
+        'standort': 'Gareth',
+        'standortOrtId': 7,
+      });
+      expect(geladen.standortOrtId, '');
+    });
+
+    test('der Schlüssel ist bekannt und landet nicht in unbekannteFelder', () {
+      expect(HeroState.jsonSchluessel, contains('standortOrtId'));
+      final geladen = HeroState.fromJson(<String, dynamic>{
+        ...leer.toJson(),
+        'standort': 'Gareth',
+        'standortOrtId': 'gareth-id',
+      });
+      expect(geladen.unbekannteFelder, isEmpty);
+    });
+  });
 }

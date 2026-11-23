@@ -358,32 +358,36 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
     KartoSpielkachelArt.reiseroute => KartoReiserouteKachel(
       heroId: heroId,
       stationen: werte.hero.reiseStationen,
-      onStandortSetzen: (standort) => bestand.standortSetzen(
+      onStandortSetzen: (wahl) => bestand.standortSetzen(
         context: context,
         ref: ref,
         heroId: heroId,
-        standort: standort,
+        standort: wahl.standort,
+        ortId: wahl.ortId,
       ),
     ),
     // Schreibt den Standort über denselben Zustandsweg wie die Standortzeile
     // der Abenteuer-Kachel; Reisen schreiben Reise und Standort gemeinsam.
     KartoSpielkachelArt.standort => KartoStandortKachel(
       standort: werte.state.standort,
+      standortOrtId: werte.state.standortOrtId,
       heroId: heroId,
       unterwegs: werte.state.unterwegs,
-      onSpeichern: (standort) => bestand.standortSetzen(
+      onSpeichern: (wahl) => bestand.standortSetzen(
         context: context,
         ref: ref,
         heroId: heroId,
-        standort: standort,
+        standort: wahl.standort,
+        ortId: wahl.ortId,
       ),
-      onReiseZustand: ({required unterwegs, standort}) =>
+      onReiseZustand: ({required unterwegs, standort, standortOrtId = ''}) =>
           bestand.reiseZustandSetzen(
             context: context,
             ref: ref,
             heroId: heroId,
             unterwegs: unterwegs,
             standort: standort,
+            standortOrtId: standortOrtId,
           ),
     ),
     // Schreibt nichts am Helden; gewürfelt wird über die Gefechtsbrücke, die
@@ -733,14 +737,16 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
     heroId: heroId,
     abenteuer: laufendesAbenteuer(werte.hero),
     standort: werte.state.standort,
+    standortOrtId: werte.state.standortOrtId,
     sortierung: leser.watch(abenteuerSortierungProvider),
     // Bewusst ohne `aktion`-Guard: der Dialog schließt sich selbst, und
     // das Speichern läuft über den eingereihten Zustandsweg.
-    onStandortSpeichern: (standort) => bestand.standortSetzen(
+    onStandortSpeichern: (wahl) => bestand.standortSetzen(
       context: context,
       ref: ref,
       heroId: heroId,
-      standort: standort,
+      standort: wahl.standort,
+      ortId: wahl.ortId,
     ),
     onOeffnen: () {
       final abenteuer = laufendesAbenteuer(werte.hero);

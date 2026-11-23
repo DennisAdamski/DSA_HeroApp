@@ -273,8 +273,13 @@ class TestBestand implements KartoBestandsAdapter {
     required WidgetRef ref,
     required String heroId,
     required String standort,
+    String ortId = '',
   }) async {
-    aufrufe.add('standort:$heroId:$standort');
+    aufrufe.add(
+      ortId.isEmpty
+          ? 'standort:$heroId:$standort'
+          : 'standort:$heroId:$standort:$ortId',
+    );
   }
 
   @override
@@ -284,8 +289,12 @@ class TestBestand implements KartoBestandsAdapter {
     required String heroId,
     required HeroUnterwegs? unterwegs,
     String? standort,
+    String standortOrtId = '',
   }) async {
-    aufrufe.add('reise:$heroId:${unterwegs?.ziel ?? '-'}:${standort ?? '-'}');
+    aufrufe.add(
+      'reise:$heroId:${unterwegs?.ziel ?? '-'}:${standort ?? '-'}'
+      '${standortOrtId.isEmpty ? '' : ':$standortOrtId'}',
+    );
     return true;
   }
 
