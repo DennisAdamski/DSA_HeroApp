@@ -7,7 +7,7 @@ Orte, Route. Hintergrund und Entscheidungen stehen in
 [reiseroute_plan.md](reiseroute_plan.md), der Hosting-Teil in
 [web_deployment.md](web_deployment.md) unter „Kartenkacheln“.
 
-## Stand (13.11.2026)
+## Stand (23.11.2026)
 
 - Anfrage in Issue 7 abgeschickt: Serie `modern`, 16384 px, eigenes Hosting,
   nicht-kommerziell.
@@ -26,8 +26,12 @@ Orte, Route. Hintergrund und Entscheidungen stehen in
   Fake-Server getestet).
 - 19.11.2026: Paket `modern` mit 32768 px geladen. Revision `e62449359a41`
   ergibt 5461 Kacheln (z0–6) mit 173 MB. Web-Builds in CI und
-  `tool/deploy_web.ps1` setzen `KARTEN_KACHELN`. Offen sind die Sichtprüfung
-  auf Test und die Abnahme vor `main`.
+  `tool/deploy_web.ps1` setzen `KARTEN_KACHELN`.
+- 22.11.2026: Sichtprüfung auf Test bestanden (Kacheln z0–6, Orte auf den
+  Siedlungen, Nennung mit Logo und Lizenz-URI, Lizenzeintrag, keine CSP- oder
+  CORS-Fehler).
+- 23.11.2026: Mit #286 auf `main` und live auf Produktion. Die schmale Ecke der
+  Standort-Kachel zeigt die Nennung seitdem ungekürzt.
 
 ## Ablauf
 

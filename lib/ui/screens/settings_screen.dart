@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
 import 'package:dsa_heldenverwaltung/data/auth_service.dart';
+import 'package:dsa_heldenverwaltung/data/karte/karten_kachel_manifest.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_tools.dart';
 import 'package:dsa_heldenverwaltung/domain/app_build_info.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_config.dart';

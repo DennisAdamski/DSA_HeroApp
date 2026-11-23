@@ -1370,6 +1370,20 @@ class _LegalSettingsPage extends StatelessWidget {
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: 8),
+              Text(
+                kKartenKachelBasis.isEmpty
+                    ? 'Kartenpositionen und Reisewege stammen von Avesmaps '
+                          '(avesmaps.de).'
+                    : 'Kartenpositionen und Reisewege stammen von Avesmaps '
+                          '(avesmaps.de). Das Kartenbild ist Kartenmaterial '
+                          '© Ulisses Spiele (Originalkarte: Ina Kramer) in der '
+                          'Bearbeitung von Avesmaps (DSA-Fanprojekt), '
+                          'nicht-kommerziell nach der Lizenz des '
+                          'Ulisses-Kartenpakets.',
+                key: const ValueKey<String>('settings-legal-avesmaps'),
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 8),
               TextButton.icon(
                 key: const ValueKey<String>('settings-legal-licenses'),
                 onPressed: () => showLicensePage(
