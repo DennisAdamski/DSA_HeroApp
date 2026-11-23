@@ -10,7 +10,7 @@ und später auf einer Aventurien-Karte.
 | --- | --- | --- |
 | 0 | Anfrage an Avesmaps (Ortsverzeichnis, Kacheln, CORS, Namensnennung) | beantwortet (12.11.2026): Ortsdaten und Route ja, Kacheln nein |
 | 1 | Stationsliste am Helden, Spielkachel „Reiseroute“, Blatt mit Zeitleiste | umgesetzt |
-| 2 | Ortssuche mit Koordinaten, Reisewege, Karte mit Route und Pins | A2, A1, Tabellenansicht, Ortsdetails (D), Standort-Kachel und Aventurien-Karte im Avesmaps-Stil (C2, C3 vorbereitet) umgesetzt (13.11.2026); Kartenbild (C3) auf Test (19.11.2026), Reisewege (B2) umgesetzt (20.11.2026) |
+| 2 | Ortssuche mit Koordinaten, Reisewege, Karte mit Route und Pins | A2, A1, Tabellenansicht, Ortsdetails (D), Standort-Kachel und Aventurien-Karte im Avesmaps-Stil (C2, C3 vorbereitet) umgesetzt (13.11.2026); Reisewege (B2) umgesetzt (20.11.2026), Reiseplaner (B3) umgesetzt (21.11.2026), Kartenbild (C3) live (23.11.2026) |
 
 ## Stufe 1 (umgesetzt)
 
@@ -166,7 +166,7 @@ formatiert nur.
 | --- | --- | --- |
 | C1 Nur Rücklinks | Wie heute, Link je Station; mit D der genaue Seitenname. | Kein Aufwand, keine Karte in der App. |
 | **C2 Routenskizze** | Eigene Zeichnung ohne Kartenbild: Stationen als nummerierte Pins, Verbindung als Luftlinie oder als `linie` aus B2, dazu Metropolen und Großstädte (43 Orte der Liste) als Anhaltspunkte. | **Empfohlen** vor C3. Keine Kartenrechte berührt, keine neue Abhängigkeit, läuft offline. Orientierung bleibt grob. |
-| C3 Eigene Kacheln | Karten-PNG mit Schlüssel einmal laden (lokales Werkzeug unter `tool/`, Schlüssel in gitignorierter Datei), in Kacheln schneiden, selbst hosten (Firebase Hosting oder Storage, damit ohne CORS- und CSP-Thema). Anzeige mit `flutter_map` und `CrsSimple`, Route und Pins darüber. | Volle Karte. Verlangt: Lizenz des Kartenpakets selbst prüfen, Logo, Lizenz-URI und Ulisses-Zeile in der Kartenecke und unter „Rechtliches“, Speicher- und Bandbreitenkosten, erneutes Schneiden bei neuer Kartenfassung. Kacheln nicht ins öffentliche Repository. |
+| C3 Eigene Kacheln (umgesetzt, live seit 23.11.2026) | Karten-PNG mit Schlüssel einmal laden (lokales Werkzeug unter `tool/`, Schlüssel in gitignorierter Datei), in Kacheln schneiden, selbst hosten (Firebase Hosting oder Storage, damit ohne CORS- und CSP-Thema). Anzeige mit `flutter_map` und `CrsSimple`, Route und Pins darüber. | Volle Karte. Verlangt: Lizenz des Kartenpakets selbst prüfen, Logo, Lizenz-URI und Ulisses-Zeile in der Kartenecke und unter „Rechtliches“, Speicher- und Bandbreitenkosten, erneutes Schneiden bei neuer Kartenfassung. Kacheln nicht ins öffentliche Repository. |
 | C4 Übersichtsbild | Ein verkleinertes Kartenbild (etwa 2048 px) als Hintergrund der Skizze aus C2. | Günstiger als C3 und offline, aber dieselben Lizenzpflichten; im App-Paket ausgeliefert heißt im Repository eingecheckt. Erst nach der Lizenzprüfung zu C3 entscheiden. |
 
 ### D · Ortsdetails
@@ -250,9 +250,9 @@ eigenen Kacheln lit. f).
 `test/ui2/spielen/karto_reiseroute_test.dart`,
 `test/ui2/spielen/karto_ort_feld_test.dart`.
 
-**Offen.** Sichtprüfung im Web gegen die echte Schnittstelle; Verweis am
-Standort (`HeroState`), Anreise zwischen Stationen (B2) und die grafische
-Darstellung (C2).
+**Offen.** Verweis am Standort (`HeroState`). Erledigt: Anreise zwischen
+Stationen (B2), grafische Darstellung (C2) und die Sichtprüfung im Web gegen
+die echte Schnittstelle (22.11.2026).
 
 ### Automatische Station beim Standortwechsel (umgesetzt 16.11.2026)
 
@@ -296,8 +296,8 @@ Rücklink-Regel der Seite: Seitenname hinter `/wiki/` aus `wiki.url` als
 - Datenschutzerklärung Abschnitt 6 und Verzeichnis der Verarbeitungstätigkeiten
   nennen die Kachel und den Abruf der Ortsdetails.
 
-**Offen.** Rücklinks der Reiseroute über die Ortsdetails, Sichtprüfung im
-Web. Die Lageskizze ist inzwischen ein Ausschnitt der Aventurien-Karte (siehe
+**Offen.** Rücklinks der Reiseroute über die Ortsdetails (Sichtprüfung im
+Web erledigt, 22.11.2026). Die Lageskizze ist inzwischen ein Ausschnitt der Aventurien-Karte (siehe
 unten).
 
 ### Aventurien-Karte im Avesmaps-Stil (umgesetzt 13.11.2026)
@@ -383,11 +383,14 @@ nicht mehr.
   - Der Knopf erscheint, wenn die Karte aus der Standort-Kachel oder aus dem
     Reiseroute-Blatt der Spielansicht geöffnet wurde.
 
-**Offen.** Zugang ist angefragt (Issue 7), die Site `heldensync-karten`
-angelegt. Sobald der Zugang kommt: schneiden, veröffentlichen,
-`KARTEN_KACHELN` in CI und `tool/deploy_web.ps1` setzen, Sichtprüfung neben
-avesmaps.de. Schritt für Schritt in
-[avesmaps_kartenzugang.md](avesmaps_kartenzugang.md).
+**Kartenbild live (23.11.2026).** Paket `modern` mit 32768 px, Revision
+`e62449359a41` (z0–6) auf `heldensync-karten`; CI und `tool/deploy_web.ps1`
+setzen `KARTEN_KACHELN`. Sichtprüfung auf Test und Produktion: Kacheln aller
+Stufen ohne Haarrisse, Orte auf den Siedlungen, keine CSP- oder CORS-Fehler,
+Lizenzeintrag vorhanden. Seit 23.11.2026 kürzt die schmale Ecke der
+Standort-Kachel die Nennung nicht mehr (vorher fiel „DSA-Fanprojekt“ weg);
+unter „Rechtliches“ steht ein Absatz zu Avesmaps und dem Kartenmaterial.
+Neue Kartenfassungen nach [avesmaps_kartenzugang.md](avesmaps_kartenzugang.md).
 
 ### B2 · Reisewege statt Luftlinie (umgesetzt 20.11.2026)
 
@@ -686,9 +689,9 @@ erfasste Etappen einen Plan haben.
 3. **2c (umgesetzt):** C2 als Aventurien-Karte mit Luftlinie; `linie` aus 2b
    kommt als durchgezogene Linie dazu.
 4. **2d (umgesetzt, 21.11.2026):** B3 Reiseplaner mit Zeitrechnung und „Unterwegs“.
-5. **2e (auf Test, 19.11.2026):** C3 mit Schlüssel. Das Paket ist geladen
+5. **2e (live, 23.11.2026):** C3 mit Schlüssel. Das Paket ist geladen
    (`tool/avesmaps_karte_laden.py`) und geschnitten, die Web-Builds setzen
-   `KARTEN_KACHELN`. Offen sind Sichtprüfung und Abnahme vor `main`.
+   `KARTEN_KACHELN`; abgenommen und mit #286 auf `main`.
 
 ### Rückfragen an Avesmaps
 
