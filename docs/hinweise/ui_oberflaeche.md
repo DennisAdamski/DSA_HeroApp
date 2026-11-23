@@ -399,9 +399,19 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Erschwernis, TaW aus den Bestandteil-Talenten, die Probe über
   `KartoGefechtsAdapter.gefechtsProbe` (schreibt selbst ins Würfelprotokoll,
   kein Import aus `lib/ui`; ohne Gefechtsbrücke bleibt der Knopf gesperrt) und
-  die Ergebnisanzeige. Die Kachel schreibt nichts am Helden; Eingaben und
-  Ergebnis leben nur im Widget, jede Eingabe verwirft das Ergebnis. AsP werden
-  nicht abgebucht. Das Vergrößern-Popup liefert das Raster; in `weit` zeigt die
+  die Ergebnisanzeige. Eingaben und Ergebnis leben nur im Widget, jede
+  Eingabe verwirft das Ergebnis samt offener Buchungen. Geschrieben wird nur
+  auf Knopfdruck und frisch: eingesetzte AsP beim Würfeln
+  (`gefechtsZustand`), „N Tagesrationen ins Inventar“
+  (`aendereHeldAusserhalbPlanung` mit `mitWildnisRationen`, Datum aus dem
+  frisch geladenen Helden, bei offener Steigerungsrunde gesperrt) und nach
+  „Geschossverlust würfeln“ (Schusszahl per Schritt, nicht bei 1W6+1) das
+  Abbuchen über `gefechtsAusruestung` mit `mitJagdGeschossverlust`; Tabellen-
+  waffen und Waffen ohne gewähltes Geschoss nennen nur den Verlust. Keys:
+  `karto-wildnis-rationen-buchen`/`-gebucht`, `karto-wildnis-munition`,
+  `karto-wildnis-verlust-wuerfeln`, `karto-wildnis-verlust`,
+  `karto-wildnis-verlust-buchen`/`-gebucht`, `karto-wildnis-buchungsfehler`.
+  `KartoWildnisKachel.wuerfler` erlaubt Tests feste Würfe. Das Vergrößern-Popup liefert das Raster; in `weit` zeigt die
   Vorschau mehr Zeilen (`kWildnisVorschauWeit` statt `kWildnisVorschauKurz`),
   „Alle N anzeigen“ blendet in jeder Größe die ganze Liste ein. Zeilen mit
   `WildnisErgebnisZeile.erlaeuterung`/`quelle` klappen per Antippen auf
@@ -417,7 +427,27 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `vorschau`) plus Regelfunktion in `lib/rules/derived/`, dann ein Eintrag in
   `kartoWildnisTaetigkeiten`; Kachel und Raster bleiben unverändert. Als
   erste ist `KartoKraeutersucheTaetigkeit` (KL/IN/FF laut WdE S. 113, nicht das
-  MU/IN/FF des Standard-Metatalents) umgesetzt. Standardplatz: vor dem
+  MU/IN/FF des Standard-Metatalents) umgesetzt.
+  **Nahrungsbeschaffung (23.11.2026):** Nahrung sammeln, Pirsch- und
+  Ansitzjagd, Tierfallen, Angeln und Speerfischen erben von
+  `KartoRationenTaetigkeit` (`karto_rationen_taetigkeit.dart`: Regionen,
+  keine Jahreszeit, keine Daten, `probeEingabe` liefert die
+  `WildnisProbeEingabe` oder `null` für „nicht möglich“, `erschwernisTeile`
+  für die Aufschlüsselung, Vorschau „Aussichten“ mit Erfolgschance und
+  erwarteten Tagesrationen). Die Schnittstelle kennt dafür
+  `grundTaw(held, optionen)` (TaW abhängig von Waffe oder Speertalent),
+  `brauchtJahreszeit` (sonst blendet die Kachel die Wahl aus und verlangt sie
+  nicht), `gelaendekundeStaffel` (Beschriftung der Chips), `sperrgrund`
+  (Zusammenfassung „nicht möglich“, Key `karto-wildnis-sperrgrund`, Würfeln
+  und Vorschau gesperrt) und `vorschauTitel`. Der Kontext trägt `held`,
+  `katalog`, `dauerMinuten` (Dauern sind Minuten, Key
+  `karto-wildnis-dauer-60`) und eine nullbare `jahreszeit`. Passt eine
+  dynamische Antwort nicht mehr, gilt `dynamischerStandard` (Jagd: erste
+  Fernwaffe des Helden, sonst Kurzbogen) bzw. die feste Vorgabe, sonst die
+  erste Antwort. Rationen-Tätigkeiten nennen über `inventarGegenstand` und
+  `inventarBeschreibung`, was gebucht wird. Beim Wechsel der Tätigkeit bleiben
+  Landschaft und Handwerte für Gelände-/Ortskenntnis erhalten, wenn die neue
+  Tätigkeit denselben Landschaftsschlüssel kennt. Standardplatz: vor dem
   Würfelprotokoll, damit bestehende Anordnungen nicht verschoben werden.
   **Vor- und Nachteile:** In `weit` zeigt die eingeklappte Übersicht
   (`KartoMerkmalsuebersicht`) je Art bis zu `kMerkmaleZeilenWeit` (3) statt einer

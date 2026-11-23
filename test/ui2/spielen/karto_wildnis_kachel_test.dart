@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/ort_loader.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -10,6 +11,8 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/kraeuter_eintrag.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/bridges/karto_bestands_adapter_impl.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
@@ -115,6 +118,78 @@ HeroSheet _held({
   adventures: <HeroAdventureEntry>[if (monat != null) _abenteuer(monat)],
 );
 
+/// Ein Jäger mit Kurzbogen und Scharfschütze (Bogen): Pirschjagd-TaW
+/// (8 + 6 + 7 + 5 + 9) / 5 = 7.
+HeroSheet _jaeger() => _held().copyWith(
+  talents: const <String, HeroTalentEntry>{
+    'tal_wildnisleben': HeroTalentEntry(talentValue: 8),
+    'tal_tierkunde': HeroTalentEntry(talentValue: 6),
+    'tal_faehrtensuchen': HeroTalentEntry(talentValue: 7),
+    'tal_schleichen': HeroTalentEntry(talentValue: 5),
+    'tal_bogen': HeroTalentEntry(talentValue: 9),
+  },
+  combatConfig: const CombatConfig(
+    weapons: <MainWeaponSlot>[
+      MainWeaponSlot(
+        id: 'w1',
+        name: 'Kurzbogen',
+        talentId: 'tal_bogen',
+        combatType: WeaponCombatType.ranged,
+      ),
+    ],
+    specialRules: CombatSpecialRules(
+      activeManeuvers: <String>['man_scharfschuetze::tal_bogen'],
+    ),
+  ),
+);
+
+/// Ein Jäger wie [_jaeger], dessen Kurzbogen 12 Jagdpfeile führt.
+HeroSheet _jaegerMitPfeilen() {
+  final jaeger = _jaeger();
+  final bogen = jaeger.combatConfig.weapons.single;
+  return jaeger.copyWith(
+    combatConfig: jaeger.combatConfig.copyWith(
+      weapons: <MainWeaponSlot>[
+        bogen.copyWith(
+          rangedProfile: bogen.rangedProfile.copyWith(
+            projectiles: const <RangedProjectile>[
+              RangedProjectile(id: 'p1', name: 'Jagdpfeile', count: 12),
+            ],
+            selectedProjectileIndex: 0,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// Würfel mit festen Ergebnissen in der angegebenen Reihenfolge.
+class _FesteWuerfel implements DiceRoller {
+  _FesteWuerfel(this.werte);
+
+  final List<int> werte;
+  var _naechster = 0;
+
+  @override
+  int rollDie(int sides) => werte[_naechster++];
+}
+
+/// Gefechtsbrücke, die Ausrüstungsänderungen wie die App schreibt.
+class _AusruestungsBestand extends GefechtsTestBestand {
+  @override
+  Future<bool> gefechtsAusruestung({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required CombatConfig Function(CombatConfig) aenderung,
+  }) => const KartoBestandsAdapterImpl().gefechtsAusruestung(
+    context: context,
+    ref: ref,
+    heroId: heroId,
+    aenderung: aenderung,
+  );
+}
+
 void main() {
   Finder k(String schluessel) => find.byKey(ValueKey<String>(schluessel));
   late FakeRepository repository;
@@ -128,6 +203,7 @@ void main() {
     double skalierung = 1,
     KraeuterKatalog kraeuter = _kraeuter,
     int asp = 30,
+    DiceRoller? wuerfler,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(breite, 3200);
@@ -180,6 +256,7 @@ void main() {
                   werte: werte,
                   bestand: bestand ?? TestBestand(),
                   aktion: (auftrag) => auftrag(),
+                  wuerfler: wuerfler,
                 ),
               ),
             ),
@@ -193,6 +270,297 @@ void main() {
   String zusammenfassung() =>
       (k('karto-wildnis-zusammenfassung').evaluate().single.widget as Text)
           .data!;
+
+  String erschwernisHinweis() =>
+      (k('karto-wildnis-erschwernis-hinweis').evaluate().single.widget as Text)
+          .data!;
+
+  Future<void> waehleTaetigkeit(WidgetTester tester, String id) async {
+    await tester.tap(k('karto-wildnis-taetigkeit-$id'));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> waehleIn(
+    WidgetTester tester,
+    String feld,
+    String eintrag,
+  ) async {
+    await tester.tap(k(feld));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(eintrag).last);
+    await tester.pumpAndSettle();
+  }
+
+  group('Weitere Tätigkeiten', () {
+    testWidgets('der Umschalter nennt alle Tätigkeiten', (tester) async {
+      await zeige(tester, held: _held());
+      for (final id in <String>[
+        'kraeutersuche',
+        'nahrung',
+        'pirschjagd',
+        'ansitzjagd',
+        'tierfallen',
+        'angeln',
+        'speerfischen',
+      ]) {
+        expect(k('karto-wildnis-taetigkeit-$id'), findsOneWidget, reason: id);
+      }
+    });
+
+    testWidgets('Nahrung sammeln: MU/IN/FF, Region ohne Jahreszeit', (
+      tester,
+    ) async {
+      await zeige(tester, held: _held(monat: null));
+      // Ohne Datum verlangt die Kräutersuche eine Jahreszeit …
+      expect(k('karto-wildnis-zusammenfassung'), findsNothing);
+      await waehleTaetigkeit(tester, 'nahrung');
+      // … Nahrung sammeln nicht: Dschungel −2.
+      expect(find.text('Kein Datum im Abenteuer: bitte wählen.'), findsNothing);
+      expect(zusammenfassung(), 'TaW 9 · Erschwernis −2');
+      expect(
+        erschwernisHinweis(),
+        'darin Region −2; Jahreszeit nach Meisterentscheid',
+      );
+      expect(find.textContaining('MU 14 · IN 13 · FF 10'), findsOneWidget);
+      expect(find.text('Aussichten'), findsOneWidget);
+      expect(find.textContaining('Erfolgschance'), findsOneWidget);
+    });
+
+    testWidgets('Nahrung sammeln: jede Viertelstunde mehr erleichtert', (
+      tester,
+    ) async {
+      await zeige(tester, held: _held());
+      await waehleTaetigkeit(tester, 'nahrung');
+      await waehleIn(tester, 'karto-wildnis-dauer-60', '1½ Stunden (−2)');
+      expect(zusammenfassung(), 'TaW 9 · Erschwernis −4');
+    });
+
+    testWidgets('Nahrung sammeln würfelt Rationen und nennt den Giftwurf', (
+      tester,
+    ) async {
+      final bestand = GefechtsTestBestand()..w20Wert = 5;
+      await zeige(tester, held: _held(), bestand: bestand);
+      await waehleTaetigkeit(tester, 'nahrung');
+      await tester.tap(k('karto-wildnis-wuerfeln'));
+      await tester.pumpAndSettle();
+      final anfrage = bestand.anfragen.single;
+      expect(anfrage.title, 'Nahrung sammeln');
+      expect(anfrage.subtitle, 'MU/IN/FF');
+      // TaP* 9 (gedeckelt durch den TaW): 1 + 9 / 3 = 4 Rationen.
+      final ergebnis = k('karto-wildnis-ergebnis');
+      expect(
+        find.descendant(
+          of: ergebnis,
+          matching: find.textContaining('4 Tagesrationen'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: ergebnis,
+          matching: find.textContaining('bei 18–20'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Pirschjagd mit eigener Waffe und Scharfschütze', (
+      tester,
+    ) async {
+      final bestand = GefechtsTestBestand()..w20Wert = 5;
+      await zeige(tester, held: _jaeger(), bestand: bestand);
+      await waehleTaetigkeit(tester, 'pirschjagd');
+      // Kurzbogen +2; ohne Zuschläge verfällt der Scharfschütze.
+      expect(zusammenfassung(), 'TaW 7 · Erschwernis +2');
+      expect(erschwernisHinweis(), contains('Kurzbogen +2'));
+      expect(erschwernisHinweis(), contains('3 Punkte der Schützen-SF'));
+      expect(find.textContaining('Wie am Helden: Scharfschütze'), findsWidgets);
+
+      // Sturm +6 gleicht der Scharfschütze um 3 aus.
+      await waehleIn(tester, 'karto-wildnis-option-wetter-ruhig', 'Sturm (+6)');
+      expect(zusammenfassung(), 'TaW 7 · Erschwernis +5');
+
+      await tester.tap(k('karto-wildnis-wuerfeln'));
+      await tester.pumpAndSettle();
+      final anfrage = bestand.anfragen.single;
+      expect(anfrage.title, 'Pirschjagd');
+      expect(anfrage.subtitle, 'MU/IN/GE');
+      expect(anfrage.basePool, 7);
+      expect(anfrage.initialSituationalModifier, -5);
+      expect(
+        find.descendant(
+          of: k('karto-wildnis-ergebnis'),
+          matching: find.textContaining('Pfeil'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Tierfallen: Geländekunde −5, in der Wüste nicht möglich', (
+      tester,
+    ) async {
+      await zeige(tester, held: _held(), bestand: GefechtsTestBestand());
+      await waehleTaetigkeit(tester, 'tierfallen');
+      expect(find.text('Passend (−5)'), findsOneWidget);
+      expect(find.text('Ähnlich (−3)'), findsOneWidget);
+      expect(zusammenfassung(), 'TaW 0 · Erschwernis −4');
+
+      await waehleIn(tester, 'karto-wildnis-landschaft-dschungel', 'Wüste');
+      expect(zusammenfassung(), 'TaW 0 · nicht möglich');
+      expect(k('karto-wildnis-sperrgrund'), findsOneWidget);
+      expect(k('karto-wildnis-vorschau'), findsNothing);
+      final wuerfeln = tester.widget<FilledButton>(k('karto-wildnis-wuerfeln'));
+      expect(wuerfeln.onPressed, isNull);
+    });
+
+    testWidgets('die Landschaft bleibt beim Wechsel der Tätigkeit', (
+      tester,
+    ) async {
+      await zeige(tester, held: _held(), standort: 'Reichsforst');
+      await waehleIn(
+        tester,
+        'karto-wildnis-landschaft-',
+        'Lichter Wald (Standort)',
+      );
+      expect(zusammenfassung(), 'TaW 9 · Erschwernis −6');
+      await waehleTaetigkeit(tester, 'nahrung');
+      // Lichter Wald beim Nahrung sammeln −6.
+      expect(zusammenfassung(), 'TaW 9 · Erschwernis −6');
+      await waehleTaetigkeit(tester, 'pirschjagd');
+      expect(k('karto-wildnis-zusammenfassung'), findsOneWidget);
+    });
+
+    testWidgets('erbeutete Rationen lassen sich ins Inventar buchen', (
+      tester,
+    ) async {
+      final bestand = GefechtsTestBestand()..w20Wert = 5;
+      await zeige(tester, held: _jaeger(), bestand: bestand);
+      await waehleTaetigkeit(tester, 'pirschjagd');
+      await tester.tap(k('karto-wildnis-wuerfeln'));
+      await tester.pumpAndSettle();
+      // TaW 7, Erschwernis +2: 5 TaP*, also 5 Tagesrationen.
+      expect(find.text('5 Tagesrationen ins Inventar'), findsOneWidget);
+      await tester.tap(k('karto-wildnis-rationen-buchen'));
+      await tester.pumpAndSettle();
+
+      final eintrag = (await repository.loadHeroById(_id))!.inventoryEntries
+          .singleWhere((e) => e.gegenstand == 'Wildbret (frisch)');
+      expect(eintrag.menge, 5);
+      expect(eintrag.herkunft, 'Pirschjagd am 5. Praios 1043 BF');
+      expect(eintrag.beschreibung, contains('Sumpf, Dschungel'));
+      expect(k('karto-wildnis-rationen-gebucht'), findsOneWidget);
+      expect(k('karto-wildnis-rationen-buchen'), findsNothing);
+    });
+
+    testWidgets('misslungene Jagd bietet keine Rationen an', (tester) async {
+      final bestand = GefechtsTestBestand()..w20Wert = 20;
+      await zeige(tester, held: _jaeger(), bestand: bestand);
+      await waehleTaetigkeit(tester, 'pirschjagd');
+      await tester.tap(k('karto-wildnis-wuerfeln'));
+      await tester.pumpAndSettle();
+      expect(k('karto-wildnis-rationen-buchen'), findsNothing);
+      // Geschossen wurde trotzdem.
+      expect(k('karto-wildnis-verlust-wuerfeln'), findsOneWidget);
+    });
+
+    testWidgets('Kräutersuche bucht keine Rationen', (tester) async {
+      final bestand = GefechtsTestBestand()..w20Wert = 5;
+      await zeige(tester, held: _held(), bestand: bestand);
+      await tester.tap(k('karto-wildnis-wuerfeln'));
+      await tester.pumpAndSettle();
+      expect(k('karto-wildnis-rationen-buchen'), findsNothing);
+      expect(k('karto-wildnis-munition'), findsNothing);
+    });
+
+    testWidgets('Geschossverlust wird gewürfelt und abgebucht', (tester) async {
+      final bestand = _AusruestungsBestand()..w20Wert = 5;
+      await zeige(
+        tester,
+        held: _jaegerMitPfeilen(),
+        bestand: bestand,
+        // Zwei Schüsse: 1 + 2 = 3 (verloren), 10 + 10 = 20 (bleibt).
+        wuerfler: _FesteWuerfel(<int>[1, 2, 10, 10]),
+      );
+      await waehleTaetigkeit(tester, 'pirschjagd');
+      await tester.tap(k('karto-wildnis-wuerfeln'));
+      await tester.pumpAndSettle();
+      expect(
+        (k('karto-wildnis-munition').evaluate().single.widget as Text).data,
+        'Munition: Kurzbogen · Jagdpfeile (12)',
+      );
+      await tester.tap(k('karto-wildnis-schuesse-plus'));
+      await tester.pump();
+      await tester.tap(k('karto-wildnis-verlust-wuerfeln'));
+      await tester.pumpAndSettle();
+      expect(
+        (k('karto-wildnis-verlust').evaluate().single.widget as Text).data,
+        '2W20 je Schuss: 3 · 20 (verloren bei 3–5): 1 Geschoss verloren',
+      );
+      expect(find.text('1 × Jagdpfeile abbuchen'), findsOneWidget);
+      await tester.tap(k('karto-wildnis-verlust-buchen'));
+      await tester.pumpAndSettle();
+
+      final bogen = (await repository.loadHeroById(_id))!
+          .combatConfig
+          .weaponSlots
+          .single;
+      expect(bogen.rangedProfile.projectiles.single.count, 11);
+      expect(k('karto-wildnis-verlust-gebucht'), findsOneWidget);
+    });
+
+    testWidgets('mit einer Tabellenwaffe bleibt der Bestand Handarbeit', (
+      tester,
+    ) async {
+      final bestand = GefechtsTestBestand()..w20Wert = 5;
+      await zeige(
+        tester,
+        held: _held(),
+        bestand: bestand,
+        // Schleudersteine: 1W6 = 3, also 4 verloren.
+        wuerfler: _FesteWuerfel(<int>[3]),
+      );
+      await waehleTaetigkeit(tester, 'pirschjagd');
+      await waehleIn(
+        tester,
+        'karto-wildnis-option-waffe-tabelle:kurzbogen',
+        'Schleuder (+4)',
+      );
+      await tester.tap(k('karto-wildnis-wuerfeln'));
+      await tester.pumpAndSettle();
+      // Bei 1W6+1 gibt es keine Schusszahl.
+      expect(k('karto-wildnis-schuesse-plus'), findsNothing);
+      await tester.tap(k('karto-wildnis-verlust-wuerfeln'));
+      await tester.pumpAndSettle();
+      expect(
+        (k('karto-wildnis-verlust').evaluate().single.widget as Text).data,
+        '1W6 = 3 (+1): 4 Geschosse verloren',
+      );
+      expect(k('karto-wildnis-verlust-buchen'), findsNothing);
+      expect(
+        find.text('Waffe aus der Tabelle: Bestand bitte von Hand anpassen.'),
+        findsOneWidget,
+      );
+    });
+
+    for (final skalierung in [1.0, 2.0]) {
+      testWidgets('Pirschjagd bei 320 dp, Schrift $skalierung, ohne Überlauf', (
+        tester,
+      ) async {
+        final bestand = GefechtsTestBestand()..w20Wert = 5;
+        await zeige(
+          tester,
+          held: _jaeger(),
+          bestand: bestand,
+          breite: 320,
+          skalierung: skalierung,
+        );
+        await waehleTaetigkeit(tester, 'pirschjagd');
+        await tester.tap(k('karto-wildnis-wuerfeln'));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      });
+    }
+  });
 
   group('Vorbelegung aus dem Helden', () {
     testWidgets(
@@ -345,7 +713,7 @@ void main() {
 
     testWidgets('zwei Stunden steigern den TaW um die Hälfte', (tester) async {
       await zeige(tester, held: _held());
-      await tester.tap(k('karto-wildnis-dauer-1'));
+      await tester.tap(k('karto-wildnis-dauer-60'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('2 Stunden').last);
       await tester.pumpAndSettle();

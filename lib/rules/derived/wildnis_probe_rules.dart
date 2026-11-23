@@ -1,4 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wildnis_ausbeute_rules.dart';
 
 // Regelgrundlage: Wege des Entdeckers S. 112 f. („Nahrung sammeln“, „Kräuter
 // Suchen“: Probenmodifikationen nach Sonderfertigkeiten und AsP), Zoo Botanica
@@ -36,6 +38,35 @@ enum Gelaendekunde {
 
   /// Erschwernis der Probe.
   final int erschwernis;
+}
+
+/// Wie stark eine Geländekunde eine bestimmte Tätigkeit erleichtert.
+///
+/// Fast alle Wildnisproben rechnen passend −3 und ähnlich −1
+/// ([GelaendekundeStaffel.standard]); das Aufstellen von Tierfallen kennt
+/// −5 und −3 (Wege des Entdeckers S. 111 f.).
+class GelaendekundeStaffel {
+  /// Erstellt eine Staffel (Erschwernisse, also negativ = leichter).
+  const GelaendekundeStaffel({required this.passend, required this.aehnlich});
+
+  /// Passend −3, ähnlich −1 (Nahrung sammeln, Kräuter Suchen, Jagd, Fischen).
+  static const GelaendekundeStaffel standard = GelaendekundeStaffel(
+    passend: -3,
+    aehnlich: -1,
+  );
+
+  /// Erschwernis bei passender Geländekunde.
+  final int passend;
+
+  /// Erschwernis bei ähnlicher Geländekunde (Meisterentscheid).
+  final int aehnlich;
+
+  /// Erschwernis der Stufe [stufe].
+  int erschwernis(Gelaendekunde stufe) => switch (stufe) {
+    Gelaendekunde.keine => 0,
+    Gelaendekunde.aehnlich => aehnlich,
+    Gelaendekunde.passend => passend,
+  };
 }
 
 /// Geländearten der Sonderfertigkeit Geländekunde (Wege der Helden S. 276 f.).
@@ -122,10 +153,14 @@ class WildnisProbeEingabe {
     this.ortskenntnis = false,
     this.eingesetzteAsp = 0,
     this.situativeErschwernis = 0,
+    this.gelaendekundeStaffel = GelaendekundeStaffel.standard,
   });
 
   /// TaW der Probe nach Dauer.
   final int taw;
+
+  /// Was die Geländekunde bei dieser Tätigkeit wert ist.
+  final GelaendekundeStaffel gelaendekundeStaffel;
 
   /// Die drei Probeneigenschaften samt Wert.
   final List<ProbeTargetValue> eigenschaften;
@@ -148,16 +183,22 @@ class WildnisProbeEingabe {
 
 /// Gesamterschwernis einer Wildnisprobe (positiv = schwerer).
 ///
-/// Summe aus Basiserschwernis, Geländekunde (−3/−1), passender Ortskenntnis
-/// (−7), eingesetzten AsP (je 3 AsP −1) und situativer Erschwernis.
+/// Summe aus Basiserschwernis, Geländekunde (nach
+/// [WildnisProbeEingabe.gelaendekundeStaffel], meist −3/−1), passender
+/// Ortskenntnis (−7), eingesetzten AsP (je 3 AsP −1) und situativer
+/// Erschwernis.
 int wildnisProbenErschwernis(WildnisProbeEingabe eingabe) {
-  final asp = eingabe.eingesetzteAsp < 0 ? 0 : eingabe.eingesetzteAsp;
   return eingabe.basisErschwernis +
-      eingabe.gelaendekunde.erschwernis +
-      (eingabe.ortskenntnis ? kOrtskenntnisErschwernis : 0) -
-      asp ~/ kWildnisAspProErleichterung +
+      eingabe.gelaendekundeStaffel.erschwernis(eingabe.gelaendekunde) +
+      (eingabe.ortskenntnis ? kOrtskenntnisErschwernis : 0) +
+      wildnisAspErschwernis(eingabe.eingesetzteAsp) +
       eingabe.situativeErschwernis;
 }
+
+/// Erschwernis durch eingesetzte AsP: je 3 AsP −1, negative Angaben zählen
+/// nicht.
+int wildnisAspErschwernis(int eingesetzteAsp) =>
+    eingesetzteAsp < 0 ? 0 : -(eingesetzteAsp ~/ kWildnisAspProErleichterung);
 
 /// Baut die Talentprobe einer Wildnistätigkeit (3W20 gegen die Eigenschaften,
 /// TaW als Pool, Erschwernis als negativer Modifikator).
@@ -233,6 +274,8 @@ class WildnisErgebnis {
     required this.tapStern,
     this.zeilen = const <WildnisErgebnisZeile>[],
     this.hinweis = '',
+    this.rationen,
+    this.munition,
   });
 
   /// Die ausgewertete Talentprobe.
@@ -250,6 +293,150 @@ class WildnisErgebnis {
   /// Erläuterung zu Sonderfällen; leer ohne Besonderheit.
   final String hinweis;
 
+  /// Tagesrationen, die sich ins Inventar buchen lassen; `null`, wenn die
+  /// Tätigkeit keine bringt oder die Probe misslang.
+  final WildnisRationen? rationen;
+
+  /// Munition, deren Verlust zu würfeln ist (Jagd); `null` ohne.
+  final WildnisMunition? munition;
+
   /// Ob die Probe gelungen ist.
   bool get erfolg => probe.success;
+}
+
+/// Ergebnis einer Wildnisprobe, deren TaP* unmittelbar Tagesrationen sind
+/// (Pirsch- und Ansitzjagd, Tierfallen, Fischen; Wege des Entdeckers
+/// S. 107–112: „Die TaP* … nennt die Zahl der Tagesrationen“).
+///
+/// [hinweis] erläutert Verbrauch, Wiederholbarkeit und Ähnliches; bei
+/// Misserfolg entfällt die Ausbeutezeile. Mit [gegenstand] lassen sich die
+/// Rationen als dieser Eintrag ins Inventar buchen ([WildnisErgebnis.rationen],
+/// Herkunft [taetigkeit], Beschreibung [beschreibung]); [munition] nennt die
+/// Geschosse, deren Verlust zu würfeln ist.
+WildnisErgebnis wildnisRationenErgebnis(
+  ProbeResult probe, {
+  required int erschwernis,
+  String hinweis = '',
+  String? gegenstand,
+  String taetigkeit = '',
+  String beschreibung = '',
+  WildnisMunition? munition,
+}) {
+  final tap = wildnisTapStern(probe);
+  return WildnisErgebnis(
+    probe: probe,
+    erschwernis: erschwernis,
+    tapStern: tap,
+    zeilen: <WildnisErgebnisZeile>[
+      if (tap > 0)
+        WildnisErgebnisZeile(
+          titel: tap == 1 ? '1 Tagesration' : '$tap Tagesrationen',
+          detail: 'je TaP* eine Ration',
+        ),
+    ],
+    hinweis: hinweis,
+    rationen: gegenstand == null || tap <= 0
+        ? null
+        : WildnisRationen(
+            gegenstand: gegenstand,
+            anzahl: tap,
+            taetigkeit: taetigkeit,
+            beschreibung: beschreibung,
+          ),
+    munition: munition,
+  );
+}
+
+/// Höchstzahl zwischengespeicherter Verteilungen ([wildnisTapVerteilung]).
+const int _kVerteilungsSpeicher = 64;
+
+final Map<String, Map<int, double>> _verteilungen =
+    <String, Map<int, double>>{};
+
+/// Verteilung der TaP* einer Wildnisprobe über alle 8000 Wurfkombinationen.
+///
+/// Schlüssel 0 steht für Misserfolg, alle anderen Schlüssel für die TaP* einer
+/// gelungenen Probe ([wildnisTapStern]); die Werte summieren sich zu 1. Das
+/// Ergebnis hängt nur von Eigenschaften, Pool und Modifikator ab und wird
+/// deshalb zwischengespeichert, damit die Vorschau beim Neuzeichnen nicht
+/// jedes Mal 8000 Proben auswertet.
+Map<int, double> wildnisTapVerteilung(ResolvedProbeRequest request) {
+  final schluessel = <Object>[
+    request.type.name,
+    request.basePool,
+    request.initialSituationalModifier,
+    for (final ziel in request.targets) ziel.value,
+  ].join('|');
+  final gemerkt = _verteilungen[schluessel];
+  if (gemerkt != null) return gemerkt;
+
+  final haeufigkeit = <int, int>{};
+  for (var a = 1; a <= 20; a++) {
+    for (var b = 1; b <= 20; b++) {
+      for (var c = 1; c <= 20; c++) {
+        final probe = evaluateProbe(
+          request,
+          ProbeRollInput(
+            mode: ProbeRollMode.manual,
+            diceValues: <int>[a, b, c],
+            situationalModifier: request.initialSituationalModifier,
+            specializationApplied: false,
+          ),
+        );
+        final tap = wildnisTapStern(probe);
+        haeufigkeit[tap] = (haeufigkeit[tap] ?? 0) + 1;
+      }
+    }
+  }
+  final sortiert = haeufigkeit.keys.toList()..sort();
+  final verteilung = Map<int, double>.unmodifiable(<int, double>{
+    for (final tap in sortiert) tap: haeufigkeit[tap]! / 8000,
+  });
+  if (_verteilungen.length >= _kVerteilungsSpeicher) _verteilungen.clear();
+  _verteilungen[schluessel] = verteilung;
+  return verteilung;
+}
+
+/// Aussichten einer Wildnisprobe vor dem Wurf.
+class WildnisAussicht {
+  /// Erstellt die Aussicht.
+  const WildnisAussicht({
+    required this.erfolgschance,
+    required this.erwarteteAusbeute,
+    required this.hoechsteAusbeute,
+  });
+
+  /// Wahrscheinlichkeit einer gelungenen Probe (0 bis 1).
+  final double erfolgschance;
+
+  /// Erwartete Ausbeute (Misserfolg zählt 0).
+  final double erwarteteAusbeute;
+
+  /// Größte erreichbare Ausbeute.
+  final int hoechsteAusbeute;
+}
+
+/// Aussichten der Probe [request], wenn [ausbeute] die TaP* einer gelungenen
+/// Probe in die Ausbeute übersetzt (etwa Tagesrationen); ohne Angabe zählt
+/// jeder TaP* einfach.
+WildnisAussicht wildnisAussicht(
+  ResolvedProbeRequest request, {
+  int Function(int tapStern)? ausbeute,
+}) {
+  final umrechnung = ausbeute ?? (int tap) => tap;
+  var chance = 0.0;
+  var erwartet = 0.0;
+  var hoechste = 0;
+  wildnisTapVerteilung(request).forEach((tap, p) {
+    if (tap <= 0) return;
+    final menge = umrechnung(tap);
+    chance += p;
+    erwartet += p * menge;
+    if (menge > hoechste) hoechste = menge;
+  });
+  return WildnisAussicht(
+    erfolgschance: chance,
+    erwarteteAusbeute: erwartet,
+    hoechsteAusbeute: hoechste,
+  );
 }

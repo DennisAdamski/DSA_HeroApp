@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/kraeuter_eintrag.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/meta_talent_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wildnis_probe_rules.dart';
 
@@ -22,6 +25,7 @@ class KartoWildnisOption {
     required this.standard,
     this.sichtbar,
     this.dynamischeWerte,
+    this.dynamischerStandard,
   });
 
   /// Stabiler Schlüssel innerhalb der Tätigkeit.
@@ -33,32 +37,40 @@ class KartoWildnisOption {
   /// Mögliche Antworten: Schlüssel und Anzeigetext.
   final List<({String schluessel, String text})> werte;
 
-  /// Schlüssel der vorbelegten Antwort.
+  /// Schlüssel der vorbelegten Antwort. Passt er nicht zu den
+  /// [dynamischeWerte]n, gilt [dynamischerStandard], sonst deren erste
+  /// Antwort.
   final String standard;
 
   /// Ob die Wahl zur aktuellen Auswahl passt; ohne Angabe immer.
   final bool Function(Map<String, String> optionen)? sichtbar;
 
-  /// Antworten, die vom Kontext abhängen (etwa die Kräuter der Landschaft);
-  /// ersetzt [werte], wenn gesetzt.
+  /// Antworten, die vom Kontext abhängen (etwa die Kräuter der Landschaft
+  /// oder die Waffen des Helden); ersetzt [werte], wenn gesetzt.
   final List<({String schluessel, String text})> Function(
     KartoWildnisKontext kontext,
   )?
   dynamischeWerte;
+
+  /// Vorgabe, die vom Kontext abhängt (etwa die erste Waffe des Helden, sonst
+  /// der Kurzbogen); gilt, wenn die gespeicherte Antwort nicht mehr passt.
+  final String Function(KartoWildnisKontext kontext)? dynamischerStandard;
 }
 
-/// Eine wählbare Dauer der Tätigkeit.
-typedef KartoWildnisDauer = ({int stunden, String text});
+/// Eine wählbare Dauer der Tätigkeit in Minuten.
+typedef KartoWildnisDauer = ({int minuten, String text});
 
 /// Alle Eingaben einer Wildnisprobe, so wie die Kachel sie zusammenträgt.
 class KartoWildnisKontext {
   /// Erstellt den Kontext.
   const KartoWildnisKontext({
+    required this.held,
+    required this.katalog,
     required this.landschaft,
     required this.jahreszeit,
     required this.monat,
     required this.taw,
-    required this.dauerStunden,
+    required this.dauerMinuten,
     required this.eigenschaften,
     required this.gelaendekunde,
     required this.ortskenntnis,
@@ -68,20 +80,28 @@ class KartoWildnisKontext {
     required this.daten,
   });
 
+  /// Der Held (Talente, Waffen, Sonderfertigkeiten); nur lesen.
+  final HeroSheet held;
+
+  /// Regelkatalog des Helden (für Sonderfertigkeiten und Manöver).
+  final RulesCatalog? katalog;
+
   /// Durchsuchte Landschaft.
   final WildnisLandschaft landschaft;
 
-  /// Jahreszeit der Probe.
-  final Jahreszeit jahreszeit;
+  /// Jahreszeit der Probe; `null` nur bei Tätigkeiten ohne
+  /// [KartoWildnisTaetigkeit.brauchtJahreszeit].
+  final Jahreszeit? jahreszeit;
 
   /// Monatsschlüssel des aventurischen Datums; leer, wenn unbekannt.
   final String monat;
 
-  /// TaW der Tätigkeit bei der Grunddauer (vor [dauerStunden]).
+  /// TaW der Tätigkeit bei der Grunddauer
+  /// ([KartoWildnisTaetigkeit.grundTaw]).
   final int taw;
 
-  /// Gewählte Dauer in Stunden.
-  final int dauerStunden;
+  /// Gewählte Dauer in Minuten.
+  final int dauerMinuten;
 
   /// Die drei Probeneigenschaften samt Wert.
   final List<ProbeTargetValue> eigenschaften;
@@ -105,14 +125,14 @@ class KartoWildnisKontext {
   final Object? daten;
 }
 
-/// Eine Wildnistätigkeit der Wildnis-Kachel: Kräuter suchen, später Nahrung
-/// sammeln, Pirschjagd, Fallenstellen …
+/// Eine Wildnistätigkeit der Wildnis-Kachel: Kräuter suchen, Nahrung
+/// sammeln, Pirsch- und Ansitzjagd, Fallenstellen, Fischen …
 ///
 /// Die Kachel kennt nur diese Schnittstelle. Gemeinsam sind Landschaft,
 /// Datum, Geländekunde, Ortskenntnis, TaW aus Bestandteil-Talenten, AsP, die
 /// Probe über das Würfelprotokoll und die Ergebnisanzeige; die Tätigkeit
 /// liefert, was sich unterscheidet. Eine neue Tätigkeit ist eine Unterklasse
-/// plus ein Eintrag in [kartoWildnisTaetigkeiten], ohne Umbau der Kachel.
+/// plus ein Eintrag in `kartoWildnisTaetigkeiten`, ohne Umbau der Kachel.
 ///
 /// Keine Rechenlogik hier: Erschwernis, Probe und Auswertung stammen aus
 /// `lib/rules/derived/` (CLAUDE.md, Regel „Regelrechnung nie im Widget“).
@@ -133,11 +153,30 @@ abstract class KartoWildnisTaetigkeit {
   String get regelHinweis;
 
   /// IDs der Talente, aus denen sich der TaW zusammensetzt (Mittel, höchstens
-  /// das Doppelte des niedrigsten).
+  /// das Doppelte des niedrigsten). Tätigkeiten mit wählbaren Bestandteilen
+  /// (etwa der Waffe) überschreiben [grundTaw].
   List<String> get talentKomponenten;
+
+  /// TaW bei der Grunddauer für [held] und die gewählten [optionen].
+  ///
+  /// [optionen] können noch ungeprüft sein; die Tätigkeit fällt bei einer
+  /// unbekannten Antwort auf ihre Vorgabe zurück.
+  int grundTaw(HeroSheet held, Map<String, String> optionen) =>
+      computeMetaTalentBaseTaw(
+        talentEntries: held.talents,
+        componentTalentIds: talentKomponenten,
+      );
 
   /// Die drei Probeneigenschaften.
   List<AttributeCode> get eigenschaften;
+
+  /// Ob die Jahreszeit die Probe verändert; sonst blendet die Kachel die Wahl
+  /// aus und verlangt sie nicht.
+  bool get brauchtJahreszeit => true;
+
+  /// Was eine Geländekunde bei dieser Tätigkeit wert ist.
+  GelaendekundeStaffel get gelaendekundeStaffel =>
+      GelaendekundeStaffel.standard;
 
   /// Alle wählbaren Landschaften.
   List<WildnisLandschaft> get landschaften;
@@ -156,6 +195,10 @@ abstract class KartoWildnisTaetigkeit {
   /// Wartet nie mit `.future` (Fehler enden nie); die Kachel zeigt Laden und
   /// Fehler selbst.
   AsyncValue<Object?> beobachteDaten(WidgetRef ref);
+
+  /// Warum die Probe unter [kontext] nicht möglich ist (etwa Fallenstellen in
+  /// der Wüste); `null`, wenn gewürfelt werden kann.
+  String? sperrgrund(KartoWildnisKontext kontext) => null;
 
   /// Gesamterschwernis für [kontext] (positiv = schwerer).
   int erschwernis(KartoWildnisKontext kontext);
@@ -180,6 +223,9 @@ abstract class KartoWildnisTaetigkeit {
     ProbeResult probe, {
     required DiceRoller roller,
   });
+
+  /// Überschrift der Vorschau mit [anzahl] Zeilen.
+  String vorschauTitel(int anzahl) => 'Mögliche Funde ($anzahl)';
 
   /// Zeilen der Vorschau vor dem Wurf (etwa die möglichen Kräuter); leer, wenn
   /// die Tätigkeit keine kennt.

@@ -838,31 +838,8 @@ int kraeuterMindestTapFuerFund(int suchschwierigkeit) =>
 /// Schlüssel 0 steht für Misserfolg, alle anderen Schlüssel für die TaP* einer
 /// gelungenen Probe. Die Werte sind Wahrscheinlichkeiten und summieren sich zu
 /// 1.
-Map<int, double> kraeuterTapVerteilung(KraeuterSucheEingabe eingabe) {
-  final request = baueKraeutersucheProbe(eingabe);
-  final haeufigkeit = <int, int>{};
-  for (var a = 1; a <= 20; a++) {
-    for (var b = 1; b <= 20; b++) {
-      for (var c = 1; c <= 20; c++) {
-        final probe = evaluateProbe(
-          request,
-          ProbeRollInput(
-            mode: ProbeRollMode.manual,
-            diceValues: <int>[a, b, c],
-            situationalModifier: request.initialSituationalModifier,
-            specializationApplied: false,
-          ),
-        );
-        final tap = kraeuterTapStern(probe);
-        haeufigkeit[tap] = (haeufigkeit[tap] ?? 0) + 1;
-      }
-    }
-  }
-  final schluessel = haeufigkeit.keys.toList()..sort();
-  return <int, double>{
-    for (final tap in schluessel) tap: haeufigkeit[tap]! / 8000,
-  };
-}
+Map<int, double> kraeuterTapVerteilung(KraeuterSucheEingabe eingabe) =>
+    wildnisTapVerteilung(baueKraeutersucheProbe(eingabe));
 
 /// Eine Zeile der Vorschau einer Kräutersuche.
 class KraeuterVorschauZeile {

@@ -57,8 +57,8 @@ class KartoKraeutersucheTaetigkeit extends KartoWildnisTaetigkeit {
 
   @override
   List<KartoWildnisDauer> get dauern => const <KartoWildnisDauer>[
-    (stunden: kKraeuterSucheNormaleStunden, text: '1 Stunde'),
-    (stunden: kKraeuterSucheAusfuehrlicheStunden, text: '2 Stunden'),
+    (minuten: kKraeuterSucheNormaleStunden * 60, text: '1 Stunde'),
+    (minuten: kKraeuterSucheAusfuehrlicheStunden * 60, text: '2 Stunden'),
   ];
 
   @override
@@ -140,7 +140,7 @@ class KartoKraeutersucheTaetigkeit extends KartoWildnisTaetigkeit {
 
   @override
   int tawBeiDauer(KartoWildnisKontext kontext) =>
-      kraeuterSuchenTawBeiDauer(kontext.taw, kontext.dauerStunden);
+      kraeuterSuchenTawBeiDauer(kontext.taw, kontext.dauerMinuten ~/ 60);
 
   @override
   ResolvedProbeRequest baueProbe(KartoWildnisKontext kontext) =>
@@ -239,12 +239,16 @@ class KartoKraeutersucheTaetigkeit extends KartoWildnisTaetigkeit {
         'Unbekannte Landschaft ${kontext.landschaft.schluessel}.',
       );
     }
+    final jahreszeit = kontext.jahreszeit;
+    if (jahreszeit == null) {
+      throw StateError('Die Kräutersuche braucht eine Jahreszeit.');
+    }
     return KraeuterSucheEingabe(
       landschaft: landschaft,
-      jahreszeit: kontext.jahreszeit,
+      jahreszeit: jahreszeit,
       taw: kontext.taw,
       eigenschaften: kontext.eigenschaften,
-      dauerStunden: kontext.dauerStunden,
+      dauerStunden: kontext.dauerMinuten ~/ 60,
       gelaendekunde: kontext.gelaendekunde,
       ortskenntnis: kontext.ortskenntnis,
       eingesetzteAsp: kontext.eingesetzteAsp,
