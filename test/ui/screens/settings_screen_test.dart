@@ -210,6 +210,13 @@ void main() {
         find.textContaining('BlazeFace', findRichText: true),
         findsOneWidget,
       );
+      // Ohne KARTEN_KACHELN (Testlauf) nennt der Absatz nur Avesmaps, das
+      // Kartenmaterial erst in Builds mit Kartenbild.
+      final avesmaps = tester.widget<Text>(
+        find.byKey(const ValueKey<String>('settings-legal-avesmaps')),
+      );
+      expect(avesmaps.data, contains('Avesmaps (avesmaps.de)'));
+      expect(avesmaps.data, isNot(contains('Kartenmaterial')));
 
       await tester.pageBack();
       await tester.pumpAndSettle();

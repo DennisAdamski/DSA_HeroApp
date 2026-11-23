@@ -392,6 +392,10 @@ class KartoKartenKnopf extends StatelessWidget {
 
 /// Namensnennung in der Kartenecke: Ortsdaten immer, das Kartenmaterial samt
 /// Logo und Lizenz nur mit Kartenbild.
+///
+/// Die Nennung wird nie gekürzt: Die Lizenz des Kartenpakets verlangt sie
+/// vollständig, einschließlich der Kennzeichnung als DSA-Fanprojekt. In
+/// schmalen Ecken umbricht sie deshalb lieber auf weitere Zeilen.
 class KartoKartenNennung extends StatelessWidget {
   /// Erstellt die Nennung.
   const KartoKartenNennung({super.key, this.manifest, this.knapp = false});
@@ -399,22 +403,28 @@ class KartoKartenNennung extends StatelessWidget {
   /// Kartenkacheln, oder `null` (ohne Kartenbild).
   final KartenKachelManifest? manifest;
 
-  /// Nur eine Zeile (Kachel der Spielansicht).
+  /// Schmale Ecke (Kachel der Spielansicht): ohne Logo und Lizenzadresse,
+  /// jeder Teil der Nennung auf einer eigenen Zeile.
   final bool knapp;
 
-  /// Pflichtzeile des Kartenmaterials, falls das Manifest keine nennt.
-  static const String kartenmaterial =
-      'Kartenmaterial © Ulisses Spiele · Originalkarte: Ina Kramer · '
-      'Bearbeitung: Avesmaps (DSA-Fanprojekt)';
+  /// Pflichtteile des Kartenmaterials, falls das Manifest keine nennt.
+  static const List<String> kartenmaterialTeile = <String>[
+    'Kartenmaterial © Ulisses Spiele',
+    'Originalkarte: Ina Kramer',
+    'Bearbeitung: Avesmaps (DSA-Fanprojekt)',
+  ];
 
   @override
   Widget build(BuildContext context) {
     final manifest = this.manifest;
+    final teile = manifest == null
+        ? const <String>[]
+        : manifest.nennung.isEmpty
+        ? kartenmaterialTeile
+        : manifest.nennung;
     final zeilen = <String>[
-      if (manifest != null)
-        manifest.nennung.isEmpty
-            ? kartenmaterial
-            : manifest.nennung.join(' · '),
+      if (teile.isNotEmpty)
+        if (knapp) ...teile else teile.join(' · '),
       'Ortsdaten und Wege: Avesmaps (avesmaps.de)',
       if (manifest != null && manifest.lizenzUri.isNotEmpty && !knapp)
         'Lizenz: ${manifest.lizenzUri}',
@@ -442,8 +452,6 @@ class KartoKartenNennung extends StatelessWidget {
               child: Text(
                 zeilen.join('\n'),
                 key: const ValueKey<String>('karto-karte-nennung'),
-                maxLines: knapp ? 2 : 4,
-                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontFamily: kKartenSchrift,
                   fontSize: 10,
