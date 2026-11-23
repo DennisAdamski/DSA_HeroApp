@@ -202,11 +202,24 @@ class _KartoReiseplanerState extends ConsumerState<KartoReiseplaner> {
         const <String, AvesmapsRoute>{};
 
     // Der Verweis des Standorts unterscheidet gleichnamige Ausgangsorte.
-    final von = _ort(
+    // Kennt das Verzeichnis ihn (noch) nicht, gilt er mit Kennung, aber ohne
+    // Position, statt eines gleichnamigen Orts.
+    final standortOrtId = gueltigeStandortOrtId(
+      widget.standort,
+      widget.standortOrtId,
+      orte,
+    );
+    final vonOrt = _ort(
       widget.standort,
       orte,
-      gewaehlt: eintragZumVerweis(widget.standort, widget.standortOrtId, orte),
+      gewaehlt: eintragZumVerweis(widget.standort, standortOrtId, orte),
     );
+    final von =
+        vonOrt != null &&
+            standortOrtId.isNotEmpty &&
+            vonOrt.ortId != standortOrtId
+        ? ReiseOrt(name: vonOrt.name, ortId: standortOrtId)
+        : vonOrt;
     final vorgabe = widget.ziel;
     // Das Ziel der Karte gilt, solange sein Name im Feld steht.
     final nach =

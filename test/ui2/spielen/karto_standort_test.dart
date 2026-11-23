@@ -317,6 +317,31 @@ void main() {
       );
     });
 
+    testWidgets('vor dem Laden der Avesmaps-Liste gilt der Verweis weiter', (
+      tester,
+    ) async {
+      // Das Wiki-Verzeichnis allein kennt noch keine Kennungen.
+      final geoeffnet = <Uri>[];
+      await zeige(
+        tester,
+        standort: 'Kronling',
+        standortOrtId: 'kronling-weiden',
+        gespeichert: [],
+        geoeffnet: geoeffnet,
+        orte: <OrtEintrag>[
+          OrtEintrag(name: 'Kronling', art: OrtArt.siedlung, region: 'Weiden'),
+        ],
+      );
+
+      await tester.tap(schluessel('karto-spiel-standort-karte'));
+      await tester.pump();
+
+      expect(
+        geoeffnet.single.toString(),
+        'https://avesmaps.de/?place=kronling-weiden',
+      );
+    });
+
     testWidgets('ein Verweis, der nicht zum Namen passt, gilt nicht', (
       tester,
     ) async {

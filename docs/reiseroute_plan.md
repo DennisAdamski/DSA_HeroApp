@@ -265,18 +265,30 @@ in den Reiseplaner und in neue Stationen tragen.
   Nur bei Belegung und mit Standort im JSON, Bestandszustände behalten ihren
   Hash. `copyWith` löst den Verweis, wenn sich der Text ohne neuen Verweis
   ändert. Sync: eigenes Feld oberster Ebene, normale Dreiwege-Zusammenführung.
-- **Schreiben** (`standortSetzen(ortId:)`, `reiseZustandSetzen(standortOrtId:)`,
-  Regel `standortOrtIdNachWechsel`): Eine ausdrückliche Wahl gilt (Vorschlag
-  der Ortseingabe, „Standort hierher“, Ankunft einer Reise), sonst ein
-  eindeutiger Name; ein gleichbleibender Name ohne Verweis behält den alten,
-  ein neuer Name und „Entfernen“ lösen ihn. Die Rast beim Anhalten hat keinen
-  Verweis. Die Station beim Ortswechsel übernimmt die Wahl (`gewaehlt`), eine
-  neue Station mit dem vorbelegten Standort dessen Verweis
+- **Schreiben** (`standortSetzen(ortId:, kartenX:, kartenY:)`,
+  `reiseZustandSetzen(standortOrtId:)`, Regel `standortOrtIdNachWechsel`):
+  Eine ausdrückliche Wahl gilt (Vorschlag der Ortseingabe, „Standort
+  hierher“, Ankunft einer Reise). Ohne Wahl behält ein gleichbleibender Name
+  den alten Verweis, solange das Verzeichnis ihm nicht widerspricht; erst
+  danach verknüpft ein eindeutiger Name. So tauscht ein unverändertes
+  Speichern einen gewählten Ort nicht gegen einen gleichnamigen. Ein neuer
+  Name ohne Verweis und „Entfernen“ lösen ihn; die Rast beim Anhalten hat
+  keinen.
+- **Stationen:** Die Station beim Ortswechsel trägt den Verweis des neuen
+  Standorts, auch wenn das Verzeichnis den Ort nicht kennt (dann mit der
+  Position der Wahl, etwa aus der Online-Suche). Ein Wechsel zwischen
+  gleichnamigen Orten mit verschiedenen Verweisen legt eine Station an. Eine
+  neue Station mit dem vorbelegten Standort übernimmt dessen Verweis
   (`standortVerweisFuer`).
-- **Lesen:** `ortZumStandort(ortId:)` und `eintragZumVerweis` nehmen den
-  Verweis nur, solange er zum Namen passt (Name oder voller Wiki-Seitenname).
-  Ältere App-Fassungen ändern den Text, ohne das Feld zu kennen; ihr alter
-  Verweis bleibt in `unbekannteFelder` erhalten, wird aber übergangen.
+- **Lesen:** `ortZumStandort(ortId:)`, `eintragZumVerweis` und
+  `gueltigeStandortOrtId` nehmen den Verweis, solange er zum Namen passt (Name
+  oder voller Wiki-Seitenname) bzw. das Verzeichnis ihm nicht widerspricht;
+  vor dem Laden der Avesmaps-Liste kennt das Verzeichnis keine Kennungen, der
+  Verweis gilt dann weiter. Ältere App-Fassungen ändern den Text, ohne das
+  Feld zu kennen; ihr alter Verweis bleibt in `unbekannteFelder` erhalten,
+  wird aber übergangen. Die Karte bietet „Standort hierher“ und „Hierher
+  reisen“ auch für gleichnamige Orte mit anderem Verweis an. Im
+  Sync-Konfliktdialog heißt das Feld „Standort (Kartenverweis)“.
 - **Tests:** `hero_state_model_test.dart` (Gruppe `standortOrtId`),
   `standort_rules_test.dart`, `standort_lage_rules_test.dart`,
   `reiseroute_rules_test.dart`, `karto_standort_bruecke_test.dart`,

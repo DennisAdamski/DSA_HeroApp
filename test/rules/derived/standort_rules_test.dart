@@ -392,37 +392,88 @@ void main() {
     });
   });
 
-  group('standortOrtIdNachWechsel', () {
-    final k2 = verweisOrte.firstWhere((o) => o.ortId == 'k2');
+  group('gueltigeStandortOrtId', () {
+    test('ein passender oder dem Verzeichnis unbekannter Verweis gilt', () {
+      expect(gueltigeStandortOrtId('Kronling', 'k2', verweisOrte), 'k2');
+      // Vor dem Laden der Avesmaps-Liste kennt das Verzeichnis keine
+      // Kennungen; der gespeicherte Verweis bleibt trotzdem gültig.
+      expect(gueltigeStandortOrtId('Kronling', 'k2', const []), 'k2');
+      expect(
+        gueltigeStandortOrtId('Kronling', 'online', verweisOrte),
+        'online',
+      );
+    });
 
+    test('ein Verweis, dem das Verzeichnis widerspricht, gilt nicht', () {
+      expect(gueltigeStandortOrtId('Gareth', 'k2', verweisOrte), '');
+      expect(gueltigeStandortOrtId('', 'k2', verweisOrte), '');
+      expect(gueltigeStandortOrtId('Kronling', '', verweisOrte), '');
+    });
+  });
+
+  group('standortOrtIdNachWechsel', () {
     String nach({
       String alt = 'Gareth',
       String altId = 'g',
       required String neu,
-      OrtEintrag? verweis,
+      String gewaehlt = '',
+      List<OrtEintrag> orte = const <OrtEintrag>[],
     }) => standortOrtIdNachWechsel(
       alterStandort: alt,
       alteOrtId: altId,
       neuerStandort: neu,
-      verweis: verweis,
+      gewaehlteOrtId: gewaehlt,
+      orte: orte,
     );
 
-    test('der Verweis der Eingabe gilt vor allem anderen', () {
-      expect(nach(neu: 'Kronling', verweis: k2), 'k2');
+    test('eine ausdrückliche Wahl gilt vor allem anderen', () {
+      expect(nach(neu: 'Kronling', gewaehlt: 'k2'), 'k2');
       expect(
-        nach(alt: 'Kronling', altId: 'k1', neu: 'Kronling', verweis: k2),
+        nach(alt: 'Kronling', altId: 'k1', neu: 'Kronling', gewaehlt: 'k2'),
         'k2',
       );
     });
 
-    test('ohne Verweis bleibt der alte bei gleichem Namen', () {
+    test('bei gleichem Namen bleibt der alte Verweis vor dem Namen', () {
       expect(nach(neu: ' gareth '), 'g');
+      // Ein unverändertes Speichern tauscht den gewählten Ort nicht gegen
+      // einen gleichnamigen, den der Name allein eindeutig fände.
+      final auweiler = verbindeOrtsverzeichnisse(
+        const <OrtEintrag>[],
+        const <AvesmapsOrt>[AvesmapsOrt(id: 'a', name: 'Auweiler', x: 1, y: 2)],
+      );
+      expect(
+        nach(
+          alt: 'Auweiler',
+          altId: 'online-b',
+          neu: 'Auweiler',
+          orte: auweiler,
+        ),
+        'online-b',
+      );
     });
 
-    test('ein neuer Name ohne Verweis und ein leerer Standort lösen ihn', () {
+    test('ein widerlegter alter Verweis weicht dem eindeutigen Namen', () {
+      // Etwa nach einer älteren App, die den Text ohne den Verweis änderte.
+      final orte = verbindeOrtsverzeichnisse(
+        const <OrtEintrag>[],
+        const <AvesmapsOrt>[
+          AvesmapsOrt(id: 'g', name: 'Gareth', x: 1, y: 2),
+          AvesmapsOrt(id: 'h', name: 'Havena', x: 3, y: 4),
+        ],
+      );
+      expect(nach(alt: 'Havena', altId: 'g', neu: 'Havena', orte: orte), 'h');
+    });
+
+    test('ein neuer Name ohne Wahl verknüpft nur eindeutig', () {
       expect(nach(neu: 'Havena'), '');
+      expect(nach(neu: 'Kronling', orte: verweisOrte), '');
+      expect(nach(neu: 'Auweiler', orte: verweisOrte), 'au');
+    });
+
+    test('ein leerer Standort löst den Verweis', () {
       expect(nach(neu: '   '), '');
-      expect(nach(neu: '', verweis: k2), '');
+      expect(nach(neu: '', gewaehlt: 'k2'), '');
     });
   });
 

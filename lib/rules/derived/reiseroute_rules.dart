@@ -278,9 +278,14 @@ bool _gleicherOrt(String a, String b) =>
 /// wenn sich der Ort nicht ändert oder wenn die zeitlich letzte Station schon
 /// diesen Ort trägt (zweiter Schutz gegen doppelte Einträge). Datum und
 /// Abenteuer kommen aus [reiseStationVorschlag]; den Kartenverweis (`ortId`,
-/// Position) trägt die Station, wenn der Standort ausdrücklich gewählt wurde
-/// ([gewaehlt], der Aufrufer verbürgt, dass er zum Namen gehört) oder [orte]
-/// den Ort eindeutig kennt.
+/// Position, soweit bekannt) trägt die Station, wenn der Standort einen
+/// Verweis hat ([gewaehlt], der Aufrufer verbürgt, dass er zum Namen gehört)
+/// oder [orte] den Ort eindeutig kennt.
+///
+/// Mit Verweis zählt auch ein Wechsel zwischen gleichnamigen Orten: Weicht
+/// [gewaehlt] vom bisherigen Verweis [alteOrtId] bzw. vom Verweis der letzten
+/// Station ab, entsteht eine Station. Fehlt eine der Kennungen, gilt wie
+/// bisher der Name.
 HeroSheet? reiseStationFuerStandortwechsel({
   required HeroSheet held,
   required String alterStandort,
@@ -289,13 +294,20 @@ HeroSheet? reiseStationFuerStandortwechsel({
   required DateTime jetzt,
   List<OrtEintrag> orte = const <OrtEintrag>[],
   OrtEintrag? gewaehlt,
+  String alteOrtId = '',
 }) {
   final neu = bereinigeStandort(neuerStandort);
-  if (neu.isEmpty || _gleicherOrt(alterStandort, neu)) return null;
+  final neueOrtId = gewaehlt?.ortId ?? '';
+  bool gleich(String ort, String ortId) =>
+      _gleicherOrt(ort, neu) &&
+      (neueOrtId.isEmpty || ortId.isEmpty || ortId == neueOrtId);
+  if (neu.isEmpty || gleich(alterStandort, alteOrtId)) return null;
   final sortiert = sortiereReiseStationen(held.reiseStationen);
-  if (sortiert.isNotEmpty && _gleicherOrt(sortiert.last.ort, neu)) return null;
+  if (sortiert.isNotEmpty && gleich(sortiert.last.ort, sortiert.last.ortId)) {
+    return null;
+  }
   final vorschlag = reiseStationVorschlag(held: held, standort: neu, id: id);
-  final verweis = gewaehlt != null && gewaehlt.hatKartenposition
+  final verweis = gewaehlt != null && gewaehlt.ortId.isNotEmpty
       ? gewaehlt
       : ortsVerweisFuer(neu, orte);
   final station = vorschlag.copyWith(

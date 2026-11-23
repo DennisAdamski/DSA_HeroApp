@@ -92,7 +92,11 @@ class KartoStandortKachel extends ConsumerWidget {
     final avesmaps = liste.asData?.value ?? const <AvesmapsOrt>[];
     final angefordert = ref.watch(avesmapsOrteAnforderungProvider);
     final abrufbar = ref.watch(avesmapsClientProvider) != null;
-    final eintrag = findeOrt(name, verzeichnis);
+    // Der Verweis wählt unter gleichnamigen Einträgen; ohne ihn (oder vor dem
+    // Laden der Avesmaps-Liste, die erst die Kennungen bringt) der Name.
+    final eintrag =
+        eintragZumVerweis(name, standortOrtId, verzeichnis) ??
+        findeOrt(name, verzeichnis);
     final ort = ortZumStandort(
       name,
       verzeichnis,

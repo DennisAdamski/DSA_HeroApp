@@ -265,6 +265,7 @@ class _KartoKartenBlattState extends ConsumerState<KartoKartenBlatt>
                     treffer: treffer,
                     bearbeitbar: !gesperrt && !schreibt,
                     standortName: werte?.state.standort ?? '',
+                    standortOrtId: werte?.state.standortOrtId ?? '',
                     etappe: switch (treffer) {
                       KartenTrefferStation(:final station) =>
                         etappen
@@ -354,6 +355,7 @@ class _Infotafel extends ConsumerWidget {
     required this.treffer,
     required this.bearbeitbar,
     required this.standortName,
+    this.standortOrtId = '',
     required this.onStandortSetzen,
     required this.onHierherReisen,
     required this.etappe,
@@ -370,6 +372,16 @@ class _Infotafel extends ConsumerWidget {
 
   /// Gespeicherter Standort; „Standort hierher“ fehlt für genau diesen Ort.
   final String standortName;
+
+  /// Verweis des Standorts; unterscheidet ihn von gleichnamigen Orten.
+  final String standortOrtId;
+
+  /// Ob [name] (mit Kennung [ortId]) der Standort selbst ist. Gleichnamige
+  /// Orte gelten als verschieden, sobald beide Kennungen bekannt sind und
+  /// abweichen.
+  bool _istStandort(String name, String ortId) =>
+      bereinigeStandort(name) == bereinigeStandort(standortName) &&
+      (ortId.isEmpty || standortOrtId.isEmpty || ortId == standortOrtId);
 
   /// Setzt den Standort; `null`, solange es nicht geht.
   final ValueChanged<KartoStandortWahl>? onStandortSetzen;
@@ -475,10 +487,15 @@ class _Infotafel extends ConsumerWidget {
           name: ort.name,
         );
         final wiki = sichererWikiLink(details?.wikiUrl ?? '');
-        _hierherKnopf(knoepfe, ort.name, ortId: ort.id);
+        _hierherKnopf(
+          knoepfe,
+          ort.name,
+          ortId: ort.id,
+          kartenX: ort.x,
+          kartenY: ort.y,
+        );
         final reisen = onHierherReisen;
-        if (reisen != null &&
-            bereinigeStandort(ort.name) != bereinigeStandort(standortName)) {
+        if (reisen != null && !_istStandort(ort.name, ort.id)) {
           knoepfe.add(
             _TafelKnopf(
               key: const ValueKey<String>('karto-karte-info-reisen'),
@@ -549,7 +566,13 @@ class _Infotafel extends ConsumerWidget {
             ),
           ],
         ]);
-        _hierherKnopf(knoepfe, station.ort, ortId: station.ortId);
+        _hierherKnopf(
+          knoepfe,
+          station.ort,
+          ortId: station.ortId,
+          kartenX: station.kartenX,
+          kartenY: station.kartenY,
+        );
         final stationsKarte = station.ortId.isEmpty
             ? null
             : ortsKartenLink(
@@ -648,10 +671,16 @@ class _Infotafel extends ConsumerWidget {
   }
 
   /// „Standort hierher“, außer für einen leeren Ort oder den Standort selbst.
-  void _hierherKnopf(List<Widget> knoepfe, String ort, {String ortId = ''}) {
+  void _hierherKnopf(
+    List<Widget> knoepfe,
+    String ort, {
+    String ortId = '',
+    double? kartenX,
+    double? kartenY,
+  }) {
     final name = bereinigeStandort(ort);
     final setzer = onStandortSetzen;
-    if (name.isEmpty || name == bereinigeStandort(standortName)) return;
+    if (name.isEmpty || _istStandort(name, ortId)) return;
     knoepfe.add(
       _TafelKnopf(
         key: const ValueKey<String>('karto-karte-info-hierher'),
@@ -659,7 +688,14 @@ class _Infotafel extends ConsumerWidget {
         text: 'Standort hierher',
         onPressed: setzer == null
             ? null
-            : () => setzer(KartoStandortWahl(name, ortId: ortId)),
+            : () => setzer(
+                KartoStandortWahl(
+                  name,
+                  ortId: ortId,
+                  kartenX: kartenX,
+                  kartenY: kartenY,
+                ),
+              ),
       ),
     );
   }

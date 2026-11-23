@@ -186,6 +186,7 @@ void main() {
       String neu = 'Havena',
       List<OrtEintrag> orte = const <OrtEintrag>[],
       OrtEintrag? gewaehlt,
+      String altId = '',
     }) => reiseStationFuerStandortwechsel(
       held: held,
       alterStandort: alt,
@@ -194,6 +195,7 @@ void main() {
       jetzt: jetzt,
       orte: orte,
       gewaehlt: gewaehlt,
+      alteOrtId: altId,
     );
 
     test('legt eine Station mit Datum und laufendem Abenteuer an', () {
@@ -276,6 +278,75 @@ void main() {
       )!.reiseStationen.single;
       expect(mitWahl.ortId, 'k2');
       expect(mitWahl.kartenX, 2);
+    });
+
+    test('ein Wechsel zwischen gleichnamigen Orten legt eine Station an', () {
+      final k1 = OrtEintrag(
+        name: 'Kronling',
+        art: OrtArt.siedlung,
+        ortId: 'k1',
+        kartenX: 1,
+        kartenY: 1,
+      );
+      final k2 = OrtEintrag(
+        name: 'Kronling',
+        art: OrtArt.siedlung,
+        ortId: 'k2',
+        kartenX: 2,
+        kartenY: 1,
+      );
+      final held = _held(
+        stationen: [
+          const HeroReiseStation(id: 'a', ort: 'Kronling', ortId: 'k1'),
+        ],
+      );
+      final neu = wechsel(
+        held,
+        alt: 'Kronling',
+        altId: 'k1',
+        neu: 'Kronling',
+        gewaehlt: k2,
+      );
+      expect(neu!.reiseStationen.last.ortId, 'k2');
+      // Derselbe Ort oder ein fehlender Verweis bleibt beim Namen.
+      expect(
+        wechsel(
+          held,
+          alt: 'Kronling',
+          altId: 'k1',
+          neu: 'Kronling',
+          gewaehlt: k1,
+        ),
+        isNull,
+      );
+      expect(
+        wechsel(held, alt: 'Kronling', neu: 'Kronling', gewaehlt: k2),
+        isNull,
+      );
+    });
+
+    test('ein Verweis ohne Position verknüpft die Station trotzdem', () {
+      final online = OrtEintrag(
+        name: 'Auweiler',
+        art: OrtArt.siedlung,
+        ortId: 'online-b',
+      );
+      final station = wechsel(
+        _held(),
+        neu: 'Auweiler',
+        orte: [
+          OrtEintrag(
+            name: 'Auweiler',
+            art: OrtArt.siedlung,
+            ortId: 'a',
+            kartenX: 1,
+            kartenY: 2,
+          ),
+        ],
+        gewaehlt: online,
+      )!.reiseStationen.single;
+      expect(station.ortId, 'online-b');
+      expect(station.kartenX, isNull);
     });
   });
 

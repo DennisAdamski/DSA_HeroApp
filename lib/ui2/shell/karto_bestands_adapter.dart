@@ -237,15 +237,19 @@ abstract interface class KartoBestandsAdapter {
   ///
   /// Schreibt frisch über `aendereZustandMitMeldung` und ersetzt nur die
   /// Felder `standort` und `standortOrtId`; ein leerer Text entfernt den
-  /// Standort. [ortId] ist die Kennung eines ausdrücklich gewählten Orts;
-  /// ohne sie verknüpft ein eindeutiger Name, ein gleichbleibender Name
-  /// behält den bisherigen Verweis (`standortOrtIdNachWechsel`).
+  /// Standort. [ortId] ist die Kennung eines ausdrücklich gewählten Orts,
+  /// [kartenX]/[kartenY] seine Position (für die Station, falls das
+  /// Verzeichnis den Ort nicht kennt). Ohne Wahl behält ein gleichbleibender
+  /// Name den bisherigen Verweis, sonst verknüpft ein eindeutiger Name
+  /// (`standortOrtIdNachWechsel`).
   Future<void> standortSetzen({
     required BuildContext context,
     required WidgetRef ref,
     required String heroId,
     required String standort,
     String ortId = '',
+    double? kartenX,
+    double? kartenY,
   });
 
   /// Hält eine Reise im Laufzeitzustand fest.

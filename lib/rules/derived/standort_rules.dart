@@ -268,24 +268,47 @@ OrtEintrag? eintragZumVerweis(String ort, String ortId, List<OrtEintrag> orte) {
   return null;
 }
 
+/// Der gespeicherte Verweis [ortId] des Orts [name], solange [orte] ihm
+/// nicht widerspricht; sonst leer.
+///
+/// Anders als [eintragZumVerweis] verlangt das keinen Eintrag: Vor dem Laden
+/// der Avesmaps-Liste trägt das Verzeichnis noch keine Kennungen, und auch
+/// danach fehlen ihm Orte, die nur die Online-Suche kannte. Verworfen wird der
+/// Verweis nur, wenn das Verzeichnis die Kennung kennt und ihr Name nicht
+/// passt (etwa nach einer älteren App, die den Text ohne den Verweis
+/// änderte).
+String gueltigeStandortOrtId(String name, String ortId, List<OrtEintrag> orte) {
+  if (_namensSchluessel(name).isEmpty || ortId.isEmpty) return '';
+  final bekannt = orte.any((eintrag) => eintrag.ortId == ortId);
+  if (bekannt && eintragZumVerweis(name, ortId, orte) == null) return '';
+  return ortId;
+}
+
 /// Kennung des Avesmaps-Orts, auf die der Standort nach einem Wechsel von
 /// [alterStandort] (mit Verweis [alteOrtId]) nach [neuerStandort] zeigt.
 ///
-/// Wie bei den Stationen: [verweis] ist der gewählte bzw. eindeutige Ort der
-/// Eingabe ([ortsVerweisFuer]) und gilt vor allem anderen. Ohne ihn bleibt
-/// der bisherige Verweis, solange der Name gleich bleibt (etwa ohne Netz und
-/// Ortsliste); ein neuer Name ohne Verweis und ein entfernter Standort lösen
-/// ihn.
+/// Eine ausdrückliche Wahl ([gewaehlteOrtId]: Vorschlag der Eingabe, Ort der
+/// Karte, Reiseziel) gilt vor allem anderen. Bleibt der Name gleich, bleibt
+/// der bisherige Verweis, solange [orte] ihm nicht widerspricht
+/// ([gueltigeStandortOrtId]); erst ohne ihn verknüpft ein eindeutiger Name
+/// ([ortsVerweisFuer]). So tauscht ein unverändertes Speichern einen
+/// gewählten Ort nicht gegen einen gleichnamigen. Ein entfernter Standort
+/// löst den Verweis.
 String standortOrtIdNachWechsel({
   required String alterStandort,
   required String alteOrtId,
   required String neuerStandort,
-  OrtEintrag? verweis,
+  String gewaehlteOrtId = '',
+  List<OrtEintrag> orte = const <OrtEintrag>[],
 }) {
   final neu = _namensSchluessel(neuerStandort);
   if (neu.isEmpty) return '';
-  if (verweis != null && verweis.ortId.isNotEmpty) return verweis.ortId;
-  return neu == _namensSchluessel(alterStandort) ? alteOrtId : '';
+  if (gewaehlteOrtId.isNotEmpty) return gewaehlteOrtId;
+  if (neu == _namensSchluessel(alterStandort)) {
+    final alt = gueltigeStandortOrtId(neuerStandort, alteOrtId, orte);
+    if (alt.isNotEmpty) return alt;
+  }
+  return ortsVerweisFuer(neuerStandort, orte)?.ortId ?? '';
 }
 
 /// Der Verweis des Standorts für einen Ort [ort] gleichen Namens, etwa eine

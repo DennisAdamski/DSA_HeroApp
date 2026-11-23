@@ -27,7 +27,12 @@ Future<bool> oeffneExtern(Uri uri) =>
 @immutable
 class KartoStandortWahl {
   /// Erstellt die Wahl.
-  const KartoStandortWahl(this.standort, {this.ortId = ''});
+  const KartoStandortWahl(
+    this.standort, {
+    this.ortId = '',
+    this.kartenX,
+    this.kartenY,
+  });
 
   /// Bereinigter Ortsname; leer entfernt den Standort.
   final String standort;
@@ -35,14 +40,22 @@ class KartoStandortWahl {
   /// Avesmaps-Kennung des gewählten Orts; leer ohne Auswahl.
   final String ortId;
 
+  /// Kartenposition des gewählten Orts, oder `null`.
+  final double? kartenX;
+
+  /// Kartenposition des gewählten Orts, oder `null`.
+  final double? kartenY;
+
   @override
   bool operator ==(Object other) =>
       other is KartoStandortWahl &&
       other.standort == standort &&
-      other.ortId == ortId;
+      other.ortId == ortId &&
+      other.kartenX == kartenX &&
+      other.kartenY == kartenY;
 
   @override
-  int get hashCode => Object.hash(standort, ortId);
+  int get hashCode => Object.hash(standort, ortId, kartenX, kartenY);
 
   @override
   String toString() => 'KartoStandortWahl($standort, ortId: $ortId)';
@@ -115,8 +128,9 @@ class KartoStandortZeile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final belegt = bereinigeStandort(standort).isNotEmpty;
-    // Der Verweis zählt nur, solange er zum Namen passt.
-    final ortId = eintragZumVerweis(standort, standortOrtId, orte)?.ortId ?? '';
+    // Der Verweis zählt, solange das Verzeichnis ihm nicht widerspricht; vor
+    // dem Laden der Avesmaps-Liste kennt es noch keine Kennungen.
+    final ortId = gueltigeStandortOrtId(standort, standortOrtId, orte);
     final link = belegt
         ? ortsKartenLink(
             name: standort,
@@ -215,7 +229,12 @@ Future<KartoStandortWahl?> zeigeStandortDialog(
     },
   );
   if (neu == null) return null;
-  return KartoStandortWahl(bereinigeStandort(neu.standort), ortId: neu.ortId);
+  return KartoStandortWahl(
+    bereinigeStandort(neu.standort),
+    ortId: neu.ortId,
+    kartenX: neu.kartenX,
+    kartenY: neu.kartenY,
+  );
 }
 
 // Eingabe des Standorts. Gibt die Wahl zurück; „Entfernen“ gibt einen leeren
@@ -250,7 +269,14 @@ class _StandortDialogState extends State<_StandortDialog> {
         gewaehlt.ortId.isNotEmpty &&
         bereinigeStandort(gewaehlt.name).toLowerCase() ==
             bereinigeStandort(text).toLowerCase();
-    return KartoStandortWahl(text, ortId: passt ? gewaehlt.ortId : '');
+    return passt
+        ? KartoStandortWahl(
+            text,
+            ortId: gewaehlt.ortId,
+            kartenX: gewaehlt.kartenX,
+            kartenY: gewaehlt.kartenY,
+          )
+        : KartoStandortWahl(text);
   }
 
   @override

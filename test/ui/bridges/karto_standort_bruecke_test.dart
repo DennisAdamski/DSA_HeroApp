@@ -35,7 +35,11 @@ void main() {
   late WidgetRef widgetRef;
 
   Future<
-    (FakeRepository, ProviderContainer, void Function(String, {String ortId}))
+    (
+      FakeRepository,
+      ProviderContainer,
+      void Function(String, {String ortId, double? x, double? y}),
+    )
   >
   baue(
     WidgetTester tester, {
@@ -87,13 +91,15 @@ void main() {
         ),
       ),
     );
-    void setze(String neu, {String ortId = ''}) {
+    void setze(String neu, {String ortId = '', double? x, double? y}) {
       adapter.standortSetzen(
         context: kontext,
         ref: widgetRef,
         heroId: 'rondra',
         standort: neu,
         ortId: ortId,
+        kartenX: x,
+        kartenY: y,
       );
     }
 
@@ -232,6 +238,62 @@ void main() {
       expect(zustand.standort, 'Havena');
       expect(zustand.standortOrtId, isEmpty);
     });
+
+    testWidgets('unverändertes Speichern behält den gewählten Ort', (
+      tester,
+    ) async {
+      // „Gareth“ ist im Verzeichnis eindeutig (g); gespeichert ist aber ein
+      // gewählter Ort, den das Verzeichnis nicht kennt.
+      final (repo, _, setze) = await baue(
+        tester,
+        standort: 'Gareth',
+        standortOrtId: 'online-g',
+        orte: orte,
+      );
+
+      setze('Gareth');
+      await tester.pumpAndSettle();
+      expect((await repo.loadHeroState('rondra'))!.standortOrtId, 'online-g');
+    });
+
+    testWidgets('eine Wahl außerhalb des Verzeichnisses trägt ihre Position '
+        'in die Station', (tester) async {
+      final (repo, _, setze) = await baue(tester, orte: orte);
+
+      // Gleichnamig mit k1/k2, aber ein dritter Ort (etwa aus der
+      // Online-Suche).
+      setze('Kronling', ortId: 'k3', x: 9, y: 8);
+      await tester.pumpAndSettle();
+
+      expect((await repo.loadHeroState('rondra'))!.standortOrtId, 'k3');
+      final station = (await repo.loadHeroById('rondra'))!
+          .reiseStationen
+          .single;
+      expect(station.ortId, 'k3');
+      expect(station.kartenX, 9);
+      expect(station.kartenY, 8);
+    });
+
+    testWidgets(
+      'ein Wechsel zwischen gleichnamigen Orten legt eine Station an',
+      (tester) async {
+        final (repo, _, setze) = await baue(
+          tester,
+          standort: 'Kronling',
+          standortOrtId: 'k1',
+          orte: orte,
+        );
+
+        setze('Kronling', ortId: 'k2');
+        await tester.pumpAndSettle();
+
+        expect((await repo.loadHeroState('rondra'))!.standortOrtId, 'k2');
+        final station = (await repo.loadHeroById('rondra'))!
+            .reiseStationen
+            .single;
+        expect(station.ortId, 'k2');
+      },
+    );
 
     testWidgets('eine Kennung gilt auch ohne geladenes Verzeichnis', (
       tester,

@@ -364,6 +364,8 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
         heroId: heroId,
         standort: wahl.standort,
         ortId: wahl.ortId,
+        kartenX: wahl.kartenX,
+        kartenY: wahl.kartenY,
       ),
     ),
     // Schreibt den Standort über denselben Zustandsweg wie die Standortzeile
@@ -379,6 +381,8 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
         heroId: heroId,
         standort: wahl.standort,
         ortId: wahl.ortId,
+        kartenX: wahl.kartenX,
+        kartenY: wahl.kartenY,
       ),
       onReiseZustand: ({required unterwegs, standort, standortOrtId = ''}) =>
           bestand.reiseZustandSetzen(
@@ -747,6 +751,8 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
       heroId: heroId,
       standort: wahl.standort,
       ortId: wahl.ortId,
+      kartenX: wahl.kartenX,
+      kartenY: wahl.kartenY,
     ),
     onOeffnen: () {
       final abenteuer = laufendesAbenteuer(werte.hero);

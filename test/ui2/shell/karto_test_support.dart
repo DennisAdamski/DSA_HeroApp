@@ -274,6 +274,8 @@ class TestBestand implements KartoBestandsAdapter {
     required String heroId,
     required String standort,
     String ortId = '',
+    double? kartenX,
+    double? kartenY,
   }) async {
     aufrufe.add(
       ortId.isEmpty
