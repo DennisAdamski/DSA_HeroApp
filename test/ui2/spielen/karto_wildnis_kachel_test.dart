@@ -537,7 +537,7 @@ void main() {
       );
       expect(k('karto-wildnis-verlust-buchen'), findsNothing);
       expect(
-        find.text('Waffe aus der Tabelle: Bestand bitte von Hand anpassen.'),
+        find.text('Ohne verknüpften Bestand: bitte von Hand anpassen.'),
         findsOneWidget,
       );
     });

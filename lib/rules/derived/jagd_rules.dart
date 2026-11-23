@@ -76,6 +76,7 @@ class JagdWaffe {
     required this.modifikator,
     required this.verbrauch,
     this.herkunft = '',
+    this.slotId,
   });
 
   /// Stabiler Schlüssel (`tabelle:kurzbogen` oder `held:<Slot-ID>`).
@@ -95,6 +96,10 @@ class JagdWaffe {
 
   /// Woher der Modifikator stammt (`Tabelle` oder `Reichweite 60 Schritt`).
   final String herkunft;
+
+  /// Slot-ID der Waffe des Helden; `null` bei Tabellenwaffen und Slots ohne
+  /// ID (deren Bestand sich nicht sicher wiederfinden lässt).
+  final String? slotId;
 }
 
 JagdWaffe _tabelle(
@@ -297,6 +302,7 @@ JagdWaffe? jagdWaffeAusSlot(MainWeaponSlot slot) {
   if (slot.combatType != WeaponCombatType.ranged) return null;
   final talentId = slot.talentId.trim();
   if (talentId.isEmpty) return null;
+  final slotId = slot.id.isEmpty ? null : slot.id;
   final name = slot.name.trim().isEmpty ? slot.weaponType : slot.name;
   final schluessel = 'held:${slot.id.isEmpty ? _vergleich(name) : slot.id}';
   final tabelle =
@@ -309,8 +315,12 @@ JagdWaffe? jagdWaffeAusSlot(MainWeaponSlot slot) {
       modifikator: tabelle.modifikator,
       verbrauch: tabelle.verbrauch,
       herkunft: 'wie ${tabelle.name}',
+      slotId: slotId,
     );
   }
+  // Lasso, Netze, Enterhaken und Kettenkugel laufen über das Talent
+  // Schleuder, taugen aber nicht zur Jagd; nur Tabellenwaffen zählen.
+  if (talentId == _schleuder) return null;
   final reichweite = jagdWaffenReichweite(slot);
   if (reichweite == null) return null;
   return JagdWaffe(
@@ -320,6 +330,7 @@ JagdWaffe? jagdWaffeAusSlot(MainWeaponSlot slot) {
     modifikator: jagdWaffenModifikatorNachReichweite(reichweite, talentId),
     verbrauch: _verbrauchNachTalent(talentId),
     herkunft: 'Reichweite $reichweite Schritt',
+    slotId: slotId,
   );
 }
 
@@ -586,10 +597,9 @@ String frischfleischBeschreibung(Wildnisregion region) =>
 /// Wertet eine Jagd aus: TaP* = Tagesrationen Wildbret fürs Inventar, dazu
 /// Geschossverlust und Wiederholbarkeit.
 ///
-/// Mit einer Waffe des Helden (`held:<Slot-ID>`) kennt das Ergebnis den Slot,
+/// Mit einer Waffe des Helden ([JagdWaffe.slotId]) kennt das Ergebnis den Slot,
 /// damit der Verlust am Geschossbestand abgebucht werden kann.
 WildnisErgebnis werteJagdAus(JagdEingabe e, ProbeResult probe) {
-  final schluessel = e.waffe.schluessel;
   return wildnisRationenErgebnis(
     probe,
     erschwernis: berechneJagdErschwernis(e).gesamt,
@@ -602,9 +612,7 @@ WildnisErgebnis werteJagdAus(JagdEingabe e, ProbeResult probe) {
     munition: WildnisMunition(
       waffenName: e.waffe.name,
       verbrauch: e.waffe.verbrauch,
-      waffenSlotId: schluessel.startsWith('held:')
-          ? schluessel.substring('held:'.length)
-          : null,
+      waffenSlotId: e.waffe.slotId,
     ),
   );
 }

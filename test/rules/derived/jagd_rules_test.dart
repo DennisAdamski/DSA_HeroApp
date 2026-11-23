@@ -147,6 +147,30 @@ void main() {
       expect(waffe.modifikator, -2);
     });
 
+    test('Lasso und Netze über das Talent Schleuder sind keine Jagdwaffen', () {
+      expect(
+        jagdWaffeAusSlot(
+          _fernwaffe(
+            name: 'Lasso',
+            talentId: 'tal_schleuder',
+            reichweiten: const <String>['15'],
+          ),
+        ),
+        isNull,
+      );
+      expect(
+        jagdWaffeAusSlot(
+          _fernwaffe(name: 'Schleuder', talentId: 'tal_schleuder'),
+        )!.modifikator,
+        4,
+      );
+    });
+
+    test('nur Slots mit ID tragen eine Slot-ID', () {
+      expect(jagdWaffeAusSlot(_fernwaffe())!.slotId, 'w1');
+      expect(jagdWaffeAusSlot(_fernwaffe(id: ''))!.slotId, isNull);
+    });
+
     test('unbekannte Waffen rechnen nach der letzten Reichweite', () {
       final waffe = jagdWaffeAusSlot(
         _fernwaffe(

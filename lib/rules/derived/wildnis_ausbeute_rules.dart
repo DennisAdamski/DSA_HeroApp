@@ -148,8 +148,8 @@ class WildnisMunition {
   /// Art des Verlusts.
   final JagdVerbrauch verbrauch;
 
-  /// Slot-ID der Waffe des Helden; `null` bei einer Waffe aus der Tabelle,
-  /// deren Bestand die App nicht kennt.
+  /// Slot-ID der Waffe des Helden; `null` bei einer Waffe aus der Tabelle
+  /// oder einem Slot ohne ID, deren Bestand die App nicht kennt.
   final String? waffenSlotId;
 }
 
@@ -212,6 +212,7 @@ CombatConfig mitJagdGeschossverlust(
       .firstOrNull;
   final bestand = frisch?.count ?? geschoss.count;
   final abzug = verloren > bestand ? bestand : verloren;
+  // Leerer Bestand: dieselbe Konfiguration, damit nichts geschrieben wird.
   if (abzug <= 0) return config;
   return mitGeschossSchritt(config, waffe, geschoss, -abzug);
 }

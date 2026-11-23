@@ -735,7 +735,7 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
                 if (bestand == null || geschoss == null || bruecke == null)
                   Text(
                     munition.waffenSlotId == null
-                        ? 'Waffe aus der Tabelle: Bestand bitte von Hand '
+                        ? 'Ohne verknüpften Bestand: bitte von Hand '
                               'anpassen.'
                         : 'Kein Geschoss gewählt: Bestand bitte von Hand '
                               'anpassen.',
