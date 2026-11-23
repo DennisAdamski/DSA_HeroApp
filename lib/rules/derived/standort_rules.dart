@@ -217,7 +217,7 @@ List<OrtEintrag> verbindeOrtsverzeichnisse(
 /// `null`.
 ///
 /// Hat der Nutzer einen Vorschlag gewählt ([gewaehlt]) und steht dessen Name
-/// noch im Feld, gilt dieser. Sonst zählt ein Eintrag aus [orte] mit
+/// (oder sein voller Wiki-Seitenname) noch im Feld, gilt dieser. Sonst zählt ein Eintrag aus [orte] mit
 /// Kartenposition, dessen Name dem Text gleicht (ohne Rücksicht auf Groß-
 /// und Kleinschreibung), sofern es genau einer ist. Gleichnamige Orte
 /// verknüpft nur die ausdrückliche Auswahl.
@@ -230,7 +230,9 @@ OrtEintrag? ortsVerweisFuer(
   if (schluessel.isEmpty) return null;
   if (gewaehlt != null &&
       gewaehlt.hatKartenposition &&
-      _namensSchluessel(gewaehlt.name) == schluessel) {
+      (_namensSchluessel(gewaehlt.name) == schluessel ||
+          (gewaehlt.seite.isNotEmpty &&
+              _namensSchluessel(gewaehlt.seite) == schluessel))) {
     return gewaehlt;
   }
   OrtEintrag? treffer;
@@ -241,4 +243,89 @@ OrtEintrag? ortsVerweisFuer(
     treffer = eintrag;
   }
   return treffer;
+}
+
+/// Der Eintrag aus [orte], auf den der gespeicherte Verweis [ortId] zeigt,
+/// solange dessen Name oder voller Wiki-Seitenname (etwa „Auweiler
+/// (Darpatien)“, so heißt der Ort bei Avesmaps) zum Text [ort] passt; sonst
+/// `null`.
+///
+/// Der Verweis allein reicht nicht: Ältere App-Fassungen ändern den Text,
+/// ohne das Feld des Verweises zu kennen, und eine Zusammenführung zweier
+/// Geräte kann Text und Verweis verschiedener Seiten übernehmen. Ohne
+/// geladenes Verzeichnis gibt es keinen Eintrag.
+OrtEintrag? eintragZumVerweis(String ort, String ortId, List<OrtEintrag> orte) {
+  final schluessel = _namensSchluessel(ort);
+  if (schluessel.isEmpty || ortId.isEmpty) return null;
+  for (final eintrag in orte) {
+    if (eintrag.ortId != ortId) continue;
+    if (_namensSchluessel(eintrag.name) == schluessel ||
+        (eintrag.seite.isNotEmpty &&
+            _namensSchluessel(eintrag.seite) == schluessel)) {
+      return eintrag;
+    }
+  }
+  return null;
+}
+
+/// Der gespeicherte Verweis [ortId] des Orts [name], solange [orte] ihm
+/// nicht widerspricht; sonst leer.
+///
+/// Anders als [eintragZumVerweis] verlangt das keinen Eintrag: Vor dem Laden
+/// der Avesmaps-Liste trägt das Verzeichnis noch keine Kennungen, und auch
+/// danach fehlen ihm Orte, die nur die Online-Suche kannte. Verworfen wird der
+/// Verweis nur, wenn das Verzeichnis die Kennung kennt und ihr Name nicht
+/// passt (etwa nach einer älteren App, die den Text ohne den Verweis
+/// änderte).
+String gueltigeStandortOrtId(String name, String ortId, List<OrtEintrag> orte) {
+  if (_namensSchluessel(name).isEmpty || ortId.isEmpty) return '';
+  final bekannt = orte.any((eintrag) => eintrag.ortId == ortId);
+  if (bekannt && eintragZumVerweis(name, ortId, orte) == null) return '';
+  return ortId;
+}
+
+/// Kennung des Avesmaps-Orts, auf die der Standort nach einem Wechsel von
+/// [alterStandort] (mit Verweis [alteOrtId]) nach [neuerStandort] zeigt.
+///
+/// Eine ausdrückliche Wahl ([gewaehlteOrtId]: Vorschlag der Eingabe, Ort der
+/// Karte, Reiseziel) gilt vor allem anderen. Bleibt der Name gleich, bleibt
+/// der bisherige Verweis, solange [orte] ihm nicht widerspricht
+/// ([gueltigeStandortOrtId]); erst ohne ihn verknüpft ein eindeutiger Name
+/// ([ortsVerweisFuer]). So tauscht ein unverändertes Speichern einen
+/// gewählten Ort nicht gegen einen gleichnamigen. Ein entfernter Standort
+/// löst den Verweis.
+String standortOrtIdNachWechsel({
+  required String alterStandort,
+  required String alteOrtId,
+  required String neuerStandort,
+  String gewaehlteOrtId = '',
+  List<OrtEintrag> orte = const <OrtEintrag>[],
+}) {
+  final neu = _namensSchluessel(neuerStandort);
+  if (neu.isEmpty) return '';
+  if (gewaehlteOrtId.isNotEmpty) return gewaehlteOrtId;
+  if (neu == _namensSchluessel(alterStandort)) {
+    final alt = gueltigeStandortOrtId(neuerStandort, alteOrtId, orte);
+    if (alt.isNotEmpty) return alt;
+  }
+  return ortsVerweisFuer(neuerStandort, orte)?.ortId ?? '';
+}
+
+/// Der Verweis des Standorts für einen Ort [ort] gleichen Namens, etwa eine
+/// neue Station, die mit dem Standort vorbelegt ist; sonst `null`.
+///
+/// So trägt die Station denselben Ort wie der Standort, auch wenn der Name
+/// mehrdeutig ist und die Eingabe allein keinen Verweis findet.
+OrtEintrag? standortVerweisFuer(
+  String ort, {
+  required String standort,
+  required String standortOrtId,
+  required List<OrtEintrag> orte,
+}) {
+  final schluessel = _namensSchluessel(ort);
+  if (schluessel.isEmpty || schluessel != _namensSchluessel(standort)) {
+    return null;
+  }
+  final eintrag = eintragZumVerweis(standort, standortOrtId, orte);
+  return eintrag != null && eintrag.hatKartenposition ? eintrag : null;
 }

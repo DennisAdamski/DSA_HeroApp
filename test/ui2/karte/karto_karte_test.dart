@@ -22,6 +22,7 @@ import '../../test_support/fake_repository.dart';
 
 import 'package:dsa_heldenverwaltung/ui2/karte/karto_karte.dart';
 import 'package:dsa_heldenverwaltung/ui2/karte/karto_karten_blatt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_standort.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/standort/karto_standort_kachel.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
@@ -212,6 +213,7 @@ void main() {
       WidgetTester tester, {
       bool planOffen = false,
       Widget Function(String heroId)? start,
+      String standortOrtId = '',
     }) async {
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = const Size(900, 1000);
@@ -221,7 +223,10 @@ void main() {
       repo = FakeRepository(
         heroes: <HeroSheet>[held],
         states: <String, HeroState>{
-          'rondra': const HeroState.empty().copyWith(standort: 'Punin'),
+          'rondra': const HeroState.empty().copyWith(
+            standort: 'Punin',
+            standortOrtId: standortOrtId,
+          ),
         },
       );
       final container = ProviderContainer(
@@ -293,6 +298,58 @@ void main() {
       expect(_k('karto-karte-info-name'), findsNothing);
     });
 
+    testWidgets('Standort hierher fehlt nur für den Standort selbst', (
+      tester,
+    ) async {
+      Future<void> tippePunin({required String standortOrtId}) async {
+        await zeige(
+          tester,
+          standortOrtId: standortOrtId,
+          start: (heroId) => KartoKartenBlatt(
+            heroId: heroId,
+            mitRoute: false,
+            onStandortSetzen: (_) async {},
+          ),
+        );
+        // Ohne Route trifft der Tipp den Ort Punin, nicht die Station.
+        await tippeStation(tester, 's2');
+        expect(tester.widget<Text>(_k('karto-karte-info-name')).data, 'Punin');
+      }
+
+      await tippePunin(standortOrtId: 'punin');
+      expect(_k('karto-karte-info-hierher'), findsNothing);
+
+      // Ein gleichnamiger, anderer Ort (anderer Verweis) bleibt erreichbar.
+      await tippePunin(standortOrtId: 'punin-am-see');
+      expect(_k('karto-karte-info-hierher'), findsOneWidget);
+    });
+
+    testWidgets('eine verknüpfte Station öffnet genau ihren Ort', (
+      tester,
+    ) async {
+      final geoeffnet = <Uri>[];
+      await zeige(
+        tester,
+        start: (heroId) => KartoKartenBlatt(
+          heroId: heroId,
+          oeffneLink: (uri) async {
+            geoeffnet.add(uri);
+            return true;
+          },
+        ),
+      );
+
+      await tippeStation(tester, 's1');
+      await tester.tap(_k('karto-karte-info-avesmaps'));
+      await tester.pumpAndSettle();
+
+      // Ohne geladene Ortsdetails über die Kennung, nicht über den Namen.
+      expect(
+        geoeffnet.single.toString(),
+        'https://avesmaps.de/?place=$_garethId',
+      );
+    });
+
     testWidgets('während einer Planung ist Bearbeiten gesperrt', (
       tester,
     ) async {
@@ -309,13 +366,13 @@ void main() {
     });
 
     testWidgets('Standort hierher setzt den getroffenen Ort', (tester) async {
-      final gesetzt = <String>[];
+      final gesetzt = <KartoStandortWahl>[];
       await zeige(
         tester,
         start: (heroId) => KartoKartenBlatt(
           heroId: heroId,
           mitRoute: false,
-          onStandortSetzen: (standort) async => gesetzt.add(standort),
+          onStandortSetzen: (wahl) async => gesetzt.add(wahl),
         ),
       );
       expect(
@@ -327,7 +384,15 @@ void main() {
       expect(tester.widget<Text>(_k('karto-karte-info-name')).data, 'Gareth');
       await tester.tap(_k('karto-karte-info-hierher'));
       await tester.pumpAndSettle();
-      expect(gesetzt, <String>['Gareth']);
+      // Der Ort der Karte bringt seine Kennung mit.
+      expect(gesetzt, <KartoStandortWahl>[
+        const KartoStandortWahl(
+          'Gareth',
+          ortId: _garethId,
+          kartenX: 551.625,
+          kartenY: 532.969,
+        ),
+      ]);
       expect(_k('karto-karte-info-name'), findsNothing);
     });
 
@@ -339,7 +404,11 @@ void main() {
         start: (heroId) => KartoKartenBlatt(
           heroId: heroId,
           mitRoute: false,
-          onReiseZustand: ({required unterwegs, standort}) async => true,
+          onReiseZustand: ({
+            required unterwegs,
+            standort,
+            standortOrtId = '',
+          }) async => true,
         ),
       );
       await tippeStation(tester, 's1');

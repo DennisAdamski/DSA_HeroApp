@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/standort_lage_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_info_chip.dart';
@@ -16,20 +17,84 @@ typedef KartoLinkOeffner = Future<bool> Function(Uri uri);
 Future<bool> oeffneExtern(Uri uri) =>
     launchUrl(uri, mode: LaunchMode.externalApplication);
 
+/// Ein neuer Standort: der bereinigte Text und, falls bekannt, die
+/// Avesmaps-Kennung des gewählten Orts.
+///
+/// Die Kennung stammt aus einer ausdrücklichen Auswahl (Vorschlag der
+/// Ortseingabe, Ort der Karte, Reiseziel); einen eindeutigen Namen ohne
+/// Auswahl verknüpft der Schreibweg selbst. Ein leerer [standort] heißt
+/// „Standort entfernen“.
+@immutable
+class KartoStandortWahl {
+  /// Erstellt die Wahl.
+  const KartoStandortWahl(
+    this.standort, {
+    this.ortId = '',
+    this.kartenX,
+    this.kartenY,
+  });
+
+  /// Bereinigter Ortsname; leer entfernt den Standort.
+  final String standort;
+
+  /// Avesmaps-Kennung des gewählten Orts; leer ohne Auswahl.
+  final String ortId;
+
+  /// Kartenposition des gewählten Orts, oder `null`.
+  final double? kartenX;
+
+  /// Kartenposition des gewählten Orts, oder `null`.
+  final double? kartenY;
+
+  @override
+  bool operator ==(Object other) =>
+      other is KartoStandortWahl &&
+      other.standort == standort &&
+      other.ortId == ortId &&
+      other.kartenX == kartenX &&
+      other.kartenY == kartenY;
+
+  @override
+  int get hashCode => Object.hash(standort, ortId, kartenX, kartenY);
+
+  @override
+  String toString() => 'KartoStandortWahl($standort, ortId: $ortId)';
+}
+
+/// Speichert einen neuen Standort des Helden (frischer Zustandsweg der
+/// Spielansicht, legt bei Ortswechsel eine Station an).
+typedef KartoStandortSetzer = Future<void> Function(KartoStandortWahl wahl);
+
+/// Wiki-Adresse aus den Ortsdetails von [ortId], sofern sie in dieser
+/// Sitzung schon geladen sind; leer sonst.
+///
+/// Löst bewusst keinen Abruf aus: Listen mit vielen Orten (Reiseroute) sollen
+/// nicht je Ort bei Avesmaps anfragen. Ohne Details öffnet der Rücklink den
+/// Ort über seine Kennung. Lädt eine andere Ansicht die Details später (etwa
+/// die Standort-Kachel oder die Infotafel der Karte), baut der Aufrufer neu.
+String kartoGeladeneWikiUrl(WidgetRef ref, String ortId) {
+  if (ortId.isEmpty) return '';
+  final details = avesmapsOrtsdetailsProvider(ortId);
+  if (!ref.watch(details.exists)) return '';
+  return ref.watch(details).asData?.value?.wikiUrl ?? '';
+}
+
 /// Standort des Helden als Marke samt Kartenlink, für den Abenteuerabschnitt.
 ///
 /// Hält den aktuellen Aufenthaltsort fest und verlinkt ihn auf die
 /// Avesmaps-Karte. Die Karte wird nicht eingebettet (die Seite verbietet das
-/// per `X-Frame-Options`), sondern im Browser geöffnet. Gespeichert wird nur
-/// der Ortsname; es werden keine Karten- oder Ortsdaten übernommen. Die
+/// per `X-Frame-Options`), sondern im Browser geöffnet. Gespeichert werden
+/// der Ortsname und, bei Auswahl aus dem Verzeichnis, die Kennung des Orts
+/// ([standortOrtId]); der Kartenlink öffnet dann genau diesen Ort. Die
 /// Eingabe schlägt Orte aus dem Ortsverzeichnis vor ([orte]), bleibt aber
 /// frei. Zu bekannten Orten führt ein zweiter Link in das Wiki Aventurica. Für Regionen, Flüsse und Straßen entfällt der Kartenlink, weil
 /// Avesmaps nur Siedlungen öffnet.
-class KartoStandortZeile extends StatelessWidget {
+class KartoStandortZeile extends ConsumerWidget {
   /// Erstellt die Zeile für den gespeicherten [standort].
   const KartoStandortZeile({
     super.key,
     required this.standort,
+    this.standortOrtId = '',
     required this.onSpeichern,
     this.oeffneLink = oeffneExtern,
     this.orte = const <OrtEintrag>[],
@@ -40,8 +105,11 @@ class KartoStandortZeile extends StatelessWidget {
   /// Gespeicherter Standort; leer, solange keiner festgehalten ist.
   final String standort;
 
-  /// Speichert den bereinigten Standort; ein leerer Text entfernt ihn.
-  final Future<void> Function(String standort) onSpeichern;
+  /// Gespeicherter Verweis auf den Avesmaps-Ort; leer ohne Verweis.
+  final String standortOrtId;
+
+  /// Speichert den neuen Standort; ein leerer Text entfernt ihn.
+  final KartoStandortSetzer onSpeichern;
 
   /// Öffnet den Kartenlink; in Tests ersetzbar.
   final KartoLinkOeffner oeffneLink;
@@ -58,10 +126,18 @@ class KartoStandortZeile extends StatelessWidget {
   final bool liveOrte;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final belegt = bereinigeStandort(standort).isNotEmpty;
-    final link = belegt && kartenlinkSinnvoll(standort, orte)
-        ? avesmapsLink(standort)
+    // Der Verweis zählt, solange das Verzeichnis ihm nicht widerspricht; vor
+    // dem Laden der Avesmaps-Liste kennt es noch keine Kennungen.
+    final ortId = gueltigeStandortOrtId(standort, standortOrtId, orte);
+    final link = belegt
+        ? ortsKartenLink(
+            name: standort,
+            ortId: ortId,
+            wikiUrl: kartoGeladeneWikiUrl(ref, ortId),
+            orte: orte,
+          )
         : null;
     final wikiLink = wikiAventuricaLink(standort, orte);
 
@@ -130,14 +206,15 @@ class KartoStandortZeile extends StatelessWidget {
 /// Ohne feste Liste beobachtet der Dialog `ortsverzeichnisProvider` sowie
 /// die Online-Suche, damit während der Eingabe geladene Orte verfügbar sind.
 ///
-/// Liefert den bereinigten Text; ein leerer Text heißt „Standort entfernen“,
-/// `null` heißt abgebrochen. Gespeichert wird hier nichts.
-Future<String?> zeigeStandortDialog(
+/// Liefert den bereinigten Text samt Kennung eines gewählten Vorschlags,
+/// solange dessen Name noch im Feld steht; ein leerer Text heißt „Standort
+/// entfernen“, `null` heißt abgebrochen. Gespeichert wird hier nichts.
+Future<KartoStandortWahl?> zeigeStandortDialog(
   BuildContext context, {
   required String standort,
   List<OrtEintrag>? orte,
 }) async {
-  final neu = await showDialog<String>(
+  final neu = await showDialog<KartoStandortWahl>(
     context: context,
     builder: (_) {
       final anfang = bereinigeStandort(standort);
@@ -151,10 +228,16 @@ Future<String?> zeigeStandortDialog(
       );
     },
   );
-  return neu == null ? null : bereinigeStandort(neu);
+  if (neu == null) return null;
+  return KartoStandortWahl(
+    bereinigeStandort(neu.standort),
+    ortId: neu.ortId,
+    kartenX: neu.kartenX,
+    kartenY: neu.kartenY,
+  );
 }
 
-// Eingabe des Standorts. Gibt den Text zurück; „Entfernen“ gibt einen leeren
+// Eingabe des Standorts. Gibt die Wahl zurück; „Entfernen“ gibt einen leeren
 // Text zurück, Abbrechen gibt null zurück.
 class _StandortDialog extends StatefulWidget {
   const _StandortDialog({
@@ -176,6 +259,26 @@ class _StandortDialogState extends State<_StandortDialog> {
     text: widget.anfang,
   );
 
+  // Zuletzt gewählter Vorschlag; zählt nur, solange sein Name im Feld steht.
+  OrtEintrag? _gewaehlt;
+
+  KartoStandortWahl _wahl(String text) {
+    final gewaehlt = _gewaehlt;
+    final passt =
+        gewaehlt != null &&
+        gewaehlt.ortId.isNotEmpty &&
+        bereinigeStandort(gewaehlt.name).toLowerCase() ==
+            bereinigeStandort(text).toLowerCase();
+    return passt
+        ? KartoStandortWahl(
+            text,
+            ortId: gewaehlt.ortId,
+            kartenX: gewaehlt.kartenX,
+            kartenY: gewaehlt.kartenY,
+          )
+        : KartoStandortWahl(text);
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -193,13 +296,15 @@ class _StandortDialogState extends State<_StandortDialog> {
         onlineSuche: widget.onlineSuche,
         autofocus: true,
         maxLength: kStandortMaxLaenge,
-        onSubmitted: (text) => Navigator.of(context).pop(text),
+        onOrtGewaehlt: (ort) => _gewaehlt = ort,
+        onSubmitted: (text) => Navigator.of(context).pop(_wahl(text)),
       ),
       actions: [
         if (widget.anfang.isNotEmpty)
           TextButton(
             key: const ValueKey<String>('karto-spiel-standort-entfernen'),
-            onPressed: () => Navigator.of(context).pop(''),
+            onPressed: () =>
+                Navigator.of(context).pop(const KartoStandortWahl('')),
             child: const Text('Entfernen'),
           ),
         TextButton(
@@ -208,7 +313,7 @@ class _StandortDialogState extends State<_StandortDialog> {
         ),
         FilledButton(
           key: const ValueKey<String>('karto-spiel-standort-speichern'),
-          onPressed: () => Navigator.of(context).pop(_controller.text),
+          onPressed: () => Navigator.of(context).pop(_wahl(_controller.text)),
           child: const Text('Speichern'),
         ),
       ],

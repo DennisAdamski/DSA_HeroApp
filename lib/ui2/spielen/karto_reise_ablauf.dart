@@ -20,6 +20,7 @@ import 'package:dsa_heldenverwaltung/ui2/widgets/karto_bestaetigen.dart';
 typedef KartoReiseZustandSetzer = Future<bool> Function({
   required HeroUnterwegs? unterwegs,
   String? standort,
+  String standortOrtId,
 });
 
 /// Satz während einer offenen Planung.
@@ -71,6 +72,7 @@ Future<void> reisePlanen(
     context,
     held: werte.hero,
     standort: werte.state.standort,
+    standortOrtId: werte.state.standortOrtId,
     ziel: ziel,
   );
   if (ergebnis == null || !context.mounted) return;
@@ -138,7 +140,11 @@ Future<void> reiseAusfuehren(
     ),
   );
   if (!ok) return;
-  await zustandSetzen(unterwegs: null, standort: ergebnis.nach.name);
+  await zustandSetzen(
+    unterwegs: null,
+    standort: ergebnis.nach.name,
+    standortOrtId: ergebnis.nach.ortId,
+  );
 }
 
 /// Das heutige Datum der Kampagne (laufendes Abenteuer, sonst letzte
@@ -198,7 +204,11 @@ Future<void> reiseAngekommen(
     ),
   );
   if (!ok) return;
-  await zustandSetzen(unterwegs: null, standort: u.ziel);
+  await zustandSetzen(
+    unterwegs: null,
+    standort: u.ziel,
+    standortOrtId: u.zielOrtId,
+  );
 }
 
 /// Hält die Reise [u] unterwegs an: Raststation an der geschätzten Lage,

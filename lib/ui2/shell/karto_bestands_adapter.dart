@@ -235,28 +235,38 @@ abstract interface class KartoBestandsAdapter {
 
   /// Speichert den Standort des Helden im Laufzeitzustand.
   ///
-  /// Schreibt frisch über `aendereZustandMitMeldung` und ersetzt nur das Feld
-  /// `standort`; ein leerer Text entfernt den Standort.
+  /// Schreibt frisch über `aendereZustandMitMeldung` und ersetzt nur die
+  /// Felder `standort` und `standortOrtId`; ein leerer Text entfernt den
+  /// Standort. [ortId] ist die Kennung eines ausdrücklich gewählten Orts,
+  /// [kartenX]/[kartenY] seine Position (für die Station, falls das
+  /// Verzeichnis den Ort nicht kennt). Ohne Wahl behält ein gleichbleibender
+  /// Name den bisherigen Verweis, sonst verknüpft ein eindeutiger Name
+  /// (`standortOrtIdNachWechsel`).
   Future<void> standortSetzen({
     required BuildContext context,
     required WidgetRef ref,
     required String heroId,
     required String standort,
+    String ortId = '',
+    double? kartenX,
+    double? kartenY,
   });
 
   /// Hält eine Reise im Laufzeitzustand fest.
   ///
   /// Schreibt frisch über `aendereZustandMitMeldung` genau ein Dokument:
   /// [unterwegs] ersetzt die laufende Reise (`null` beendet sie), ein
-  /// gesetzter [standort] zugleich den Standort. Anders als [standortSetzen]
-  /// legt der Weg keine Station an; die schreibt der Reiseablauf selbst am
-  /// Bogen. Liefert, ob gespeichert wurde.
+  /// gesetzter [standort] zugleich den Standort samt Verweis
+  /// [standortOrtId] (leer ohne Verweis). Anders als [standortSetzen] legt
+  /// der Weg keine Station an; die schreibt der Reiseablauf selbst am Bogen.
+  /// Liefert, ob gespeichert wurde.
   Future<bool> reiseZustandSetzen({
     required BuildContext context,
     required WidgetRef ref,
     required String heroId,
     required HeroUnterwegs? unterwegs,
     String? standort,
+    String standortOrtId = '',
   });
 
   /// Öffnet die Vertrautenaktionen (Vereinigung, Zauber würfeln, Proben …).

@@ -63,12 +63,17 @@ Future<KartoReiseplanErgebnis?> zeigeReiseplaner(
   BuildContext context, {
   required HeroSheet held,
   required String standort,
+  String standortOrtId = '',
   ReiseOrt? ziel,
 }) {
   return showDialog<KartoReiseplanErgebnis>(
     context: context,
-    builder: (_) =>
-        KartoReiseplaner(held: held, standort: standort, ziel: ziel),
+    builder: (_) => KartoReiseplaner(
+      held: held,
+      standort: standort,
+      standortOrtId: standortOrtId,
+      ziel: ziel,
+    ),
   );
 }
 
@@ -80,6 +85,7 @@ class KartoReiseplaner extends ConsumerStatefulWidget {
     super.key,
     required this.held,
     required this.standort,
+    this.standortOrtId = '',
     this.ziel,
     this.orte,
   });
@@ -89,6 +95,9 @@ class KartoReiseplaner extends ConsumerStatefulWidget {
 
   /// Gespeicherter Standort.
   final String standort;
+
+  /// Verweis des Standorts auf den Avesmaps-Ort; leer ohne Verweis.
+  final String standortOrtId;
 
   /// Vorbelegtes Ziel (etwa der Ort der Karte), oder `null`.
   final ReiseOrt? ziel;
@@ -192,7 +201,25 @@ class _KartoReiseplanerState extends ConsumerState<KartoReiseplaner> {
         ref.watch(avesmapsReisewegeProvider).asData?.value ??
         const <String, AvesmapsRoute>{};
 
-    final von = _ort(widget.standort, orte);
+    // Der Verweis des Standorts unterscheidet gleichnamige Ausgangsorte.
+    // Kennt das Verzeichnis ihn (noch) nicht, gilt er mit Kennung, aber ohne
+    // Position, statt eines gleichnamigen Orts.
+    final standortOrtId = gueltigeStandortOrtId(
+      widget.standort,
+      widget.standortOrtId,
+      orte,
+    );
+    final vonOrt = _ort(
+      widget.standort,
+      orte,
+      gewaehlt: eintragZumVerweis(widget.standort, standortOrtId, orte),
+    );
+    final von =
+        vonOrt != null &&
+            standortOrtId.isNotEmpty &&
+            vonOrt.ortId != standortOrtId
+        ? ReiseOrt(name: vonOrt.name, ortId: standortOrtId)
+        : vonOrt;
     final vorgabe = widget.ziel;
     // Das Ziel der Karte gilt, solange sein Name im Feld steht.
     final nach =

@@ -789,13 +789,19 @@ class KartoBestandsAdapterImpl
     required WidgetRef ref,
     required String heroId,
     required String standort,
+    String ortId = '',
+    double? kartenX,
+    double? kartenY,
   }) async {
     // Alles Kontextgebundene vor dem Warten greifen: Der Dialog ist danach zu.
     final bote = ScaffoldMessenger.maybeOf(context);
     final orte = ref.read(ortsverzeichnisProvider);
-    // Der alte Standort stammt aus dem frisch geladenen Zustand, nicht aus dem
-    // Stand beim Rendern.
+    final neu = bereinigeStandort(standort);
+    // Alter Standort und Verweis stammen aus dem frisch geladenen Zustand,
+    // nicht aus dem Stand beim Rendern.
     String? alterStandort;
+    var alteOrtId = '';
+    var neueOrtId = '';
     final gespeichert = await aendereZustandMitMeldung(
       context: context,
       ref: ref,
@@ -803,17 +809,39 @@ class KartoBestandsAdapterImpl
       was: 'Standort',
       aenderung: (aktuell) {
         alterStandort = aktuell.standort;
-        return aktuell.copyWith(standort: bereinigeStandort(standort));
+        alteOrtId = aktuell.standortOrtId;
+        neueOrtId = standortOrtIdNachWechsel(
+          alterStandort: aktuell.standort,
+          alteOrtId: aktuell.standortOrtId,
+          neuerStandort: neu,
+          gewaehlteOrtId: ortId,
+          orte: orte,
+        );
+        return aktuell.copyWith(standort: neu, standortOrtId: neueOrtId);
       },
     );
     if (gespeichert == null || alterStandort == null) return;
+    // Die Station trägt denselben Ort wie der Standort: aus dem Verzeichnis,
+    // sonst (etwa ein Treffer der Online-Suche) mit der Position der Wahl.
+    final verweis = neueOrtId.isEmpty
+        ? null
+        : orte.where((e) => e.ortId == neueOrtId).firstOrNull ??
+              OrtEintrag(
+                name: neu,
+                art: OrtArt.siedlung,
+                ortId: neueOrtId,
+                kartenX: neueOrtId == ortId ? kartenX : null,
+                kartenY: neueOrtId == ortId ? kartenY : null,
+              );
     await _haltStandortwechselFest(
       ref: ref,
       bote: bote,
       heroId: heroId,
       alterStandort: alterStandort!,
+      alteOrtId: alteOrtId,
       neuerStandort: standort,
       orte: orte,
+      gewaehlt: verweis,
     );
   }
 
@@ -825,6 +853,7 @@ class KartoBestandsAdapterImpl
     required String heroId,
     required HeroUnterwegs? unterwegs,
     String? standort,
+    String standortOrtId = '',
   }) async {
     final gespeichert = await aendereZustandMitMeldung(
       context: context,
@@ -834,6 +863,10 @@ class KartoBestandsAdapterImpl
       aenderung: (aktuell) => aktuell.copyWith(
         unterwegs: unterwegs,
         standort: standort == null ? null : bereinigeStandort(standort),
+        // Ein neuer Standort bringt seinen Verweis mit (oder keinen).
+        standortOrtId: standort == null || bereinigeStandort(standort).isEmpty
+            ? null
+            : standortOrtId,
       ),
     );
     return gespeichert != null;
@@ -853,6 +886,8 @@ class KartoBestandsAdapterImpl
     required String alterStandort,
     required String neuerStandort,
     required List<OrtEintrag> orte,
+    String alteOrtId = '',
+    OrtEintrag? gewaehlt,
   }) async {
     if (bereinigeStandort(neuerStandort).isEmpty) return;
     try {
@@ -867,6 +902,8 @@ class KartoBestandsAdapterImpl
               id: const Uuid().v4(),
               jetzt: DateTime.now(),
               orte: orte,
+              gewaehlt: gewaehlt,
+              alteOrtId: alteOrtId,
             ) ??
             held,
       );

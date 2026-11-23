@@ -55,6 +55,7 @@ void main() {
     double breite = 900,
     double skalierung = 1,
     List<AvesmapsOrt>? avesmaps,
+    String standortOrtId = '',
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(breite, 1200);
@@ -62,7 +63,12 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     repo = FakeRepository(
       heroes: [held ?? _held()],
-      states: {'rondra': const HeroState.empty().copyWith(standort: 'Punin')},
+      states: {
+        'rondra': const HeroState.empty().copyWith(
+          standort: 'Punin',
+          standortOrtId: standortOrtId,
+        ),
+      },
     );
     final container = ProviderContainer(
       overrides: [
@@ -303,6 +309,50 @@ void main() {
       expect(station.ortId, 'ort-punin');
       expect(station.kartenX, 420.5);
       expect(station.kartenY, 380.25);
+    });
+
+    testWidgets('eine neue Station übernimmt den Verweis des Standorts, auch '
+        'bei gleichnamigen Orten', (tester) async {
+      await zeige(
+        tester,
+        avesmaps: const <AvesmapsOrt>[
+          AvesmapsOrt(id: 'punin-1', name: 'Punin', x: 420.5, y: 380.25),
+          AvesmapsOrt(id: 'punin-2', name: 'Punin', x: 100, y: 120),
+        ],
+        standortOrtId: 'punin-2',
+      );
+      await tester.tap(key('karto-reise-station-neu'));
+      await tester.pumpAndSettle();
+      await tester.tap(key('karto-reise-speichern'));
+      await tester.pumpAndSettle();
+
+      final station = (await gespeichert()).single;
+      expect(station.ort, 'Punin');
+      expect(station.ortId, 'punin-2');
+      expect(station.kartenX, 100);
+      expect(station.kartenY, 120);
+    });
+
+    testWidgets('verknüpfte Stationen tragen den Kartenlink über die Kennung', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: _held(
+          stationen: const [
+            HeroReiseStation(
+              id: 'k',
+              ort: 'Kronling',
+              ortId: 'kronling-weiden',
+              kartenX: 1,
+              kartenY: 2,
+            ),
+          ],
+        ),
+        groesse: KartoKachelGroesse.weit,
+      );
+
+      expect(key('karto-reise-karte-k'), findsOneWidget);
     });
 
     testWidgets('ein gewählter Vorschlag verknüpft die Station; die Luftlinie '

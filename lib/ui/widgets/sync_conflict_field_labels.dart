@@ -125,6 +125,7 @@ const Map<String, String> syncFieldLabels = <String, String>{
   'diceLog': 'Würfel-Log',
   'begleiterZustaende': 'Begleiter (laufende Werte)',
   'standort': 'Standort',
+  'standortOrtId': 'Standort (Kartenverweis)',
   'zustandsmarker': 'Zustandsmarker',
   'unterwegs': 'Unterwegs',
   'wunden': 'Wunden',

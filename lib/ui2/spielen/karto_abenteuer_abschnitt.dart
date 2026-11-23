@@ -40,6 +40,7 @@ class KartoAbenteuerAbschnitt extends ConsumerStatefulWidget {
     required this.heroId,
     required this.abenteuer,
     required this.standort,
+    this.standortOrtId = '',
     required this.sortierung,
     required this.onStandortSpeichern,
     required this.onOeffnen,
@@ -56,11 +57,14 @@ class KartoAbenteuerAbschnitt extends ConsumerStatefulWidget {
   /// Gespeicherter Standort des Helden; leer, solange keiner festgehalten ist.
   final String standort;
 
+  /// Verweis des Standorts auf den Avesmaps-Ort; leer ohne Verweis.
+  final String standortOrtId;
+
   /// Reihenfolge von Personen und Notizen.
   final AbenteuerSortierung sortierung;
 
   /// Speichert den Standort über den Zustandsweg der Brücke.
-  final Future<void> Function(String standort) onStandortSpeichern;
+  final KartoStandortSetzer onStandortSpeichern;
 
   /// Öffnet das Vollblatt des Abenteuers.
   final VoidCallback onOeffnen;
@@ -188,6 +192,7 @@ class _KartoAbenteuerAbschnittState
     return link == null
         ? KartoStandortZeile(
             standort: widget.standort,
+            standortOrtId: widget.standortOrtId,
             onSpeichern: widget.onStandortSpeichern,
             orte: orte,
             onBearbeiten: fordereOrteAn,
@@ -195,6 +200,7 @@ class _KartoAbenteuerAbschnittState
           )
         : KartoStandortZeile(
             standort: widget.standort,
+            standortOrtId: widget.standortOrtId,
             onSpeichern: widget.onStandortSpeichern,
             oeffneLink: link,
             orte: orte,

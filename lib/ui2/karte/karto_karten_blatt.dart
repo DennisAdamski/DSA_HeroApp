@@ -28,10 +28,6 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_standort.dart';
 /// (90 Meilen).
 const double kKartenFokusHalb = 30;
 
-/// Speichert einen neuen Standort des Helden (frischer Zustandsweg der
-/// Spielansicht, legt bei Ortswechsel eine Station an).
-typedef KartoStandortSetzer = Future<void> Function(String standort);
-
 /// Öffnet die Aventurien-Karte des Helden [heroId] im Vollbild, auf Wunsch
 /// um den Ort [fokus].
 ///
@@ -161,7 +157,12 @@ class _KartoKartenBlattState extends ConsumerState<KartoKartenBlatt>
           )
         : werte == null
         ? null
-        : ortZumStandort(werte.state.standort, verzeichnis, orte);
+        : ortZumStandort(
+            werte.state.standort,
+            verzeichnis,
+            orte,
+            ortId: werte.state.standortOrtId,
+          );
     final fokus = widget.fokus;
     final treffer = _treffer;
     final auswahl = switch (treffer) {
@@ -264,6 +265,7 @@ class _KartoKartenBlattState extends ConsumerState<KartoKartenBlatt>
                     treffer: treffer,
                     bearbeitbar: !gesperrt && !schreibt,
                     standortName: werte?.state.standort ?? '',
+                    standortOrtId: werte?.state.standortOrtId ?? '',
                     etappe: switch (treffer) {
                       KartenTrefferStation(:final station) =>
                         etappen
@@ -329,12 +331,12 @@ class _KartoKartenBlattState extends ConsumerState<KartoKartenBlatt>
     }
   }
 
-  Future<void> _standortSetzen(String ort) async {
+  Future<void> _standortSetzen(KartoStandortWahl wahl) async {
     final setzer = widget.onStandortSetzen;
     if (setzer == null || _setztStandort) return;
     setState(() => _setztStandort = true);
     try {
-      await setzer(ort);
+      await setzer(wahl);
     } finally {
       if (mounted) {
         setState(() {
@@ -353,6 +355,7 @@ class _Infotafel extends ConsumerWidget {
     required this.treffer,
     required this.bearbeitbar,
     required this.standortName,
+    this.standortOrtId = '',
     required this.onStandortSetzen,
     required this.onHierherReisen,
     required this.etappe,
@@ -370,8 +373,18 @@ class _Infotafel extends ConsumerWidget {
   /// Gespeicherter Standort; „Standort hierher“ fehlt für genau diesen Ort.
   final String standortName;
 
+  /// Verweis des Standorts; unterscheidet ihn von gleichnamigen Orten.
+  final String standortOrtId;
+
+  /// Ob [name] (mit Kennung [ortId]) der Standort selbst ist. Gleichnamige
+  /// Orte gelten als verschieden, sobald beide Kennungen bekannt sind und
+  /// abweichen.
+  bool _istStandort(String name, String ortId) =>
+      bereinigeStandort(name) == bereinigeStandort(standortName) &&
+      (ortId.isEmpty || standortOrtId.isEmpty || ortId == standortOrtId);
+
   /// Setzt den Standort; `null`, solange es nicht geht.
-  final ValueChanged<String>? onStandortSetzen;
+  final ValueChanged<KartoStandortWahl>? onStandortSetzen;
 
   /// Plant eine Reise zum Ort; `null`, solange es nicht geht.
   final ValueChanged<AvesmapsOrt>? onHierherReisen;
@@ -474,10 +487,15 @@ class _Infotafel extends ConsumerWidget {
           name: ort.name,
         );
         final wiki = sichererWikiLink(details?.wikiUrl ?? '');
-        _hierherKnopf(knoepfe, ort.name);
+        _hierherKnopf(
+          knoepfe,
+          ort.name,
+          ortId: ort.id,
+          kartenX: ort.x,
+          kartenY: ort.y,
+        );
         final reisen = onHierherReisen;
-        if (reisen != null &&
-            bereinigeStandort(ort.name) != bereinigeStandort(standortName)) {
+        if (reisen != null && !_istStandort(ort.name, ort.id)) {
           knoepfe.add(
             _TafelKnopf(
               key: const ValueKey<String>('karto-karte-info-reisen'),
@@ -508,13 +526,30 @@ class _Infotafel extends ConsumerWidget {
         }
       case KartenTrefferStation(:final station, :final nummer):
         final datum = reiseStationDatumText(station);
+        // Das Öffnen einer verknüpften Station lädt ihre Ortsdetails (eine
+        // Anfrage je Nutzeraktion): Gebiete und der Rücklink mit dem
+        // Seitennamen, wie Avesmaps ihn wünscht.
+        final details = station.ortId.isEmpty
+            ? null
+            : ref
+                  .watch(avesmapsOrtsdetailsProvider(station.ortId))
+                  .asData
+                  ?.value;
+        final gebiete = gebietsZeile(details);
         inhalt.addAll(<Widget>[
           Text(
             station.ort.trim().isEmpty ? 'Station $nummer' : station.ort.trim(),
             key: const ValueKey<String>('karto-karte-info-name'),
             style: titel,
           ),
-          Text(<String>['Station $nummer', ?datum].join(' · '), style: leise),
+          Text(
+            <String>[
+              'Station $nummer',
+              ?datum,
+              if (gebiete.isNotEmpty) gebiete,
+            ].join(' · '),
+            style: leise,
+          ),
           if (_anreiseZeile() case final zeile?)
             Text(
               zeile,
@@ -531,7 +566,30 @@ class _Infotafel extends ConsumerWidget {
             ),
           ],
         ]);
-        _hierherKnopf(knoepfe, station.ort);
+        _hierherKnopf(
+          knoepfe,
+          station.ort,
+          ortId: station.ortId,
+          kartenX: station.kartenX,
+          kartenY: station.kartenY,
+        );
+        final stationsKarte = station.ortId.isEmpty
+            ? null
+            : ortsKartenLink(
+                name: station.ort,
+                ortId: station.ortId,
+                wikiUrl: details?.wikiUrl ?? '',
+              );
+        if (stationsKarte != null) {
+          knoepfe.add(
+            _TafelKnopf(
+              key: const ValueKey<String>('karto-karte-info-avesmaps'),
+              symbol: Icons.open_in_new,
+              text: 'Auf Avesmaps',
+              onPressed: () => _oeffnen(context, stationsKarte),
+            ),
+          );
+        }
         final etappe = this.etappe;
         if (etappe != null && reisewegAnfrageFuer(etappe) != null) {
           knoepfe.add(
@@ -613,16 +671,31 @@ class _Infotafel extends ConsumerWidget {
   }
 
   /// „Standort hierher“, außer für einen leeren Ort oder den Standort selbst.
-  void _hierherKnopf(List<Widget> knoepfe, String ort) {
+  void _hierherKnopf(
+    List<Widget> knoepfe,
+    String ort, {
+    String ortId = '',
+    double? kartenX,
+    double? kartenY,
+  }) {
     final name = bereinigeStandort(ort);
     final setzer = onStandortSetzen;
-    if (name.isEmpty || name == bereinigeStandort(standortName)) return;
+    if (name.isEmpty || _istStandort(name, ortId)) return;
     knoepfe.add(
       _TafelKnopf(
         key: const ValueKey<String>('karto-karte-info-hierher'),
         symbol: Icons.person_pin_circle_outlined,
         text: 'Standort hierher',
-        onPressed: setzer == null ? null : () => setzer(name),
+        onPressed: setzer == null
+            ? null
+            : () => setzer(
+                KartoStandortWahl(
+                  name,
+                  ortId: ortId,
+                  kartenX: kartenX,
+                  kartenY: kartenY,
+                ),
+              ),
       ),
     );
   }

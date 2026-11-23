@@ -79,7 +79,9 @@ bool istSiedlung(AvesmapsOrt ort) => ortsklassenRang(ort.art) > 0;
 
 /// Der Avesmaps-Ort zum gespeicherten [standort], oder `null`.
 ///
-/// Gesucht wird zuerst im verbundenen Ortsverzeichnis [verzeichnis]
+/// Ein gespeicherter Verweis [ortId] (`HeroState.standortOrtId`) gilt zuerst,
+/// solange er zum Namen passt; er unterscheidet gleichnamige Orte. Danach
+/// wird im verbundenen Ortsverzeichnis [verzeichnis]
 /// (`findeOrt`, tolerant gegen Umlaute): Trägt der Eintrag eine Kennung,
 /// gilt der Avesmaps-Ort dazu. Sonst zählt ein Avesmaps-Ort, dessen Name dem
 /// Standort ohne Rücksicht auf Groß- und Kleinschreibung gleicht, aber nur,
@@ -87,10 +89,25 @@ bool istSiedlung(AvesmapsOrt ort) => ortsklassenRang(ort.art) > 0;
 AvesmapsOrt? ortZumStandort(
   String standort,
   List<OrtEintrag> verzeichnis,
-  List<AvesmapsOrt> avesmaps,
-) {
+  List<AvesmapsOrt> avesmaps, {
+  String ortId = '',
+}) {
   final name = bereinigeStandort(standort);
   if (name.isEmpty || avesmaps.isEmpty) return null;
+  if (ortId.isNotEmpty) {
+    // Der gespeicherte Verweis gilt, solange er zum Namen passt: über den
+    // Eintrag des Verzeichnisses (Wiki-Name zum Avesmaps-Ort) oder über den
+    // Avesmaps-Namen selbst.
+    final passtImVerzeichnis =
+        eintragZumVerweis(name, ortId, verzeichnis) != null;
+    for (final ort in avesmaps) {
+      if (ort.id != ortId) continue;
+      if (passtImVerzeichnis || ort.name.toLowerCase() == name.toLowerCase()) {
+        return ort;
+      }
+      break;
+    }
+  }
   final eintrag = findeOrt(name, verzeichnis);
   if (eintrag != null && eintrag.ortId.isNotEmpty) {
     for (final ort in avesmaps) {
@@ -233,6 +250,27 @@ Uri? avesmapsOrtLink({String wikiUrl = '', String id = '', String name = ''}) {
     return Uri.https(kAvesmapsHost, '/', <String, String>{'place': id});
   }
   return avesmapsLink(name);
+}
+
+/// Rücklink auf Avesmaps für einen Ort der Reiseroute oder den Standort.
+///
+/// Mit Verweis [ortId] gilt [avesmapsOrtLink]: `?siedlung=` aus der
+/// Wiki-Adresse der Ortsdetails ([wikiUrl], sofern geladen), sonst
+/// `?place=<Kennung>`; beides öffnet genau diesen Ort. Ohne Verweis bleibt
+/// der Link über den Namen, aber nur, wo er sinnvoll ist
+/// ([kartenlinkSinnvoll]).
+Uri? ortsKartenLink({
+  required String name,
+  String ortId = '',
+  String wikiUrl = '',
+  List<OrtEintrag> orte = const <OrtEintrag>[],
+}) {
+  final sauber = bereinigeStandort(name);
+  if (ortId.isNotEmpty) {
+    return avesmapsOrtLink(wikiUrl: wikiUrl, id: ortId, name: sauber);
+  }
+  if (sauber.isEmpty || !kartenlinkSinnvoll(sauber, orte)) return null;
+  return avesmapsLink(sauber);
 }
 
 String? _dekodiere(String teil) {

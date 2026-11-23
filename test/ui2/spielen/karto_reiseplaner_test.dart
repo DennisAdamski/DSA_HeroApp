@@ -81,10 +81,18 @@ class _Aufbau {
   final List<({HeroUnterwegs? unterwegs, String? standort})> zustand =
       <({HeroUnterwegs? unterwegs, String? standort})>[];
 
-  Future<bool> setze({required HeroUnterwegs? unterwegs, String? standort}) {
+  Future<bool> setze({
+    required HeroUnterwegs? unterwegs,
+    String? standort,
+    String standortOrtId = '',
+  }) {
     zustand.add((unterwegs: unterwegs, standort: standort));
+    ortIds.add(standortOrtId);
     return Future<bool>.value(true);
   }
+
+  /// Verweise der geschriebenen Standorte, parallel zu [zustand].
+  final List<String> ortIds = <String>[];
 
   Future<HeroSheet> held() async => (await repo.loadHeroById('rondra'))!;
 }
@@ -242,6 +250,8 @@ void main() {
     expect(held.adventures.single.currentAventurianDate.day, '6');
     expect(aufbau.zustand.single.standort, 'Perricum');
     expect(aufbau.zustand.single.unterwegs, isNull);
+    // Der neue Standort trägt den Verweis des Ziels.
+    expect(aufbau.ortIds.single, _perricum);
   });
 
   testWidgets('Reittier, Eile und Wetter verändern den Plan', (tester) async {
@@ -337,5 +347,6 @@ void main() {
     );
     expect(aufbau.zustand.single.standort, 'Perricum');
     expect(aufbau.zustand.single.unterwegs, isNull);
+    expect(aufbau.ortIds.single, _perricum);
   });
 }

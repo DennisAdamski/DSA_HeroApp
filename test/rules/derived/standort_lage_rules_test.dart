@@ -87,6 +87,85 @@ void main() {
       expect(ortZumStandort('', const [], _umgebung), isNull);
       expect(ortZumStandort('Gareth', const [], const []), isNull);
     });
+
+    test('der Verweis unterscheidet gleichnamige Orte', () {
+      final doppelt = <AvesmapsOrt>[
+        ..._umgebung,
+        _ort('kronling2', 'Kronling', 'dorf', ost: 50, nord: 50),
+      ];
+      expect(
+        ortZumStandort('Kronling', const [], doppelt, ortId: 'kronling2')?.id,
+        'kronling2',
+      );
+      expect(
+        ortZumStandort('Kronling', const [], doppelt, ortId: 'kronling')?.id,
+        'kronling',
+      );
+    });
+
+    test('ein Verweis, der nicht zum Namen passt, wird übergangen', () {
+      // Etwa nach einer älteren App, die den Text ohne den Verweis änderte.
+      expect(
+        ortZumStandort('Gareth', const [], _umgebung, ortId: 'kronling')?.id,
+        _gareth.id,
+      );
+      expect(
+        ortZumStandort('Kronling', const [], _umgebung, ortId: 'unbekannt')?.id,
+        'kronling',
+      );
+    });
+
+    test('der Verweis gilt auch über den Namen im Verzeichnis', () {
+      const auweiler = AvesmapsOrt(
+        id: 'au',
+        name: 'Auweiler (Darpatien)',
+        x: 600,
+        y: 560,
+      );
+      final verzeichnis = <OrtEintrag>[
+        OrtEintrag(
+          name: 'Auweiler',
+          art: OrtArt.siedlung,
+          seite: 'Auweiler (Darpatien)',
+          ortId: 'au',
+          kartenX: 600,
+          kartenY: 560,
+        ),
+      ];
+      expect(
+        ortZumStandort('Auweiler', verzeichnis, const [auweiler], ortId: 'au'),
+        same(auweiler),
+      );
+    });
+  });
+
+  group('ortsKartenLink', () {
+    test('mit Verweis öffnet der Link genau diesen Ort', () {
+      expect(
+        '${ortsKartenLink(name: 'Kronling', ortId: 'kronling2')}',
+        'https://avesmaps.de/?place=kronling2',
+      );
+      expect(
+        '${ortsKartenLink(name: 'Gareth', ortId: _gareth.id, wikiUrl: 'https://de.wiki-aventurica.de/wiki/Gareth')}',
+        'https://avesmaps.de/?siedlung=Gareth',
+        reason: 'mit geladenen Ortsdetails gilt der Seitenname',
+      );
+    });
+
+    test('ohne Verweis gilt der Name, wo ein Link sinnvoll ist', () {
+      expect(
+        '${ortsKartenLink(name: ' Havena ')}',
+        'https://avesmaps.de/?siedlung=Havena',
+      );
+      expect(
+        ortsKartenLink(
+          name: 'Albernia',
+          orte: <OrtEintrag>[OrtEintrag(name: 'Albernia', art: OrtArt.staat)],
+        ),
+        isNull,
+      );
+      expect(ortsKartenLink(name: '   '), isNull);
+    });
   });
 
   group('orteInDerNaehe', () {
