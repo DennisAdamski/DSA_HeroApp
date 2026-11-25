@@ -50,6 +50,7 @@ class AppSettings {
     this.dunkelModus = false,
     this.animationen = true,
     this.dekorativeEffekte = true,
+    this.klangpult = false,
     this.heroStoragePath,
     this.lastSelectedHeroId,
     this.avatarApiConfig = const AvatarApiConfig(),
@@ -73,6 +74,9 @@ class AppSettings {
 
   /// Erlaubt kurze Licht- und Magieeffekte zusaetzlich zu Bedienanimationen.
   final bool dekorativeEffekte;
+
+  /// Zeigt das schwebende Klangpult (Freesound) in der neuen Oberflaeche.
+  final bool klangpult;
   final String? heroStoragePath;
 
   /// Zuletzt auf der Startseite ausgewaehlte Helden-ID.
@@ -119,6 +123,7 @@ class AppSettings {
     bool? dunkelModus,
     bool? animationen,
     bool? dekorativeEffekte,
+    bool? klangpult,
     Object? heroStoragePath = keepFieldValue,
     Object? lastSelectedHeroId = keepFieldValue,
     AvatarApiConfig? avatarApiConfig,
@@ -138,6 +143,7 @@ class AppSettings {
       dunkelModus: dunkelModus ?? this.dunkelModus,
       animationen: animationen ?? this.animationen,
       dekorativeEffekte: dekorativeEffekte ?? this.dekorativeEffekte,
+      klangpult: klangpult ?? this.klangpult,
       heroStoragePath: identical(heroStoragePath, keepFieldValue)
           ? this.heroStoragePath
           : heroStoragePath as String?,
@@ -169,6 +175,7 @@ class AppSettings {
     'dunkelModus': dunkelModus,
     'animationen': animationen,
     'dekorativeEffekte': dekorativeEffekte,
+    'klangpult': klangpult,
     'heroStoragePath': heroStoragePath,
     'lastSelectedHeroId': lastSelectedHeroId,
     'avatarApiConfig': avatarApiConfig.toJson(),
@@ -220,6 +227,7 @@ class AppSettings {
       dekorativeEffekte: json['dekorativeEffekte'] is bool
           ? json['dekorativeEffekte'] as bool
           : true,
+      klangpult: json['klangpult'] as bool? ?? false,
       heroStoragePath: heroStoragePath == null || heroStoragePath.isEmpty
           ? null
           : heroStoragePath,

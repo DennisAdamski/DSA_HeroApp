@@ -1219,6 +1219,7 @@ class _AvatarApiSettingsPageState
     return _SettingsPageList(
       children: [
         _SettingsSectionCard(
+          title: 'KI-Bildgenerierung',
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1282,6 +1283,31 @@ class _AvatarApiSettingsPageState
                 'in deinem Konto synchronisiert.',
                 style: theme.textTheme.bodySmall,
               ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        _SettingsSectionCard(
+          title: 'Klangpult (Freesound)',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SwitchListTile.adaptive(
+                key: const ValueKey<String>('settings-klangpult'),
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Klangpult anzeigen'),
+                subtitle: const Text(
+                  'Szenen mit Ambiente, Musik und Effekten für die '
+                  'Spielleitung. Erreichbar über die Lasche am rechten Rand '
+                  'der neuen Oberfläche, auch im Gefecht.',
+                ),
+                value:
+                    ref.watch(appSettingsProvider).valueOrNull?.klangpult ??
+                    false,
+                onChanged: ref.read(settingsActionsProvider).setKlangpult,
+              ),
+              const SizedBox(height: 8),
+              const FreesoundAnmeldungBereich(),
             ],
           ),
         ),

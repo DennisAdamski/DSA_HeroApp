@@ -43,6 +43,7 @@ import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/externe_helden_providers.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/klangkulisse_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/state/sync_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/app_shell.dart';
@@ -635,6 +636,8 @@ class _AppStartupGateState extends State<AppStartupGate> {
       // Nur die laufende App fragt Avesmaps; ohne diesen Override (Tests)
       // bleibt der Abruf aus.
       avesmapsAktivProvider.overrideWithValue(true),
+      // Ebenso Freesound und der Audiokanal des Klangpults.
+      freesoundAktivProvider.overrideWithValue(true),
       firebaseBootstrapProvider.overrideWithValue(widget.firebaseBootstrap),
       customCatalogRepositoryProvider.overrideWithValue(
         customCatalogRepository ??

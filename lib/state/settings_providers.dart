@@ -154,6 +154,12 @@ final dekorativeEffekteProvider = Provider<bool>((ref) {
   return ref.watch(appSettingsProvider).valueOrNull?.dekorativeEffekte ?? true;
 });
 
+/// Ob das schwebende Klangpult in der neuen Oberflaeche erscheint.
+final klangpultSichtbarProvider = Provider<bool>((ref) {
+  return ref.watch(oberflaecheProvider) == Oberflaeche.kartograph &&
+      (ref.watch(appSettingsProvider).valueOrNull?.klangpult ?? false);
+});
+
 /// Gewuenschte Darstellung breiter Datenlisten (Tabelle oder Karten).
 final tabellenAnsichtProvider = Provider<TabellenAnsicht>((ref) {
   return ref.watch(appSettingsProvider).valueOrNull?.tabellenAnsicht ??
@@ -253,6 +259,11 @@ class SettingsActions {
   /// Speichert die Dekorationswahl unabhaengig von der Animationswahl.
   Future<void> setDekorativeEffekte(bool aktiv) async {
     await _repo.save(_repo.load().copyWith(dekorativeEffekte: aktiv));
+  }
+
+  /// Blendet das Klangpult ein oder aus.
+  Future<void> setKlangpult(bool aktiv) async {
+    await _repo.save(_repo.load().copyWith(klangpult: aktiv));
   }
 
   /// Setzt die aktive Oberflaeche.

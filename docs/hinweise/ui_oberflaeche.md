@@ -449,6 +449,45 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Landschaft und Handwerte für Gelände-/Ortskenntnis erhalten, wenn die neue
   Tätigkeit denselben Landschaftsschlüssel kennt. Standardplatz: vor dem
   Würfelprotokoll, damit bestehende Anordnungen nicht verschoben werden.
+  **Klangpult (26.11.2026, nach Vorbild PocketBard):** keine Spieltisch-Kachel,
+  sondern `KartoKlangpultHuelle` (`karto_klangkulisse.dart`) in
+  `MaterialApp.builder` oberhalb des App-Navigators, damit es auf jeder Route
+  (auch im Gefecht) erreichbar ist. Immer eingehängt (`sichtbar`), damit das
+  Umschalten den Navigator nicht neu aufbaut. Eine Lasche am rechten Rand öffnet
+  das Pult (breit Seitenleiste 380 px, schmal unteres Panel). Das Pult hat einen
+  eigenen `Navigator` mit `HeroControllerScope.none` für Overlay und den
+  Anmeldedialog. Abschaltbar über `AppSettings.klangpult` (Standard aus;
+  Einstellungen › Vernetzte Dienste). `klangpultSichtbarProvider` gilt nur für
+  den Kartographen, und ein Ausblenden stoppt alles (`ref.listen` in
+  `app_shell.dart`). Inhalt: elf Szenen (`kKlangszenen` in `klangstimmung.dart`)
+  mit 2–3 Ambiente-Ebenen (Schleifen mit eigener Stärke), Musik in den Lagen
+  Erkunden, Kampf und Sieg (Sieg einmalig) und angehefteten Einzeleffekten
+  (zufällig einer der fünf besten Treffer). Szenen-, Lagen- und Klangwechsel
+  blenden über `kKlangBlende` (1,5 s, Timer in `AudioplayersKlangKanal`), und
+  die wirksame Lautstärke ist Gesamt × Stärke. Suchtreffer bleiben für die
+  Sitzung gemerkt (ein Szenenwechsel kostet nur beim ersten Mal Anfragen).
+  Unter „Quellen“ steht die Namensnennung aller laufenden Klänge (Titel,
+  Urheber, Lizenz, Rücklink). Jede
+  Nutzerin meldet sich mit ihrem eigenen Freesound-Konto an (OAuth2 mit PKCE,
+  `FreesoundOAuth`, öffentlicher Client ohne Secret). Der Browser öffnet die
+  Freesound-Zustimmung; Rücksprung ist die Freesound-eigene Seite, die den Code
+  zum Kopieren zeigt (`kFreesoundRedirectUri`), damit keine Plattform einen
+  eigenen Rücksprung braucht. Der Code (oder die ganze Adresse) kommt in den
+  Dialog von `FreesoundAnmeldungBereich` (`lib/ui_shared/`), der im Pult
+  und in den Einstellungen unter „Vernetzte Dienste“ steht. Zugang und
+  Erneuerungstoken liegen nur im sicheren Gerätespeicher
+  (`SichereFreesoundZugangAblage`, ohne Konto-Sync, im Browser notfalls nur für
+  die Sitzung); das Token wird vor Ablauf (24 h) und bei 401 einmal erneuert,
+  scheitert das, ist die Nutzerin abgemeldet. Die Client-ID kommt per
+  `--dart-define=FREESOUND_CLIENT_ID=...`; ohne sie zeigt der Bereich „nicht
+  eingerichtet“. Das Client-Secret gehört nie in die App. Die App liefert
+  keinen Schlüssel aus. `klangkulisseProvider` ist geräteweit und nicht
+  `autoDispose`, damit der Klang beim Wechsel von Held oder Seite weiterläuft.
+  `freesoundAktivProvider` ist ohne Override aus (stummer Spieler, keine
+  Netzanfrage, stumme Kanäle über `klangKanalFabrikProvider`) und wird in `AppStartupGate._buildScope` eingeschaltet. Gespielt
+  werden die MP3-Vorschauen vom CDN (ohne Token). Limit laut Freesound
+  60 Anfragen pro Minute, 2000 pro Tag (ob je App oder je Konto, sagt die Doku nicht). Tests:
+  `test/state/klangkulisse_providers_test.dart`.
   **Vor- und Nachteile:** In `weit` zeigt die eingeklappte Übersicht
   (`KartoMerkmalsuebersicht`) je Art bis zu `kMerkmaleZeilenWeit` (3) statt einer
   Zeile, also mehr Einträge ohne Aufklappen; aufgeklappt stehen Vorteile und
