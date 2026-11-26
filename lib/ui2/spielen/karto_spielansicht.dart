@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spiel_dabei_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spiel_zauber_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
@@ -38,6 +39,7 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spieltisch_siegel.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielraster_bedienung.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielraster_ordnung.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_wuerfelprotokoll.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_zauber_kachel.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_zuletzt_gewuerfelt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/standort/karto_standort_kachel.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/wildnis/karto_wildnis_kachel.dart';
@@ -271,11 +273,13 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
     );
   }
 
-  // Ohne Begleiter entfällt ihre Kachel; ein gespeicherter Eintrag bleibt.
+  // Ohne Begleiter entfällt ihre Kachel, ohne Zauber die Zauberkachel; ein
+  // gespeicherter Eintrag bleibt.
   Set<KartoSpielkachelArt> _verfuegbar(HeroComputedSnapshot werte) => {
     for (final art in KartoSpielkachelArt.values)
-      if (art != KartoSpielkachelArt.begleiter ||
-          werte.hero.companions.isNotEmpty)
+      if ((art != KartoSpielkachelArt.begleiter ||
+              werte.hero.companions.isNotEmpty) &&
+          (art != KartoSpielkachelArt.zauber || fuehrtZauber(werte)))
         art,
   };
 
@@ -355,6 +359,13 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
     ),
     KartoSpielkachelArt.kampf => _kampf(werte),
     KartoSpielkachelArt.effekte => _effekte(context, werte),
+    // Schreibt nichts am Helden; gewürfelt wird über die Gefechtsbrücke.
+    KartoSpielkachelArt.zauber => KartoZauberKachel(
+      heroId: heroId,
+      werte: werte,
+      bestand: bestand,
+      aktion: aktion,
+    ),
     KartoSpielkachelArt.zustand => KartoAbschnitt(
       titel: 'Zustand',
       symbol: Icons.monitor_heart_outlined,

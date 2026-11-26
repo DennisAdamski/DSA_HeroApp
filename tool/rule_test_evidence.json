@@ -13519,6 +13519,13 @@
           "checkedOn": "2026-11-24"
         }
       ]
+    },
+    "test/rules/spiel_zauber_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Sichert die Darstellungsgrundlage der Zauberkachel am Spieltisch: nur Zauber mit ZfW erscheinen, ZfW* ist ZfW plus Modifikator (12 + 2 = 14), Suche, Merkmalsfilter und Sortierung (Name, ZfW*, Richtung), eindeutige Merkmalsliste, Verfügbarkeit der Kachel (aktivierte Magie oder ein Zauber mit ZfW) und die Kopfdaten (Tradition, Leiteigenschaft mit Vorrang des manuellen Feldes, Merkmalskenntnisse). 12 Tests.",
+      "rationale": "Alle Tests gelesen. Die Kataloge sind erfundene Testzauber; ZfW* nutzt die bestehende Herleitung (ZfW + Modifikator) und die Leiteigenschaft die vorhandene Traditionsauflösung. Neu sind nur Filter-, Sortier- und Verfügbarkeitsentscheidungen der Oberfläche, also eine Produktvertragsaussage ohne neue DSA-Regelbehauptung; daher keine MCP-Suche nötig.",
+      "sources": []
     }
   }
 }

@@ -61,6 +61,19 @@ enum KartoSpielkachelArt {
     gewicht: 110,
   ),
 
+  /// Gelernte Zauber mit ZfW*, Probe und Kurzangaben nach dem Vorbild der
+  /// Magie-Seite.
+  ///
+  /// **Optional:** steht in der Standardanordnung ausgeblendet und wird im
+  /// Anordnen-Modus bewusst hinzugefügt; nur bei Helden, die Zauber führen.
+  zauber(
+    'Zauber',
+    breiten: SpielkachelBreite.values,
+    standard: SpielkachelBreite.mittel,
+    gewicht: 360,
+    standardAusgeblendet: true,
+  ),
+
   /// Wunden und Statuswerte; die Belastung steht in „Dabei“.
   zustand(
     'Zustand',
@@ -163,6 +176,7 @@ enum KartoSpielkachelArt {
     required this.gewicht,
     this.ausblendbar = true,
     this.einklappbar = true,
+    this.standardAusgeblendet = false,
   });
 
   /// Anzeigename im Anordnen-Modus.
@@ -184,6 +198,14 @@ enum KartoSpielkachelArt {
 
   /// Ob die Kachel von der Seite genommen werden darf.
   final bool ausblendbar;
+
+  /// Ob die Kachel (nur bei [ausblendbar]) ohne gespeicherten Eintrag
+  /// ausgeblendet ist und erst im Anordnen-Modus hinzugefügt wird.
+  ///
+  /// Gilt nur, solange der Held keinen Eintrag zur Kachel hat; ein
+  /// gespeicherter Eintrag entscheidet selbst. So bleibt eine neue optionale
+  /// Kachel in bestehenden Anordnungen und in der Vorlage unsichtbar.
+  final bool standardAusgeblendet;
 
   /// Ob die Kachel auf ihren Kopf eingeklappt werden darf.
   final bool einklappbar;
@@ -299,7 +321,9 @@ List<KartoSpielkachel> loeseSpielansichtAuf(
       breite: wunsch != null && art.breiten.contains(wunsch)
           ? wunsch
           : art.standard,
-      ausgeblendet: art.ausblendbar && (eintrag?.ausgeblendet ?? false),
+      ausgeblendet:
+          art.ausblendbar &&
+          (eintrag?.ausgeblendet ?? art.standardAusgeblendet),
       eingeklappt: art.einklappbar && (eintrag?.eingeklappt ?? false),
     );
   }
