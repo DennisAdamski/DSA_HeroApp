@@ -471,8 +471,10 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Nutzerin meldet sich mit ihrem eigenen Freesound-Konto an (OAuth2 mit PKCE,
   `FreesoundOAuth`, öffentlicher Client ohne Secret). Der Browser öffnet die
   Freesound-Zustimmung; Rücksprung ist die Freesound-eigene Seite, die den Code
-  zum Kopieren zeigt (`kFreesoundRedirectUri`), damit keine Plattform einen
-  eigenen Rücksprung braucht. Der Code (oder die ganze Adresse) kommt in den
+  zum Kopieren zeigt, damit keine Plattform einen
+  eigenen Rücksprung braucht. Die App sendet bewusst keinen `redirect_uri`
+  (`kFreesoundRedirectUri` leer): Freesound lehnt die identische Adresse als
+  Parameter mit „Oops! there were some errors“ ab, ohne ihn gilt die registrierte. Der Code (oder die ganze Adresse) kommt in den
   Dialog von `FreesoundAnmeldungBereich` (`lib/ui_shared/`), der im Pult
   und in den Einstellungen unter „Vernetzte Dienste“ steht. Zugang und
   Erneuerungstoken liegen nur im sicheren Gerätespeicher

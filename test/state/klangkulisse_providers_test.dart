@@ -155,7 +155,8 @@ void main() {
       expect(q['response_type'], 'code');
       expect(q['code_challenge_method'], 'S256');
       expect(q['state'], anmeldung.state);
-      expect(q['redirect_uri'], kFreesoundRedirectUri);
+      // Freesound lehnt eine ausdrückliche Adresse ab; es gilt die registrierte.
+      expect(q.containsKey('redirect_uri'), isFalse);
       final erwartet = base64Url
           .encode(
             SHA256Digest().process(utf8.encoder.convert(anmeldung.verifier)),
@@ -169,7 +170,6 @@ void main() {
         'grant_type': 'authorization_code',
         'code': 'CODE123',
         'code_verifier': anmeldung.verifier,
-        'redirect_uri': kFreesoundRedirectUri,
       });
       expect(zugang.accessToken, 'acc');
       expect(zugang.ablauf, DateTime.utc(2026, 11, 27, 11, 59, 59));

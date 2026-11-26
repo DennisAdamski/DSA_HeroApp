@@ -17,14 +17,14 @@ const String kFreesoundClientId = String.fromEnvironment(
   defaultValue: 'e2CD6o6RHAlwDs4qwlhI',
 );
 
-/// Rücksprungadresse, wie sie bei der App-Registrierung hinterlegt ist.
+/// Ausdrücklich mitgesendete Rücksprungadresse; leer = nicht senden.
 ///
-/// Voreinstellung ist die Freesound-eigene Seite, die den Code zum Kopieren
-/// anzeigt; so braucht keine Plattform einen eigenen Rücksprung.
+/// Bei der Registrierung ist die Freesound-eigene Seite hinterlegt, die den Code
+/// zum Kopieren anzeigt; so braucht keine Plattform einen eigenen Rücksprung.
+/// Freesound lehnt dieselbe Adresse als `redirect_uri` aber mit „Oops! there
+/// were some errors“ ab; ohne den Parameter gilt die registrierte.
 const String kFreesoundRedirectUri = String.fromEnvironment(
   'FREESOUND_REDIRECT_URI',
-  defaultValue:
-      'https://freesound.org/home/app_permissions/permission_granted/',
 );
 
 /// Zugang einer Nutzerin zu Freesound (OAuth2).
@@ -128,7 +128,7 @@ class FreesoundOAuth {
     final adresse = Uri.https('freesound.org', '/apiv2/oauth2/authorize/', {
       'client_id': clientId,
       'response_type': 'code',
-      'redirect_uri': redirectUri,
+      if (redirectUri.isNotEmpty) 'redirect_uri': redirectUri,
       'code_challenge': challenge,
       'code_challenge_method': 'S256',
       'state': state,
@@ -152,7 +152,7 @@ class FreesoundOAuth {
       'grant_type': 'authorization_code',
       'code': code,
       'code_verifier': anmeldung.verifier,
-      'redirect_uri': redirectUri,
+      if (redirectUri.isNotEmpty) 'redirect_uri': redirectUri,
     });
   }
 
