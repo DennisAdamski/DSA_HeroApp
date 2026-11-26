@@ -119,6 +119,80 @@ void main() {
       expect(ids, hasLength(KartoSpielkachelArt.values.length));
     });
 
+    test('die Zauberkachel ist optional: ohne Eintrag ausgeblendet', () {
+      expect(KartoSpielkachelArt.zauber.standardAusgeblendet, isTrue);
+      expect(KartoSpielkachelArt.zauber.ausblendbar, isTrue);
+      // Nur die Zauberkachel ist standardmäßig aus.
+      expect(
+        [
+          for (final art in KartoSpielkachelArt.values)
+            if (art.standardAusgeblendet) art,
+        ],
+        [KartoSpielkachelArt.zauber],
+      );
+      final standard = loeseSpielansichtAuf(null, verfuegbar: _alle);
+      expect(
+        standard.singleWhere((k) => k.art == KartoSpielkachelArt.zauber),
+        isA<KartoSpielkachel>().having((k) => k.ausgeblendet, 'aus', isTrue),
+      );
+      expect(
+        standard.where((k) => k.ausgeblendet).length,
+        1,
+        reason: 'alle übrigen Kacheln stehen wie bisher auf der Seite',
+      );
+    });
+
+    test('eine bestehende Anordnung ohne Zauber-Eintrag blendet sie aus', () {
+      final kacheln = loeseSpielansichtAuf(
+        const HeroSpielansicht(
+          kacheln: [
+            HeroSpielkachel(id: 'ressourcen'),
+            HeroSpielkachel(id: 'kampf'),
+          ],
+        ),
+        verfuegbar: _alle,
+      );
+      expect(
+        kacheln.singleWhere((k) => k.art == KartoSpielkachelArt.zauber),
+        isA<KartoSpielkachel>().having((k) => k.ausgeblendet, 'aus', isTrue),
+      );
+    });
+
+    test('ein gespeicherter Eintrag entscheidet über das Einblenden', () {
+      KartoSpielkachel zauber(HeroSpielkachel eintrag) => loeseSpielansichtAuf(
+        HeroSpielansicht(kacheln: [eintrag]),
+        verfuegbar: _alle,
+      ).singleWhere((k) => k.art == KartoSpielkachelArt.zauber);
+      expect(zauber(const HeroSpielkachel(id: 'zauber')).ausgeblendet, isFalse);
+      expect(
+        zauber(const HeroSpielkachel(id: 'zauber', ausgeblendet: true))
+            .ausgeblendet,
+        isTrue,
+      );
+    });
+
+    test('Einblenden und Zurückschreiben bleibt verlustfrei', () {
+      final aufgeloest = loeseSpielansichtAuf(null, verfuegbar: _alle);
+      final eingeblendet = aendereSpielkachel(
+        aufgeloest,
+        KartoSpielkachelArt.zauber,
+        (k) => k.copyWith(ausgeblendet: false),
+      );
+      final geschrieben = schreibeSpielansicht(eingeblendet, basis: null);
+      final eintrag = geschrieben.kachel('zauber')!;
+      expect(eintrag.ausgeblendet, isFalse);
+      expect(eintrag.toJson(), {'id': 'zauber'});
+      // Erneut aufgelöst bleibt sie sichtbar; Ausblenden wird ausdrücklich
+      // gespeichert und überstimmt den Standard nicht stillschweigend.
+      expect(
+        loeseSpielansichtAuf(
+          geschrieben,
+          verfuegbar: _alle,
+        ).singleWhere((k) => k.art == KartoSpielkachelArt.zauber).ausgeblendet,
+        isFalse,
+      );
+    });
+
     test('der frühere Eintrag der Schnellaktionen wird übergangen', () {
       // Die Schnellaktionen stehen fest im Seitenkopf und sind keine Kachel.
       final kacheln = loeseSpielansichtAuf(

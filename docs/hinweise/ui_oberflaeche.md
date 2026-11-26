@@ -464,6 +464,28 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Landschaft und Handwerte für Gelände-/Ortskenntnis erhalten, wenn die neue
   Tätigkeit denselben Landschaftsschlüssel kennt. Standardplatz: vor dem
   Würfelprotokoll, damit bestehende Anordnungen nicht verschoben werden.
+  **Zauber (26.11.2026):** Die Kachel „Zauber“ (`KartoSpielkachelArt.zauber`,
+  `ui2/spielen/karto_zauber_kachel.dart`) zeigt die Magie-Seite im Kartograph-
+  Design: Kopf mit Repräsentation, Leiteigenschaft und Merkmalskenntnissen
+  (`spielZauberKopf`), AsP-Marke, darunter die gelernten Zauber als Zeilen mit
+  ZfW\*, Probenkürzeln, Kosten, Zauberdauer, Reichweite und Wirkungsdauer;
+  ein Tipp klappt Zielobjekt, Modifikationen, Spezialisierungen und
+  Komplexität auf. Mit Platz (normal/weit) kommen Reichweite, Dauer und
+  Merkmale in die Kurzzeile. Suche (ab sieben Zaubern), Sortierung (Name, ZfW\*)
+  und Merkmalsfilter leben nur im Widget. Liste, Filter und Sortierung rechnet
+  `spiel_zauber_rules.dart` (ZfW\* über `herleiteZfw`), die Probe baut
+  `zauberprobeAus` und läuft über `KartoGefechtsAdapter.gefechtsProbe`, die selbst
+  ins Würfelprotokoll schreibt; die Kachel schreibt nichts am Helden. Die
+  geschützten Langtexte (Wirkung, Varianten) zeigt weiterhin der Probendialog.
+  **Optional:** `KartoSpielkachelArt.standardAusgeblendet` (neu) lässt eine
+  Kachel ohne gespeicherten Eintrag ausgeblendet; die Zauberkachel ist die
+  einzige. Hinzugefügt wird sie im Anordnen-Modus über den Chip „Zauber
+  einblenden“ (`karto-kachel-zauber-einblenden`) und mit „Fertig“ gespeichert;
+  ab dann steht ein Eintrag im Bogen und entscheidet. Bestehende Anordnungen und
+  die Vorlage ohne Eintrag bleiben unverändert, „Standard“ blendet sie wieder
+  aus. Verfügbar nur für Helden mit aktivierter Magie oder mindestens einem
+  Zauber mit ZfW (`fuehrtZauber`); ein gespeicherter Eintrag bleibt sonst erhalten.
+  Kein neues Modellfeld, kein Hash- oder Sync-Einfluss.
   **Klangpult (26.11.2026, nach Vorbild PocketBard):** keine Spieltisch-Kachel,
   sondern `KartoKlangpultHuelle` (`karto_klangkulisse.dart`) in
   `MaterialApp.builder` oberhalb des App-Navigators, damit es auf jeder Route
