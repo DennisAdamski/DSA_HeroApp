@@ -19,10 +19,12 @@ import 'package:dsa_heldenverwaltung/rules/derived/kampf_aenderung_rules.dart';
 /// Gewicht einer Tagesration in Gramm (etwa ein Stein, WdE S. 123).
 const int kWildnisRationGewichtGramm = 1000;
 
-/// Tagesrationen, die eine Wildnisprobe ins Inventar bringen kann.
-class WildnisRationen {
+/// Ein Posten, den eine Wildnisprobe ins Inventar bringen kann: Tagesrationen
+/// (Wildbret, Fisch, gesammelte Nahrung) oder gefundene Kräuter. [anzahl] ist
+/// die Menge des Eintrags, bei Kräutern die Zahl der Grundmengen.
+class WildnisPosten {
   /// Erstellt die Angabe.
-  const WildnisRationen({
+  const WildnisPosten({
     required this.gegenstand,
     required this.anzahl,
     required this.taetigkeit,
@@ -33,23 +35,22 @@ class WildnisRationen {
   /// Name des Inventareintrags (`Wildbret (frisch)`).
   final String gegenstand;
 
-  /// Zahl der Tagesrationen.
+  /// Zahl der Tagesrationen bzw. Grundmengen.
   final int anzahl;
 
-  /// Tätigkeit, aus der die Rationen stammen (`Pirschjagd`); Teil der
-  /// Herkunft.
+  /// Tätigkeit, aus der der Posten stammt (`Pirschjagd`); Teil der Herkunft.
   final String taetigkeit;
 
   /// Haltbarkeit und Hinweise für den Eintrag.
   final String beschreibung;
 
-  /// Gewicht je Ration in Gramm.
+  /// Gewicht je Einheit in Gramm; 0, wenn das Buch keines nennt (Kräuter).
   final int gewichtGramm;
 }
 
 /// Herkunft eines Rationeneintrags: Tätigkeit und, falls bekannt, das
 /// aventurische Datum (`Pirschjagd am 5. Praios 1043 BF`).
-String wildnisRationenHerkunft(WildnisRationen rationen, {String datum = ''}) {
+String wildnisRationenHerkunft(WildnisPosten rationen, {String datum = ''}) {
   final tag = datum.trim();
   return tag.isEmpty ? rationen.taetigkeit : '${rationen.taetigkeit} am $tag';
 }
@@ -60,9 +61,9 @@ String wildnisRationenHerkunft(WildnisRationen rationen, {String datum = ''}) {
 /// Namen, gleicher Herkunft (Tätigkeit und Tag) und gleicher Beschreibung und
 /// klarer Menge, wächst dessen Menge; sonst kommt ein neuer Eintrag hinzu.
 /// Ohne Rationen bleibt [held] unverändert.
-HeroSheet mitWildnisRationen(
+HeroSheet mitWildnisPosten(
   HeroSheet held,
-  WildnisRationen rationen, {
+  WildnisPosten rationen, {
   String datum = '',
 }) {
   if (rationen.anzahl <= 0) return held;
@@ -105,6 +106,17 @@ HeroSheet mitWildnisRationen(
   );
 }
 
+/// Bucht alle [posten] nacheinander ins Inventar von [held] (ein Dokument,
+/// ein Schreibvorgang); Posten ohne Menge bleiben außen vor.
+HeroSheet mitWildnisFunden(
+  HeroSheet held,
+  Iterable<WildnisPosten> posten, {
+  String datum = '',
+}) => posten.fold<HeroSheet>(
+  held,
+  (stand, einzel) => mitWildnisPosten(stand, einzel, datum: datum),
+);
+
 /// Was beim Jagen an Geschossen verloren geht (WdE S. 108).
 enum JagdVerbrauch {
   /// Schleudersteine, Arbalettenkugeln: 1W6+1 Stück je Jagd.
@@ -118,19 +130,52 @@ enum JagdVerbrauch {
   speere('Jeder Speer geht bei 3–7 auf 2W20 verloren.', 7),
 
   /// Wurfmesser, -beile, -dolche, Disken: je Wurf bei 3–9 auf 2W20.
-  wurfwaffen('Jede Wurfwaffe geht bei 3–9 auf 2W20 verloren.', 9);
+  wurfwaffen('Jede Wurfwaffe geht bei 3–9 auf 2W20 verloren.', 9),
 
-  const JagdVerbrauch(this.hinweis, this.verlorenBis);
+  /// Hetzjagd: Pfeile, Bolzen, Blasrohrpfeile, Speerschleuderspeere: je Schuss
+  /// bei einer 1 auf 1W20 (WdE S. 110).
+  pfeileHetz(
+    'Jeder Pfeil oder Bolzen geht bei einer 1 auf 1W20 verloren.',
+    1,
+    wuerfel: 1,
+  ),
+
+  /// Hetzjagd: Speere aller Art bei 3–6 auf 2W20.
+  speereHetz('Jeder Speer geht bei 3–6 auf 2W20 verloren.', 6),
+
+  /// Hetzjagd: Wurfwaffen bei 3–8 auf 2W20.
+  wurfwaffenHetz('Jede Wurfwaffe geht bei 3–8 auf 2W20 verloren.', 8);
+
+  const JagdVerbrauch(this.hinweis, this.verlorenBis, {this.wuerfel = 2});
 
   /// Text für die Ergebnisanzeige.
   final String hinweis;
 
-  /// Höchste Summe auf 2W20, bei der ein Geschoss verloren geht (ab 3);
+  /// Höchster Wurf (bei 2W20 die Summe), bei dem ein Geschoss verloren geht;
   /// `null` bei festem Verlust je Jagd ([kugeln]).
   final int? verlorenBis;
 
+  /// Zahl der W20 je Schuss (1 bei der Hetzjagd mit Pfeilen, sonst 2).
+  final int wuerfel;
+
+  /// Kleinster Wurf, der als Verlust zählt: bei 2W20 ab 3 (die Doppel-1 zählt
+  /// nicht), bei 1W20 schon die 1.
+  int get verlorenAb => wuerfel == 1 ? 1 : 3;
+
+  /// Der Bereich als Text (`3–5` oder `1`).
+  String get verlustBereich =>
+      verlorenAb == verlorenBis ? '$verlorenAb' : '$verlorenAb–$verlorenBis';
+
   /// Ob der Verlust je Schuss gewürfelt wird.
   bool get jeSchuss => verlorenBis != null;
+
+  /// Die Verlustregel derselben Munition bei der Hetzjagd (WdE S. 110).
+  JagdVerbrauch get beiHetzjagd => switch (this) {
+    pfeile => pfeileHetz,
+    speere => speereHetz,
+    wurfwaffen => wurfwaffenHetz,
+    _ => this,
+  };
 }
 
 /// Munition einer Jagd, deren Verlust gewürfelt werden kann.
@@ -182,11 +227,15 @@ Geschossverlust wuerfleGeschossverlust(
   }
   final wuerfe = <int>[
     for (var i = 0; i < (schuesse < 0 ? 0 : schuesse); i++)
-      roller.rollDie(20) + roller.rollDie(20),
+      verbrauch.wuerfel == 1
+          ? roller.rollDie(20)
+          : roller.rollDie(20) + roller.rollDie(20),
   ];
   return Geschossverlust(
     wuerfe: List<int>.unmodifiable(wuerfe),
-    verloren: wuerfe.where((summe) => summe >= 3 && summe <= bis).length,
+    verloren: wuerfe
+        .where((wurf) => wurf >= verbrauch.verlorenAb && wurf <= bis)
+        .length,
   );
 }
 

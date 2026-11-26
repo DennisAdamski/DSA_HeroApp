@@ -301,8 +301,8 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   gelesen), Angeln (nur Talent Fischen/Angeln, ohne Metatalent-Deckel),
   Speerfischen (Speere oder Wurfspeere, Waffe −3/0/+3, Scharfschütze nur mit
   Wurfspeeren). **Ausbeute (24.11.2026):** `wildnis_ausbeute_rules.dart`
-  hält `WildnisRationen` (Name, Anzahl, Tätigkeit, Beschreibung, 1 Stein =
-  `kWildnisRationGewichtGramm` je Ration) und `mitWildnisRationen`: ein
+  hält `WildnisPosten` (Name, Anzahl, Tätigkeit, Beschreibung, 1 Stein =
+  `kWildnisRationGewichtGramm` je Ration) und `mitWildnisPosten`: ein
   manueller Verbrauchseintrag mit `menge` (über `mitInventarMenge`) und
   Herkunft „Tätigkeit am Datum“; gleicher Name, gleiche Herkunft und
   Beschreibung mit klarer Menge stapeln, sonst neuer Eintrag. Namen:
@@ -316,5 +316,19 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Schleudersteine, `mitJagdGeschossverlust` bucht vom gespeicherten Bestand
   des angezeigten Geschosses ab (höchstens bis 0, über
   `mitGeschossSchritt`). Wie viele Schüsse fallen, sagt das Buch nicht; die
-  Zahl gibt der Spieler an. **Offen:** Hetzjagd (Reittier, eigene Tabellen,
-  nicht wiederholbar).
+  Zahl gibt der Spieler an. **Hetzjagd (26.11.2026):** `hetzjagd_rules.dart`
+  nach WdE S. 109 f.: TaW = (Wildnisleben + Tierkunde + 2 × Reiten + Waffe)
+  / 5 (Deckel doppelt das niedrigste), Tierkunde und Reiten müssen aktiviert
+  sein (`hetzjagdVoraussetzung`), MU/IN/GE, 1 Stunde, TaP* = Tagesrationen,
+  **nicht wiederholbar** (nur Hinweis, die App sperrt nichts). Eigene Tabellen
+  für Waffe (`kHetzjagdWaffenTabelle`, eigene Waffen: Reichweite + Ladezeit,
+  Wurfwaffen +6, Wurfmesser und Dolche zählen nicht), Region und
+  Sonderfertigkeiten (Scharfschütze −1, Meisterschütze zusammen −3,
+  Schnellladen −2; `Schuetzenstufe.hetzErleichterung`). Wie bei der Pirschjagd
+  gleichen Schützen-SF und Schnellladen nur positive Zuschläge außer der
+  Waffe aus; Jagdtier (−3 bis −7), Jagd zu Pferde (−3, Reiten 7, Grasland,
+  Heide, Savanne, Steppe, Tundra), Reiterkampf −2 und Berittener Schütze
+  (zusammen −7) stehen außerhalb dieser Grenze (Lesart). Verbrauch
+  `JagdVerbrauch.pfeileHetz` (1 auf 1W20), `speereHetz` (3–6), `wurfwaffenHetz`
+  (3–8) auf 2W20. **Kräuter ins Inventar:** `kraeuterPosten` und
+  `WildnisErgebnis.funde`, siehe [ui_oberflaeche.md](ui_oberflaeche.md).

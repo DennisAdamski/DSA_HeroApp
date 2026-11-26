@@ -15,7 +15,7 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
 | Bereich | Erledigt | Teilweise / offen |
 | --- | --- | --- |
 | Architektur (ARCH) | 01 bis 06 abgenommen; alle manuellen Prüfungen erledigt (18.11.) | 04 ebenfalls abgenommen (Lernregel-Reste zurückgestellt); 07 begleitend |
-| Fachlicher Ausbau | MAG-EFF: 17 Zauberprofile; TRANK: Teilstände 1 und 2 | weitere Zauber zurückgestellt; Elixiere, Verbandszeug offen; Kräutersuche als Regelfunktion und Kachel in der Spielansicht (Wildnis, seit 12.–14.11.2026); Nahrungsbeschaffung (Nahrung sammeln, Pirsch-/Ansitzjagd, Tierfallen, Angeln, Speerfischen) in derselben Kachel (23.11.2026), Rationen ins Inventar und Geschossverlust (24.11.2026); Hetzjagd offen |
+| Fachlicher Ausbau | MAG-EFF: 17 Zauberprofile; TRANK: Teilstände 1 und 2 | weitere Zauber zurückgestellt; Elixiere, Verbandszeug offen; Kräutersuche als Regelfunktion und Kachel in der Spielansicht (Wildnis, seit 12.–14.11.2026); Nahrungsbeschaffung (Nahrung sammeln, Pirsch-/Ansitzjagd, Tierfallen, Angeln, Speerfischen) in derselben Kachel (23.11.2026), Rationen ins Inventar und Geschossverlust (24.11.2026); Hetzjagd, gefundene Kräuter ins Inventar und Funde von Hand eintragen für am Tisch ausgespielte Proben (26.11.2026) |
 | Spielabend (SPIEL) | 01 bis 07 | – |
 | Weitere Themen | Gefecht, Gefechtslage 1–7, Reittiere P1, Vertraute V1/V2, Reiseroute Stufe 1 und 2 (Kartenbild live), Gruppen v2, Feedback, Redesign R1–R3, Aufräumserie REV-01–16 | siehe [Weitere Themen](#weitere-themen-stand-05112026) |
 

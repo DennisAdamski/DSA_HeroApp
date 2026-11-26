@@ -203,6 +203,13 @@ class KartoJagdTaetigkeit extends KartoRationenTaetigkeit {
   }
 
   @override
+  String? get inventarGegenstand => kWildbretGegenstand;
+
+  @override
+  String inventarBeschreibung(KartoWildnisKontext kontext) =>
+      frischfleischBeschreibung(region(kontext));
+
+  @override
   WildnisErgebnis auswerten(
     KartoWildnisKontext kontext,
     ProbeResult probe, {

@@ -828,4 +828,93 @@ void main() {
       expect(fuer(''), isEmpty);
     });
   });
+  group('Funde fürs Inventar', () {
+    test('gezielte Suche: ein Posten mit Wirkung, Grundmenge und Quelle', () {
+      const donf = KrautEintrag(
+        name: 'Donf',
+        bestimmung: 1,
+        wirkung: 'fiebersenkend',
+        grundmenge: '2W6 Blätter',
+        quelle: 'Zoo Botanica Aventurica S. 234',
+        vorkommen: <KrautVorkommen>[
+          KrautVorkommen(
+            landschaft: Kraeuterlandschaft.dichterWald,
+            haeufigkeit: Kraeuterhaeufigkeit.haeufig,
+          ),
+        ],
+      );
+      final posten = kraeuterPosten(donf, 3);
+      expect(posten.gegenstand, 'Donf');
+      expect(posten.anzahl, 3);
+      expect(posten.taetigkeit, 'Kräutersuche');
+      expect(posten.gewichtGramm, 0);
+      expect(posten.beschreibung, contains('Wirkung: fiebersenkend.'));
+      expect(posten.beschreibung, contains('Eine Grundmenge: 2W6 Blätter.'));
+      expect(posten.beschreibung, contains('Zoo Botanica Aventurica S. 234'));
+    });
+
+    test('das Ergebnis der Suche trägt Posten je Fund, Würz- und Konservierungsmittel', () {
+      final katalog = KraeuterKatalog(
+        kraeuter: <KrautEintrag>[
+          _kraut('Donf', 1, Kraeuterhaeufigkeit.haeufig),
+        ],
+      );
+      final gezielt = kraeuterErgebnisAlsWildnis(
+        fuehreKraeutersucheDurch(
+          _eingabe(modus: KraeuterSuchmodus.gezielt, ziel: 'Donf'),
+          katalog,
+          roller: _Folge(<int>[5, 5, 5]),
+        ),
+      );
+      expect(gezielt.funde.single.gegenstand, 'Donf');
+      expect(gezielt.funde.single.anzahl, greaterThan(0));
+      expect(gezielt.inventarPosten, gezielt.funde);
+
+      final wuerz = kraeuterErgebnisAlsWildnis(
+        fuehreKraeutersucheDurch(
+          _eingabe(modus: KraeuterSuchmodus.wuerz),
+          katalog,
+          roller: _Folge(<int>[5, 5, 5]),
+        ),
+      );
+      expect(wuerz.funde.single.gegenstand, 'Würzkräuter');
+      expect(wuerz.funde.single.anzahl, 5);
+
+      final konserve = kraeuterErgebnisAlsWildnis(
+        fuehreKraeutersucheDurch(
+          _eingabe(modus: KraeuterSuchmodus.konservierung),
+          katalog,
+          roller: _Folge(<int>[5, 5, 5]),
+        ),
+      );
+      expect(konserve.funde.single.gegenstand, 'Konservierungskräuter');
+      expect(konserve.funde.single.anzahl, 10);
+    });
+
+    test('Misserfolg und Pauschalsuche', () {
+      final katalog = KraeuterKatalog(
+        kraeuter: <KrautEintrag>[
+          _kraut('Donf', 1, Kraeuterhaeufigkeit.haeufig),
+        ],
+      );
+      final misserfolg = kraeuterErgebnisAlsWildnis(
+        fuehreKraeutersucheDurch(
+          _eingabe(modus: KraeuterSuchmodus.gezielt, ziel: 'Donf'),
+          katalog,
+          roller: _Folge(<int>[20, 20, 20]),
+        ),
+      );
+      expect(misserfolg.funde, isEmpty);
+      expect(misserfolg.inventarPosten, isEmpty);
+
+      final pauschal = kraeuterErgebnisAlsWildnis(
+        fuehreKraeutersucheDurch(
+          _eingabe(modus: KraeuterSuchmodus.gezielt),
+          katalog,
+          roller: _Folge(<int>[5, 5, 5]),
+        ),
+      );
+      expect(pauschal.funde.single.gegenstand, 'Heilkraut (Pflanze offen)');
+    });
+  });
 }

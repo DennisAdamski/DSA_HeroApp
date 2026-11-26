@@ -26,8 +26,8 @@ export 'package:dsa_heldenverwaltung/rules/derived/wildnis_ausbeute_rules.dart'
 // … höchstens 8 TaP* … auch bei Sturm (+6)“). Hier gleicht die Erleichterung
 // die positiven Zuschläge außer der Waffe aus, ein Überschuss verfällt.
 //
-// Die Hetzjagd (S. 109) ist nicht umgesetzt: Sie braucht Reittier, eigene
-// Waffen- und Regionstabellen und ist nicht wiederholbar.
+// Die Hetzjagd (S. 109 f.) steht in `hetzjagd_rules.dart`: eigene Waffen- und
+// Regionstabellen, Reiten im TaW, nicht wiederholbar.
 
 /// Art der Jagd zu Fuß.
 enum Jagdart {
@@ -365,21 +365,28 @@ enum Jagdwetter {
 /// Scharf- und Meisterschütze für die gewählte Waffe.
 enum Schuetzenstufe {
   /// Keine Schützen-Sonderfertigkeit.
-  keine('Keine', 0),
+  keine('Keine', 0, 0),
 
   /// Scharfschütze.
-  scharfschuetze('Scharfschütze', -3),
+  scharfschuetze('Scharfschütze', -3, -1),
 
-  /// Scharf- und Meisterschütze (gemeinsam −7).
-  meisterschuetze('Scharf- und Meisterschütze', -7);
+  /// Scharf- und Meisterschütze (gemeinsam −7, bei der Hetzjagd −3).
+  meisterschuetze('Scharf- und Meisterschütze', -7, -3);
 
-  const Schuetzenstufe(this.bezeichnung, this.jagdErleichterung);
+  const Schuetzenstufe(
+    this.bezeichnung,
+    this.jagdErleichterung,
+    this.hetzErleichterung,
+  );
 
   /// Anzeigename.
   final String bezeichnung;
 
   /// Erleichterung bei Pirsch- und Ansitzjagd (negativ).
   final int jagdErleichterung;
+
+  /// Erleichterung bei der Hetzjagd (negativ, WdE S. 109).
+  final int hetzErleichterung;
 }
 
 /// Katalog-ID des Manövers Scharfschütze.

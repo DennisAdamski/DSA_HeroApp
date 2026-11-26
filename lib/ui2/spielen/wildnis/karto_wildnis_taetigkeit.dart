@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/meta_talent_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wildnis_ausbeute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wildnis_probe_rules.dart';
 
 /// Eine Wahl, die eine Tätigkeit zusätzlich zu den gemeinsamen Feldern der
@@ -223,6 +224,33 @@ abstract class KartoWildnisTaetigkeit {
     ProbeResult probe, {
     required DiceRoller roller,
   });
+
+  /// Ob sich ein Fund von Hand eintragen lässt (Probe am Tisch ausgespielt,
+  /// ohne die App zu würfeln): Auswahl und Menge statt Wurf.
+  bool get erlaubtHandFund => false;
+
+  /// Einheit der Menge beim Fund von Hand (`Tagesrationen`, `Grundmengen`).
+  String get handFundEinheit => 'Tagesrationen';
+
+  /// Beschriftung der Auswahl beim Fund von Hand; `null`, wenn es nichts zu
+  /// wählen gibt (die Menge allein genügt).
+  String? get handFundWahlTitel => null;
+
+  /// Wählbare Funde (etwa die Kräuter des Katalogs, die der Landschaft
+  /// zuerst); leer ohne Auswahl.
+  List<({String schluessel, String text})> handFundWahl(
+    Object? daten,
+    WildnisLandschaft? landschaft,
+  ) => const <({String schluessel, String text})>[];
+
+  /// Der Posten für [menge] des gewählten Funds [wahl]; `null`, wenn sich noch
+  /// nichts buchen lässt (etwa weil die Landschaft fehlt).
+  WildnisPosten? handFund({
+    required KartoWildnisKontext? kontext,
+    required Object? daten,
+    required String? wahl,
+    required int menge,
+  }) => null;
 
   /// Überschrift der Vorschau mit [anzahl] Zeilen.
   String vorschauTitel(int anzahl) => 'Mögliche Funde ($anzahl)';

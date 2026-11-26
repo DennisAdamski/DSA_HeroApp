@@ -281,19 +281,35 @@ WildnisErgebnis werteNahrungSammelnAus(
     hinweis: hinweise.join(' '),
     rationen: ausbeute.rationen <= 0
         ? null
-        : WildnisRationen(
-            gegenstand:
-                'Gesammelte Nahrung (Haltbarkeit '
-                '${ausbeute.haltbarkeit.stufe})',
-            anzahl: ausbeute.rationen,
-            taetigkeit: 'Nahrung sammeln',
-            beschreibung: <String>[
-              'Haltbarkeit ${ausbeute.haltbarkeit.stufe}: '
-                  '${ausbeute.haltbarkeit.dauer} (mildes Klima, WdE S. 122).',
-              if (klima.isNotEmpty) klima,
-              if (e.gelaendekunde != Gelaendekunde.passend)
-                'Ohne passende Geländekunde gesammelt: Giftwurf beachten.',
-            ].join(' '),
+        : nahrungSammelnPosten(
+            region: e.region,
+            rationen: ausbeute.rationen,
+            haltbarkeit: ausbeute.haltbarkeit,
+            gelaendekunde: e.gelaendekunde,
           ),
+  );
+}
+
+/// Gesammelte Nahrung als Inventarposten: [rationen] Tagesrationen der
+/// Haltbarkeitsstufe [haltbarkeit]; auch für eine am Tisch ausgespielte
+/// Probe (Menge von Hand).
+WildnisPosten nahrungSammelnPosten({
+  required Wildnisregion region,
+  required int rationen,
+  required Haltbarkeitsstufe haltbarkeit,
+  required Gelaendekunde gelaendekunde,
+}) {
+  final klima = nahrungHaltbarkeitKlima(region);
+  return WildnisPosten(
+    gegenstand: 'Gesammelte Nahrung (Haltbarkeit ${haltbarkeit.stufe})',
+    anzahl: rationen,
+    taetigkeit: 'Nahrung sammeln',
+    beschreibung: <String>[
+      'Haltbarkeit ${haltbarkeit.stufe}: ${haltbarkeit.dauer} '
+          '(mildes Klima, WdE S. 122).',
+      if (klima.isNotEmpty) klima,
+      if (gelaendekunde != Gelaendekunde.passend)
+        'Ohne passende Geländekunde gesammelt: Giftwurf beachten.',
+    ].join(' '),
   );
 }

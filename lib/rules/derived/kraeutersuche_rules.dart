@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/domain/kraeuter_eintrag.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wildnis_ausbeute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wildnis_probe_rules.dart';
 
 // Die Geländekunde gehört dem tätigkeitsneutralen Kern; die Kräutersuche
@@ -463,8 +464,76 @@ WildnisErgebnis kraeuterErgebnisAlsWildnis(KraeuterSucheErgebnis ergebnis) {
     tapStern: ergebnis.tapStern,
     zeilen: zeilen,
     hinweis: ergebnis.hinweis,
+    funde: <WildnisPosten>[
+      for (final fund in ergebnis.funde)
+        if (fund.grundmengen > 0)
+          fund.kraut == null
+              ? kraeuterPostenUnbestimmt(fund.grundmengen)
+              : kraeuterPosten(fund.kraut!, fund.grundmengen),
+      if (ergebnis.wuerzPunkte > 0)
+        WildnisPosten(
+          gegenstand: kWuerzkraeuterGegenstand,
+          anzahl: ergebnis.wuerzPunkte,
+          taetigkeit: kKraeutersucheTaetigkeit,
+          beschreibung:
+              'Je Punkt 1 Punkt Erleichterung auf Kochen-Proben, je Probe '
+              'höchstens $kWuerzkraeuterMaxErleichterungProKochenProbe '
+              '(Wege des Entdeckers S. 113 f.).',
+          gewichtGramm: 0,
+        ),
+      if (ergebnis.haltbarkeitTage > 0)
+        WildnisPosten(
+          gegenstand: kKonservierungsGegenstand,
+          anzahl: ergebnis.haltbarkeitTage,
+          taetigkeit: kKraeutersucheTaetigkeit,
+          beschreibung:
+              'Je Stück 1 Tag zusätzliche Haltbarkeit für Vorräte '
+              '(Wege des Entdeckers S. 113 f.).',
+          gewichtGramm: 0,
+        ),
+    ],
   );
 }
+
+/// Name der Tätigkeit in der Herkunft der Inventareinträge.
+const String kKraeutersucheTaetigkeit = 'Kräutersuche';
+
+/// Inventareintrag für gefundene Würzkräuter (Menge = Punkte Erleichterung).
+const String kWuerzkraeuterGegenstand = 'Würzkräuter';
+
+/// Inventareintrag für gefundene Konservierungsmittel (Menge = Tage).
+const String kKonservierungsGegenstand = 'Konservierungskräuter';
+
+/// [grundmengen] Grundmengen von [kraut] als Inventarposten.
+///
+/// Die Beschreibung nennt Wirkung und die Größe einer Grundmenge; der Eintrag
+/// zählt Grundmengen. Gewicht nennt das Buch nicht, es bleibt 0.
+WildnisPosten kraeuterPosten(KrautEintrag kraut, int grundmengen) =>
+    WildnisPosten(
+      gegenstand: kraut.name,
+      anzahl: grundmengen,
+      taetigkeit: kKraeutersucheTaetigkeit,
+      beschreibung: <String>[
+        if (kraut.wirkung.isNotEmpty) 'Wirkung: ${kraut.wirkung}.',
+        if (kraut.grundmenge.isNotEmpty)
+          'Eine Grundmenge: ${kraut.grundmenge}.'
+        else
+          'Menge in Grundmengen.',
+        if (kraut.quelle.isNotEmpty) '(${kraut.quelle})',
+      ].join(' '),
+      gewichtGramm: 0,
+    );
+
+/// Gefundene Heilwirkung ohne bestimmte Pflanze (Pauschalsuche).
+WildnisPosten kraeuterPostenUnbestimmt(int grundmengen) => WildnisPosten(
+  gegenstand: 'Heilkraut (Pflanze offen)',
+  anzahl: grundmengen,
+  taetigkeit: kKraeutersucheTaetigkeit,
+  beschreibung:
+      'Gesucht ohne bestimmte Pflanze; Pflanze und Wirkung legt der Meister '
+      'fest. Menge in Grundmengen.',
+  gewichtGramm: 0,
+);
 
 /// Ob die nutzbaren Teile von [kraut] im Monat [monat] zu ernten sind.
 ///

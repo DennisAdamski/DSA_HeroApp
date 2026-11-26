@@ -275,6 +275,7 @@ class WildnisErgebnis {
     this.zeilen = const <WildnisErgebnisZeile>[],
     this.hinweis = '',
     this.rationen,
+    this.funde = const <WildnisPosten>[],
     this.munition,
   });
 
@@ -295,7 +296,17 @@ class WildnisErgebnis {
 
   /// Tagesrationen, die sich ins Inventar buchen lassen; `null`, wenn die
   /// Tätigkeit keine bringt oder die Probe misslang.
-  final WildnisRationen? rationen;
+  final WildnisPosten? rationen;
+
+  /// Weitere Funde fürs Inventar (gefundene Kräuter, Würz- und
+  /// Konservierungsmittel); leer, wenn die Tätigkeit keine bringt.
+  final List<WildnisPosten> funde;
+
+  /// Alles, was sich aus diesem Ergebnis ins Inventar buchen lässt.
+  List<WildnisPosten> get inventarPosten => <WildnisPosten>[
+    ?rationen,
+    ...funde,
+  ];
 
   /// Munition, deren Verlust zu würfeln ist (Jagd); `null` ohne.
   final WildnisMunition? munition;
@@ -337,7 +348,7 @@ WildnisErgebnis wildnisRationenErgebnis(
     hinweis: hinweis,
     rationen: gegenstand == null || tap <= 0
         ? null
-        : WildnisRationen(
+        : WildnisPosten(
             gegenstand: gegenstand,
             anzahl: tap,
             taetigkeit: taetigkeit,

@@ -163,6 +163,26 @@ HeroSheet _jaegerMitPfeilen() {
   );
 }
 
+/// Ein Reiter mit Kurzbogen: Hetzjagd-TaW (8 + 6 + 2 × 9 + 9) / 5 = 8.
+HeroSheet _reiter() => _held().copyWith(
+  talents: const <String, HeroTalentEntry>{
+    'tal_wildnisleben': HeroTalentEntry(talentValue: 8),
+    'tal_tierkunde': HeroTalentEntry(talentValue: 6),
+    'tal_reiten': HeroTalentEntry(talentValue: 9),
+    'tal_bogen': HeroTalentEntry(talentValue: 9),
+  },
+  combatConfig: const CombatConfig(
+    weapons: <MainWeaponSlot>[
+      MainWeaponSlot(
+        id: 'w1',
+        name: 'Kurzbogen',
+        talentId: 'tal_bogen',
+        combatType: WeaponCombatType.ranged,
+      ),
+    ],
+  ),
+);
+
 /// Würfel mit festen Ergebnissen in der angegebenen Reihenfolge.
 class _FesteWuerfel implements DiceRoller {
   _FesteWuerfel(this.werte);
@@ -299,6 +319,7 @@ void main() {
         'nahrung',
         'pirschjagd',
         'ansitzjagd',
+        'hetzjagd',
         'tierfallen',
         'angeln',
         'speerfischen',
@@ -914,6 +935,164 @@ void main() {
       await tester.tap(k('karto-wildnis-fund-0'));
       await tester.pumpAndSettle();
       expect(angaben, findsNothing);
+    });
+  });
+
+  group('Funde ins Inventar', () {
+    testWidgets('gefundene Kräuter lassen sich ins Inventar buchen', (
+      tester,
+    ) async {
+      final bestand = GefechtsTestBestand()..w20Wert = 5;
+      await zeige(tester, held: _held(), bestand: bestand);
+      await tester.tap(k('karto-wildnis-wuerfeln'));
+      await tester.pumpAndSettle();
+      expect(k('karto-wildnis-funde-buchen'), findsOneWidget);
+      await tester.tap(k('karto-wildnis-funde-buchen'));
+      await tester.pumpAndSettle();
+
+      final eintrag = (await repository.loadHeroById(_id))!.inventoryEntries
+          .singleWhere((e) => e.gegenstand == 'Donf');
+      expect(eintrag.menge, greaterThan(0));
+      expect(eintrag.herkunft, 'Kräutersuche am 5. Praios 1043 BF');
+      expect(eintrag.beschreibung, contains('fiebersenkend'));
+      expect(k('karto-wildnis-funde-gebucht'), findsOneWidget);
+      expect(k('karto-wildnis-funde-buchen'), findsNothing);
+    });
+
+    testWidgets('Kraut und Menge lassen sich von Hand eintragen', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: _held(),
+        kraeuter: _vieleKraeuter,
+        bestand: GefechtsTestBestand(),
+      );
+      expect(k('karto-wildnis-hand-buchen'), findsNothing);
+      await tester.tap(k('karto-wildnis-hand-umschalten'));
+      await tester.pumpAndSettle();
+      // Die Kräuter der Landschaft stehen vorn, die Wahl lässt sich ändern.
+      await waehleIn(tester, 'karto-wildnis-hand-wahl-Arganstrauch', 'Quinya');
+      await tester.tap(k('karto-wildnis-hand-menge-plus'));
+      await tester.pump();
+      await tester.tap(k('karto-wildnis-hand-menge-plus'));
+      await tester.pump();
+      expect(find.text('3 × Quinya ins Inventar'), findsOneWidget);
+      await tester.tap(k('karto-wildnis-hand-buchen'));
+      await tester.pumpAndSettle();
+
+      final eintrag = (await repository.loadHeroById(_id))!.inventoryEntries
+          .singleWhere((e) => e.gegenstand == 'Quinya');
+      expect(eintrag.menge, 3);
+      expect(eintrag.herkunft, 'Kräutersuche am 5. Praios 1043 BF');
+      expect(k('karto-wildnis-hand-gebucht'), findsOneWidget);
+    });
+
+    testWidgets('ein Heilkraut ohne bestimmte Pflanze ist wählbar', (
+      tester,
+    ) async {
+      await zeige(tester, held: _held(), bestand: GefechtsTestBestand());
+      await tester.tap(k('karto-wildnis-hand-umschalten'));
+      await tester.pumpAndSettle();
+      await waehleIn(
+        tester,
+        'karto-wildnis-hand-wahl-Donf',
+        'Heilkraut, Pflanze offen',
+      );
+      await tester.tap(k('karto-wildnis-hand-buchen'));
+      await tester.pumpAndSettle();
+      final inventar = (await repository.loadHeroById(_id))!.inventoryEntries;
+      final eintrag = inventar.singleWhere(
+        (e) => e.gegenstand == 'Heilkraut (Pflanze offen)',
+      );
+      expect(eintrag.menge, 1);
+    });
+
+    testWidgets('eine am Tisch ausgespielte Jagd trägt Rationen ein', (
+      tester,
+    ) async {
+      await zeige(tester, held: _jaeger(), bestand: GefechtsTestBestand());
+      await waehleTaetigkeit(tester, 'pirschjagd');
+      await tester.tap(k('karto-wildnis-hand-umschalten'));
+      await tester.pumpAndSettle();
+      // Bei Rationen gibt es nichts zu wählen, nur die Menge.
+      expect(k('karto-wildnis-hand-wahl-'), findsNothing);
+      await tester.tap(k('karto-wildnis-hand-menge-plus'));
+      await tester.pump();
+      await tester.tap(k('karto-wildnis-hand-buchen'));
+      await tester.pumpAndSettle();
+
+      final eintrag = (await repository.loadHeroById(_id))!.inventoryEntries
+          .singleWhere((e) => e.gegenstand == 'Wildbret (frisch)');
+      expect(eintrag.menge, 2);
+      expect(eintrag.herkunft, 'Pirschjagd am 5. Praios 1043 BF');
+      expect(eintrag.beschreibung, contains('Sumpf, Dschungel'));
+    });
+
+    testWidgets('gesammelte Nahrung trägt die Haltbarkeitsstufe im Namen', (
+      tester,
+    ) async {
+      await zeige(tester, held: _held(), bestand: GefechtsTestBestand());
+      await waehleTaetigkeit(tester, 'nahrung');
+      await tester.tap(k('karto-wildnis-hand-umschalten'));
+      await tester.pumpAndSettle();
+      await tester.tap(k('karto-wildnis-hand-buchen'));
+      await tester.pumpAndSettle();
+      final eintrag = (await repository.loadHeroById(_id))!.inventoryEntries
+          .singleWhere((e) => e.gegenstand.startsWith('Gesammelte Nahrung'));
+      expect(eintrag.gegenstand, 'Gesammelte Nahrung (Haltbarkeit 1)');
+      expect(eintrag.menge, 1);
+    });
+
+    testWidgets('ohne Landschaft lässt sich keine Ration eintragen', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: _jaeger(),
+        standort: '',
+        bestand: GefechtsTestBestand(),
+      );
+      await waehleTaetigkeit(tester, 'pirschjagd');
+      await tester.tap(k('karto-wildnis-hand-umschalten'));
+      await tester.pumpAndSettle();
+      expect(k('karto-wildnis-hand-buchen'), findsNothing);
+      expect(k('karto-wildnis-hand-hinweis'), findsOneWidget);
+    });
+  });
+
+  group('Hetzjagd', () {
+    testWidgets('rechnet TaW mit doppeltem Reiten und die Hetz-Erschwernis', (
+      tester,
+    ) async {
+      await zeige(tester, held: _reiter());
+      await waehleTaetigkeit(tester, 'hetzjagd');
+      // Kurzbogen +2, Dschungel +4.
+      expect(zusammenfassung(), 'TaW 8 · Erschwernis +6');
+    });
+
+    testWidgets('ohne Reiten bleibt die Probe gesperrt', (tester) async {
+      await zeige(tester, held: _jaeger(), bestand: GefechtsTestBestand());
+      await waehleTaetigkeit(tester, 'hetzjagd');
+      expect(find.textContaining('aktivierten Talente Reiten'), findsWidgets);
+      final knopf = tester.widget<FilledButton>(k('karto-wildnis-wuerfeln'));
+      expect(knopf.onPressed, isNull);
+    });
+
+    testWidgets('würfelt Wildbret, bucht es und nennt die Sperre', (
+      tester,
+    ) async {
+      final bestand = GefechtsTestBestand()..w20Wert = 5;
+      await zeige(tester, held: _reiter(), bestand: bestand);
+      await waehleTaetigkeit(tester, 'hetzjagd');
+      await tester.tap(k('karto-wildnis-wuerfeln'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('nicht wiederholen'), findsOneWidget);
+      await tester.tap(k('karto-wildnis-rationen-buchen'));
+      await tester.pumpAndSettle();
+      final eintrag = (await repository.loadHeroById(_id))!.inventoryEntries
+          .singleWhere((e) => e.gegenstand == 'Wildbret (frisch)');
+      expect(eintrag.herkunft, 'Hetzjagd am 5. Praios 1043 BF');
     });
   });
 

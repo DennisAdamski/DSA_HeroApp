@@ -27,7 +27,7 @@ class _FesteWuerfel implements DiceRoller {
   int rollDie(int sides) => werte[_naechster++];
 }
 
-const WildnisRationen _wildbret = WildnisRationen(
+const WildnisPosten _wildbret = WildnisPosten(
   gegenstand: 'Wildbret (frisch)',
   anzahl: 3,
   taetigkeit: 'Pirschjagd',
@@ -68,7 +68,7 @@ void main() {
     test(
       'legen einen Verbrauchseintrag mit Menge, Gewicht und Herkunft an',
       () {
-        final held = mitWildnisRationen(
+        final held = mitWildnisPosten(
           testHero(),
           _wildbret,
           datum: '5. Praios 1043 BF',
@@ -88,14 +88,10 @@ void main() {
     test(
       'derselbe Tag und dieselbe Tätigkeit stapeln, ein anderer Tag nicht',
       () {
-        var held = mitWildnisRationen(
-          testHero(),
-          _wildbret,
-          datum: '5. Praios',
-        );
-        held = mitWildnisRationen(held, _wildbret, datum: '5. Praios');
+        var held = mitWildnisPosten(testHero(), _wildbret, datum: '5. Praios');
+        held = mitWildnisPosten(held, _wildbret, datum: '5. Praios');
         expect(held.inventoryEntries.single.menge, 6);
-        held = mitWildnisRationen(held, _wildbret, datum: '6. Praios');
+        held = mitWildnisPosten(held, _wildbret, datum: '6. Praios');
         expect(held.inventoryEntries, hasLength(2));
       },
     );
@@ -113,19 +109,19 @@ void main() {
           ),
         ],
       );
-      final neu = mitWildnisRationen(held, _wildbret);
+      final neu = mitWildnisPosten(held, _wildbret);
       expect(neu.inventoryEntries, hasLength(2));
       expect(neu.inventoryEntries.first.anzahl, 'einige');
     });
 
     test('ohne Rationen bleibt der Held derselbe', () {
       final held = testHero();
-      const keine = WildnisRationen(
+      const keine = WildnisPosten(
         gegenstand: 'Fisch (frisch)',
         anzahl: 0,
         taetigkeit: 'Angeln',
       );
-      expect(identical(mitWildnisRationen(held, keine), held), isTrue);
+      expect(identical(mitWildnisPosten(held, keine), held), isTrue);
     });
 
     test('ohne Datum nennt die Herkunft nur die Tätigkeit', () {
@@ -346,6 +342,51 @@ void main() {
       expect(treffer.geschoss!.name, 'Jagdpfeile');
       expect(jagdWaffeUndGeschoss(held, null), isNull);
       expect(jagdWaffeUndGeschoss(held, 'fehlt'), isNull);
+    });
+  });
+  group('Mehrere Funde', () {
+    test('mitWildnisFunden bucht alle Posten in einem Bogen und stapelt', () {
+      const donf = WildnisPosten(
+        gegenstand: 'Donf',
+        anzahl: 2,
+        taetigkeit: 'Kräutersuche',
+        gewichtGramm: 0,
+      );
+      const wurz = WildnisPosten(
+        gegenstand: 'Würzkräuter',
+        anzahl: 3,
+        taetigkeit: 'Kräutersuche',
+        gewichtGramm: 0,
+      );
+      final held = mitWildnisFunden(testHero(), <WildnisPosten>[
+        donf,
+        wurz,
+      ], datum: '5. Praios 1043 BF');
+      expect(held.inventoryEntries, hasLength(2));
+      final eintrag = held.inventoryEntries.firstWhere(
+        (e) => e.gegenstand == 'Donf',
+      );
+      expect(eintrag.menge, 2);
+      expect(eintrag.herkunft, 'Kräutersuche am 5. Praios 1043 BF');
+      expect(eintrag.gewichtGramm, 0);
+
+      // Zweiter Fund desselben Krauts am selben Tag wächst die Menge.
+      final mehr = mitWildnisFunden(held, <WildnisPosten>[
+        donf,
+      ], datum: '5. Praios 1043 BF');
+      expect(mehr.inventoryEntries, hasLength(2));
+      expect(
+        mehr.inventoryEntries.firstWhere((e) => e.gegenstand == 'Donf').menge,
+        4,
+      );
+    });
+
+    test('ohne Posten bleibt der Held unverändert', () {
+      final held = testHero();
+      expect(
+        identical(mitWildnisFunden(held, const <WildnisPosten>[]), held),
+        isTrue,
+      );
     });
   });
 }

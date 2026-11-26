@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wildnis_ausbeute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wildnis_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wildnis_region_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/wildnis/karto_wildnis_taetigkeit.dart';
@@ -67,6 +68,31 @@ abstract class KartoRationenTaetigkeit extends KartoWildnisTaetigkeit {
 
   /// Beschreibung des Inventareintrags (Haltbarkeit in der Region).
   String inventarBeschreibung(KartoWildnisKontext kontext) => '';
+
+  @override
+  bool get erlaubtHandFund => inventarGegenstand != null;
+
+  /// Name des Eintrags für einen Fund von Hand; Nahrung sammeln benennt ihn
+  /// nach der Haltbarkeit.
+  String? handFundGegenstand(KartoWildnisKontext kontext) => inventarGegenstand;
+
+  @override
+  WildnisPosten? handFund({
+    required KartoWildnisKontext? kontext,
+    required Object? daten,
+    required String? wahl,
+    required int menge,
+  }) {
+    if (kontext == null || menge <= 0) return null;
+    final gegenstand = handFundGegenstand(kontext);
+    if (gegenstand == null) return null;
+    return WildnisPosten(
+      gegenstand: gegenstand,
+      anzahl: menge,
+      taetigkeit: titel,
+      beschreibung: inventarBeschreibung(kontext),
+    );
+  }
 
   WildnisProbeEingabe _eingabe(KartoWildnisKontext kontext) {
     final eingabe = probeEingabe(kontext);

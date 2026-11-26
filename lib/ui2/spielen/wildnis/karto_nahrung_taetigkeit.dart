@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/meta_talent_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/nahrung_sammeln_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wildnis_ausbeute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wildnis_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/wildnis/karto_rationen_taetigkeit.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/wildnis/karto_wildnis_taetigkeit.dart';
@@ -122,6 +123,25 @@ class KartoNahrungSammelnTaetigkeit extends KartoRationenTaetigkeit {
     ProbeResult probe, {
     required DiceRoller roller,
   }) => werteNahrungSammelnAus(_eingabe(kontext), probe);
+
+  @override
+  bool get erlaubtHandFund => true;
+
+  @override
+  WildnisPosten? handFund({
+    required KartoWildnisKontext? kontext,
+    required Object? daten,
+    required String? wahl,
+    required int menge,
+  }) {
+    if (kontext == null || menge <= 0) return null;
+    return nahrungSammelnPosten(
+      region: region(kontext),
+      rationen: menge,
+      haltbarkeit: _ziel(kontext),
+      gelaendekunde: kontext.gelaendekunde,
+    );
+  }
 
   Haltbarkeitsstufe _ziel(KartoWildnisKontext kontext) =>
       Haltbarkeitsstufe.ausStufe(

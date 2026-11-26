@@ -403,7 +403,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Eingabe verwirft das Ergebnis samt offener Buchungen. Geschrieben wird nur
   auf Knopfdruck und frisch: eingesetzte AsP beim Würfeln
   (`gefechtsZustand`), „N Tagesrationen ins Inventar“
-  (`aendereHeldAusserhalbPlanung` mit `mitWildnisRationen`, Datum aus dem
+  (`aendereHeldAusserhalbPlanung` mit `mitWildnisPosten`, Datum aus dem
   frisch geladenen Helden, bei offener Steigerungsrunde gesperrt) und nach
   „Geschossverlust würfeln“ (Schusszahl per Schritt, nicht bei 1W6+1) das
   Abbuchen über `gefechtsAusruestung` mit `mitJagdGeschossverlust`; Tabellen-
@@ -411,6 +411,21 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `karto-wildnis-rationen-buchen`/`-gebucht`, `karto-wildnis-munition`,
   `karto-wildnis-verlust-wuerfeln`, `karto-wildnis-verlust`,
   `karto-wildnis-verlust-buchen`/`-gebucht`, `karto-wildnis-buchungsfehler`.
+  **Funde ins Inventar (26.11.2026):** `WildnisErgebnis.funde` trägt neben den
+  Rationen die gefundenen Kräuter (je Fund ein Eintrag mit Menge = Grundmengen,
+  Wirkung und Größe der Grundmenge in der Beschreibung, Herkunft „Kräutersuche
+  am Datum“), Würzkräuter (Menge = Punkte) und Konservierungskräuter (Menge =
+  Tage); `karto-wildnis-funde-buchen`/`-gebucht` bucht alle in einem Schreibgang
+  (`mitWildnisFunden`, ein Dokument). **Am Tisch ausgespielt:** unter dem
+  Würfelknopf klappt „Fund eintragen“ auf (`erlaubtHandFund`; Kräuter,
+  Nahrung sammeln, Jagd, Fallen und Fischen): Kraut aus dem Katalog (die der
+  Landschaft zuerst, am Ende „Heilkraut, Pflanze offen“) bzw. nur die Menge,
+  dann `karto-wildnis-hand-buchen`. Ohne Wurf der App, gleiche Buchung, gleiche
+  Herkunft; bei Rationen braucht es die Landschaft für die Haltbarkeit
+  (`karto-wildnis-hand-hinweis`). Keys: `karto-wildnis-hand-umschalten`,
+  `-hand-wahl-<Kraut>`, `-hand-menge-plus`/`-minus`, `-hand-gebucht`.
+  Neue Tätigkeiten erlauben das über `erlaubtHandFund`, `handFundWahl` und
+  `handFund`.
   `KartoWildnisKachel.wuerfler` erlaubt Tests feste Würfe. Das Vergrößern-Popup liefert das Raster; in `weit` zeigt die
   Vorschau mehr Zeilen (`kWildnisVorschauWeit` statt `kWildnisVorschauKurz`),
   „Alle N anzeigen“ blendet in jeder Größe die ganze Liste ein. Zeilen mit

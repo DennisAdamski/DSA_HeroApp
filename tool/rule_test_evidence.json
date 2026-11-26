@@ -13414,11 +13414,38 @@
         }
       ]
     },
+    "test/rules/derived/hetzjagd_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Sichert die Hetzjagd ab (Wege des Entdeckers S. 109 f.): TaW = (Wildnisleben + Tierkunde + zweimal Reiten + Fernkampftalent der Waffe) / 5, höchstens das Doppelte des niedrigsten; Tierkunde und Reiten müssen aktiviert sein; MU/IN/GE; eine Stunde; TaP* = Tagesrationen; nicht wiederholbar. Waffentabelle (Efferdbart +10, Dschadra, Holzspeer, Speer, Wurfspeer und Balestrina +8, Balläster +6, Eisenwalder und Schleuder +5, Blasrohr +4, Kurz- und Kompositbogen +2, Elfenbogen und Orkischer Reiterbogen +1), persönliche Waffen nach Höchstreichweite (bis 15 Schritt +6 … über 80 Schritt −2) plus Ladezeit oder +6 fürs Aufheben, Region (lichter Wald, Grasland, Savanne −4 … Wüste, Ewiges Eis +12), Wetter, Beute, Scharfschütze −1, Meisterschütze zusammen −3, Schnellladen −2, Geländekunde, Ortskenntnis, AsP, Jagdglück, Jagdtier −3 bis −7, Jagd zu Pferde −3 (Reiten 7, Grasland, Heide, Savanne, Steppe, Tundra), Reiterkampf −2 und Berittener Schütze zusammen −7. Verbrauch: Schleudersteine 1W6+1, Pfeile bei einer 1 auf 1W20, Speere bei 3–6 und Wurfwaffen bei 3–8 auf 2W20.",
+      "rationale": "Datei, lib/rules/derived/hetzjagd_rules.dart und wildnis_ausbeute_rules.dart gelesen, alle Zahlen per DSA-MCP gegen den Buchtext geprüft. App-Entscheidungen ohne eindeutige Buchaussage: Schnellladen gleicht wie die Schützen-SF nur positive Zuschläge außer der Waffe aus (Fußnote **), die Jagd zu Pferde und die Reiter-Sonderfertigkeiten stehen außerhalb dieser Grenze; ein Jagdtier wirkt höchstens mit −7; Waffen der Pirschtabelle, die nicht in der Hetz-Tabelle stehen (Lang- und Kriegsbogen …), sowie Wurfmesser und Dolche zählen nicht („gehen zu leicht verloren“); Wurfwaffen erhalten statt der Ladezeit +6; die Zahl der Schüsse gibt der Spieler an.",
+      "sources": [
+        {
+          "title": "Wege des Entdeckers – Hetzjagd (Metatalent, Waffen, Sonderfertigkeiten, Region, Wetter, Verbrauch)",
+          "pages": "109–110",
+          "mcpChunks": [
+            6299,
+            6300
+          ],
+          "checkedOn": "2026-11-26"
+        },
+        {
+          "title": "Wege des Entdeckers – Pirschjagd (Verbrauch, Fußnote zu Schützen-SF)",
+          "pages": "108–109",
+          "mcpChunks": [
+            6296,
+            6297,
+            6298
+          ],
+          "checkedOn": "2026-11-26"
+        }
+      ]
+    },
     "test/rules/derived/jagd_rules_test.dart": {
       "kind": "official",
       "status": "verified",
       "summary": "Sichert Pirsch- und Ansitzjagd ab (Wege des Entdeckers S. 107–109): TaW = (Wildnisleben + Tierkunde + Fährtensuchen + Schleichen bzw. Sich Verstecken + Fernkampftalent der Waffe) / 5, höchstens das Doppelte des niedrigsten; MU/IN/GE; eine bzw. anderthalb Stunden; TaP* = Tagesrationen. Waffentabelle (Borndorn, Wurfdolch, Wurfmesser +10 bis Arbalone, Elfenbogen −3), persönliche Waffen nach Höchstreichweite (bis 15 Schritt +8 … über 200 Schritt −3, Wurfmesser und Wurfbeile +2), Scharfschütze −3, Meisterschütze zusammen −7, Geländekunde −3/−1, Ortskenntnis −7, Region (lichter Wald, Grasland, Savanne −4 … Wüste, Ewiges Eis +12), Wetter +2/+4/+6, nur schmackhaftes Fleisch +2, je 3 AsP −1, Jagdglück −5. Scharf- und Meisterschütze verrechnen sich nicht mit dem Zuschlag der Waffe, wohl aber mit anderen Zuschlägen (Beispiel Kurzbogen und Sturm). Verbrauch: Schleudersteine 1W6+1, Pfeile und Bolzen bei 3–5, Speere bei 3–7, Wurfwaffen bei 3–9 auf 2W20; die Haltbarkeit frischen Fleischs nach Klima (S. 121 f.).",
-      "rationale": "Datei, lib/rules/derived/jagd_rules.dart und wildnis_ausbeute_rules.dart gelesen, alle Zahlen per DSA-MCP gegen den Buchtext geprüft; die Talente der Tabellenwaffen gegen waffen.json. App-Entscheidungen ohne Buchaussage: Waffen des Helden werden über Waffenart oder Namen der Tabelle zugeordnet, sonst über die letzte Distanzstufe mit reiner Schrittzahl; Waffen des Talents Schleuder zählen nur, wenn sie in der Tabelle stehen (Lasso, Netze, Enterhaken sind keine Jagdwaffen); ein Überschuss der Schützen-SF über die übrigen Zuschläge verfällt; die Zahl der Schüsse gibt der Spieler an; eine Doppel-1 auf 2W20 zählt nicht als Verlust; die Schützen-SF werden je Fernkampftalent erkannt. Die Hetzjagd (S. 109 f.) ist nicht umgesetzt.",
+      "rationale": "Datei, lib/rules/derived/jagd_rules.dart und wildnis_ausbeute_rules.dart gelesen, alle Zahlen per DSA-MCP gegen den Buchtext geprüft; die Talente der Tabellenwaffen gegen waffen.json. App-Entscheidungen ohne Buchaussage: Waffen des Helden werden über Waffenart oder Namen der Tabelle zugeordnet, sonst über die letzte Distanzstufe mit reiner Schrittzahl; Waffen des Talents Schleuder zählen nur, wenn sie in der Tabelle stehen (Lasso, Netze, Enterhaken sind keine Jagdwaffen); ein Überschuss der Schützen-SF über die übrigen Zuschläge verfällt; die Zahl der Schüsse gibt der Spieler an; eine Doppel-1 auf 2W20 zählt nicht als Verlust; die Schützen-SF werden je Fernkampftalent erkannt. Die Hetzjagd (S. 109 f.) steht in hetzjagd_rules_test.dart.",
       "sources": [
         {
           "title": "Wege des Entdeckers – Pirschjagd, Ansitzjagd (Metatalente, Modifikationen, Verbrauch)",
