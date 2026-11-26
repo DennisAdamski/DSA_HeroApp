@@ -19,6 +19,7 @@ import 'package:dsa_heldenverwaltung/ui2/foundation/karto_breakpoints.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_verwaltungs_ziel.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuerblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
@@ -76,6 +77,7 @@ class KartoSpielansicht extends ConsumerStatefulWidget {
     required this.bestand,
     required this.aktion,
     required this.vorHeldenbearbeitung,
+    this.onVerwaltungOeffnen,
   });
 
   /// ID im gemeinsam genutzten Heldenspeicher.
@@ -94,6 +96,13 @@ class KartoSpielansicht extends ConsumerStatefulWidget {
   /// Einträge aus dem Blatt. `false` bricht das Öffnen ab. Dieselbe Prüfung
   /// läuft vor dem Anordnen und dem Einklappen der Kacheln.
   final Future<bool> Function() vorHeldenbearbeitung;
+
+  /// Schlägt eine Seite der Verwaltung auf (Kachel-Shortcut, etwa das Inventar
+  /// von „Dabei“ aus).
+  ///
+  /// Der Workspace wechselt dafür den Arbeitsbereich. Ohne Rückruf zeigt keine
+  /// Kachel den Knopf.
+  final ValueChanged<KartoVerwaltungsAbschnitt>? onVerwaltungOeffnen;
 
   @override
   ConsumerState<KartoSpielansicht> createState() => _KartoSpielansichtState();
@@ -314,9 +323,20 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
             ? (wert) => _einklappen(art, wert)
             : null,
         onVergroessern: () => _vergroessern(art),
+        onOeffnen: _oeffnenFuer(art),
+        oeffnenZiel: art.verwaltungsAbschnitt?.titel ?? '',
         child: _inhalt(context, werte, art, ref),
       ),
     );
+  }
+
+  // Der Shortcut fehlt ohne Workspace-Rückruf und bei Kacheln ohne Seite im
+  // Bestand.
+  VoidCallback? _oeffnenFuer(KartoSpielkachelArt art) {
+    final abschnitt = art.verwaltungsAbschnitt;
+    final oeffnen = widget.onVerwaltungOeffnen;
+    if (abschnitt == null || oeffnen == null) return null;
+    return () => oeffnen(abschnitt);
   }
 
   Widget _inhalt(

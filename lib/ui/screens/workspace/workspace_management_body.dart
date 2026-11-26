@@ -17,6 +17,7 @@ import 'package:dsa_heldenverwaltung/ui2/foundation/karto_breakpoints.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_verwaltungs_ziel.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_seitenkopf.dart';
 
@@ -33,6 +34,7 @@ class WorkspaceManagementBody extends ConsumerStatefulWidget {
     required this.heroId,
     required this.korrekturenGesperrt,
     required this.onVerlassenRegistriert,
+    this.ziel,
   });
 
   /// ID des verwalteten Helden.
@@ -43,6 +45,23 @@ class WorkspaceManagementBody extends ConsumerStatefulWidget {
 
   /// Registriert den Guard für Wechsel aus der Verwaltungsfläche.
   final ValueChanged<KartoVerlassenPruefung?> onVerlassenRegistriert;
+
+  /// Kachel-Shortcut der Spielansicht: welchen Abschnitt aufzuschlagen ist.
+  final KartoVerwaltungsZiel? ziel;
+
+  /// Bestands-Tab eines Abschnitts, den die Spielansicht ansteuern kann.
+  static String tabIdFuer(KartoVerwaltungsAbschnitt abschnitt) =>
+      switch (abschnitt) {
+        KartoVerwaltungsAbschnitt.uebersicht => WorkspaceTabIds.overview,
+        KartoVerwaltungsAbschnitt.talente => WorkspaceTabIds.talents,
+        KartoVerwaltungsAbschnitt.kampf => WorkspaceTabIds.combat,
+        KartoVerwaltungsAbschnitt.magie => WorkspaceTabIds.magic,
+        KartoVerwaltungsAbschnitt.inventar => WorkspaceTabIds.inventory,
+        KartoVerwaltungsAbschnitt.notizen => WorkspaceTabIds.notes,
+        KartoVerwaltungsAbschnitt.reisebericht => WorkspaceTabIds.reisebericht,
+        KartoVerwaltungsAbschnitt.begleiter => WorkspaceTabIds.begleiter,
+        KartoVerwaltungsAbschnitt.gruppe => WorkspaceTabIds.gruppe,
+      };
 
   /// Erstellt den Zustand für Koordination und Guard-Registrierung.
   @override
@@ -56,6 +75,11 @@ class _WorkspaceManagementBodyState
     with TickerProviderStateMixin {
   late final WorkspaceManagementCoordinator _coordinator;
 
+  // Noch nicht umgesetzter Shortcut-Wunsch. Die Tabs stehen erst nach dem
+  // ersten `syncHero` im Build fest, ein Wechsel mitten im Build wäre unzulässig.
+  KartoVerwaltungsAbschnitt? _ausstehend;
+  bool _wechselVorgemerkt = false;
+
   @override
   void initState() {
     super.initState();
@@ -67,11 +91,45 @@ class _WorkspaceManagementBodyState
     );
     _coordinator.addListener(_rebuild);
     widget.onVerlassenRegistriert(_coordinator.confirmLeave);
+    widget.ziel?.addListener(_zielGeaendert);
+    _zielGeaendert();
+  }
+
+  void _zielGeaendert() {
+    final ziel = widget.ziel;
+    final abschnitt = ziel?.abschnitt;
+    if (abschnitt == null) return;
+    ziel!.erledigt();
+    _ausstehend = abschnitt;
+    _wechselPlanen();
+  }
+
+  void _wechselPlanen() {
+    if (_wechselVorgemerkt) return;
+    _wechselVorgemerkt = true;
+    // Ohne weiteren Anlass käme kein Frame, und der Wechsel bliebe liegen.
+    WidgetsBinding.instance.ensureVisualUpdate();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _wechselVorgemerkt = false;
+      final abschnitt = _ausstehend;
+      if (!mounted || abschnitt == null) return;
+      // Ohne geladenen Helden gibt es noch keine Tabs: der Build versucht es
+      // nach `syncHero` erneut.
+      if (_coordinator.visibleTabs.isEmpty) return;
+      _ausstehend = null;
+      _coordinator.waehleAbschnitt(
+        WorkspaceManagementBody.tabIdFuer(abschnitt),
+      );
+    });
   }
 
   @override
   void didUpdateWidget(covariant WorkspaceManagementBody oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.ziel != widget.ziel) {
+      oldWidget.ziel?.removeListener(_zielGeaendert);
+      widget.ziel?.addListener(_zielGeaendert);
+    }
     if (oldWidget.onVerlassenRegistriert != widget.onVerlassenRegistriert) {
       oldWidget.onVerlassenRegistriert(null);
       widget.onVerlassenRegistriert(_coordinator.confirmLeave);
@@ -86,6 +144,7 @@ class _WorkspaceManagementBodyState
 
   @override
   void dispose() {
+    widget.ziel?.removeListener(_zielGeaendert);
     widget.onVerlassenRegistriert(null);
     _coordinator.removeListener(_rebuild);
     _coordinator.dispose();
@@ -115,6 +174,7 @@ class _WorkspaceManagementBodyState
     if (_coordinator.visibleTabs.isEmpty) {
       return const Center(child: Text('Keine Bereiche verfügbar.'));
     }
+    if (_ausstehend != null) _wechselPlanen();
 
     return LayoutBuilder(
       builder: (context, constraints) {

@@ -125,6 +125,26 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   jeder schnelle Klick zählt; UI2 kennt keine Grenze. Den
   Re-Entrancy-Guard reicht `KartoWorkspace` als `KartoLaufzeitAktion` herein;
   die Spielansicht macht keinen zweiten Fehlerweg auf.
+- **Kachel-Shortcut in die Verwaltung.** Jede Kachel, die im Bestand eine Seite
+  hat, trägt in der Kopfzeile neben Vergrößern und Einklappen einen leisen
+  `arrow_outward`-Knopf (Key `karto-kachel-<id>-oeffnen`, Tooltip „<Seite> in der
+  Verwaltung öffnen“, `KartoKachelSteuerung.onOeffnen`, wie die übrige
+  Kopf-Bedienung nur bei Zeiger/Fokus sichtbar). Die Zuordnung steht allein in
+  `KartoSpielkachelArt.verwaltungsAbschnitt`: Ressourcen, Eigenschaften, Effekte,
+  Zustand und Vor-/Nachteile → Übersicht, Häufige Proben → Talente, Kampf,
+  Begleiter, Dabei → Inventar, Abenteuer → Chroniken/Kontakte/Abenteuer,
+  Reiseroute → Reisebericht; Marker, Standort, Wildnis und Protokoll haben keine
+  Seite und keinen Knopf. Weg: `KartoSpielansicht.onVerwaltungOeffnen` →
+  `_verwaltungOeffnen` im Workspace (Editorprüfung, dann Bereich „Verwalten“)
+  → `KartoVerwaltungsZiel` (`karto_verwaltungs_ziel.dart`, `ChangeNotifier`, meldet
+  auch denselben Abschnitt zweimal) → `KartoBestandsAdapter.verwaltung(ziel:)` →
+  `WorkspaceManagementBody` liest das Ziel beim Start und per Listener nach dem
+  Build und ruft `WorkspaceManagementCoordinator.waehleAbschnitt`. Der Wechsel
+  läuft über den `TabController` und damit durch dieselbe Prüfung ungespeicherter
+  Änderungen wie ein Tippen auf den Reiter; ein für den Helden unsichtbarer
+  Abschnitt (Magie ohne Zauberkunde) lässt die Ansicht unverändert. UI2 kennt
+  nur den Enum `KartoVerwaltungsAbschnitt`; die Tab-IDs bleiben in `lib/ui/`.
+  Der Vergrößern-Dialog trägt den Knopf nicht.
 - **Kachelraster der Spielansicht (SPIEL-07).** Statt Haupt- und Seitenspalte
   stehen die Abschnitte als Kacheln im `KartoKachelraster`
   (`karto_kachelraster.dart`): Rastereinheit mindestens 300 dp

@@ -254,37 +254,57 @@ class KartoAbschnitt extends StatelessWidget {
           );
   }
 
-  // Der Einklappknopf steht neben Titel und Kopfaktion, nicht in deren
-  // Umbruch: so bleibt er auch in einer schmalen Kachel rechts oben.
+  // Einklappknopf und Seiten-Shortcut stehen neben Titel und Kopfaktion, nicht
+  // in deren Umbruch: so bleiben sie auch in einer schmalen Kachel rechts oben.
   Widget _mitEinklappknopf({
     required KartoKachelSteuerung? steuerung,
     required KartoTheme karto,
     required Widget kopfzeile,
   }) {
     final einklappen = steuerung?.onEinklappen;
-    if (steuerung == null || einklappen == null) return kopfzeile;
+    final oeffnen = steuerung?.onOeffnen;
+    if (steuerung == null || (einklappen == null && oeffnen == null)) {
+      return kopfzeile;
+    }
     final eingeklappt = steuerung.eingeklappt;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(child: kopfzeile),
+        // Der Sprung in die Seite der Verwaltung (Inventar, Kampf …) bleibt
+        // wie Vergrößern leise, solange der Zeiger nicht auf der Kachel liegt.
+        if (oeffnen != null)
+          _BeiBedarf(
+            child: IconButton(
+              key: ValueKey<String>(
+                'karto-kachel-${steuerung.kennung}-oeffnen',
+              ),
+              tooltip: steuerung.oeffnenZiel.isEmpty
+                  ? 'In der Verwaltung öffnen'
+                  : '${steuerung.oeffnenZiel} in der Verwaltung öffnen',
+              visualDensity: VisualDensity.compact,
+              icon: Icon(Icons.arrow_outward, color: karto.schriftLeise),
+              onPressed: oeffnen,
+            ),
+          ),
         // Eingeklappt bleibt der Pfeil stehen: er ist dann der einzige
         // Hinweis, dass die Kachel mehr enthält.
-        _BeiBedarf(
-          immer: eingeklappt,
-          child: IconButton(
-            key: ValueKey<String>(
-              'karto-kachel-${steuerung.kennung}-einklappen',
+        if (einklappen != null)
+          _BeiBedarf(
+            immer: eingeklappt,
+            child: IconButton(
+              key: ValueKey<String>(
+                'karto-kachel-${steuerung.kennung}-einklappen',
+              ),
+              tooltip: eingeklappt ? '$titel aufklappen' : '$titel einklappen',
+              visualDensity: VisualDensity.compact,
+              icon: Icon(
+                eingeklappt ? Icons.expand_more : Icons.expand_less,
+                color: karto.schriftLeise,
+              ),
+              onPressed: () => einklappen(!eingeklappt),
             ),
-            tooltip: eingeklappt ? '$titel aufklappen' : '$titel einklappen',
-            visualDensity: VisualDensity.compact,
-            icon: Icon(
-              eingeklappt ? Icons.expand_more : Icons.expand_less,
-              color: karto.schriftLeise,
-            ),
-            onPressed: () => einklappen(!eingeklappt),
           ),
-        ),
       ],
     );
   }
@@ -394,6 +414,8 @@ class KartoKachelSteuerung extends InheritedWidget {
     this.eingeklappt = false,
     this.onEinklappen,
     this.onVergroessern,
+    this.onOeffnen,
+    this.oeffnenZiel = '',
     this.dicht = true,
     this.groesse = KartoKachelGroesse.normal,
     required super.child,
@@ -406,6 +428,8 @@ class KartoKachelSteuerung extends InheritedWidget {
        eingeklappt = false,
        onEinklappen = null,
        onVergroessern = null,
+       onOeffnen = null,
+       oeffnenZiel = '',
        dicht = false;
 
   /// Kennung der Kachel für Schlüssel und Tests.
@@ -419,6 +443,13 @@ class KartoKachelSteuerung extends InheritedWidget {
 
   /// Öffnet die Kachel vergrößert; ohne Rückruf bleibt der Name Text.
   final VoidCallback? onVergroessern;
+
+  /// Springt in die zugehörige Seite der Verwaltung; ohne Rückruf entfällt der
+  /// Knopf (Kachel ohne Seite im Bestand).
+  final VoidCallback? onOeffnen;
+
+  /// Name der Seite, die [onOeffnen] aufschlägt; steht im Tooltip.
+  final String oeffnenZiel;
 
   /// Knapper Innenabstand wie bei [KartoAbschnitt.dicht].
   final bool dicht;
@@ -456,7 +487,9 @@ class KartoKachelSteuerung extends InheritedWidget {
       oldWidget.dicht != dicht ||
       oldWidget.groesse != groesse ||
       oldWidget.onEinklappen != onEinklappen ||
-      oldWidget.onVergroessern != onVergroessern;
+      oldWidget.onVergroessern != onVergroessern ||
+      oldWidget.onOeffnen != onOeffnen ||
+      oldWidget.oeffnenZiel != oeffnenZiel;
 }
 
 /// Die zwei Hervorhebungen einer Begleitfläche.

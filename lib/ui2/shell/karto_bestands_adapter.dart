@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart'
 import 'package:dsa_heldenverwaltung/rules/derived/reittier_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_verwaltungs_ziel.dart';
 
 /// Prüft das Verlassen eines Editors; false erhält Ansicht und Entwurf.
 typedef KartoVerlassenPruefung = Future<bool> Function();
@@ -33,10 +34,16 @@ enum KartoRessource {
 /// Begrenzte Übergangsbrücke zu bestehenden Fachansichten und Dialogen.
 abstract interface class KartoBestandsAdapter {
   /// Baut die gemeinsame Verwaltung und registriert ihren Leave-Guard.
+  ///
+  /// Über [ziel] schlägt eine Kachel der Spielansicht den passenden Abschnitt
+  /// auf (Kachel-Shortcut). Die Verwaltung setzt den Wechsel über denselben
+  /// Weg um wie ein Tippen auf den Reiter, also mit der Prüfung ungespeicherter
+  /// Änderungen.
   Widget verwaltung({
     required String heroId,
     required bool korrekturenGesperrt,
     required ValueChanged<KartoVerlassenPruefung?> onVerlassenRegistriert,
+    KartoVerwaltungsZiel? ziel,
   });
 
   /// Zeigt den Katalog der vorhandenen Steigerungssitzung.

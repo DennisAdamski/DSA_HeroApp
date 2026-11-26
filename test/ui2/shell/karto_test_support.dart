@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/reittier_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_verwaltungs_ziel.dart';
 
 const testCatalog = RulesCatalog(
   version: 'test',
@@ -49,10 +50,12 @@ class TestBestand implements KartoBestandsAdapter {
     required String heroId,
     required bool korrekturenGesperrt,
     required ValueChanged<KartoVerlassenPruefung?> onVerlassenRegistriert,
+    KartoVerwaltungsZiel? ziel,
   }) => _TestVerwaltung(
     pruefung: () async => await pruefung?.call() ?? true,
     registrieren: onVerlassenRegistriert,
     gesperrt: korrekturenGesperrt,
+    ziel: ziel,
   );
 
   @override
@@ -330,24 +333,34 @@ class _TestVerwaltung extends StatefulWidget {
     required this.pruefung,
     required this.registrieren,
     required this.gesperrt,
+    this.ziel,
   });
   final KartoVerlassenPruefung pruefung;
   final ValueChanged<KartoVerlassenPruefung?> registrieren;
   final bool gesperrt;
+  final KartoVerwaltungsZiel? ziel;
   @override
   State<_TestVerwaltung> createState() => _TestVerwaltungState();
 }
 
 class _TestVerwaltungState extends State<_TestVerwaltung> {
   final _draft = TextEditingController();
+  KartoVerwaltungsAbschnitt? _abschnitt;
+
+  // Wie die echte Verwaltung: beim Start und bei jedem Wunsch lesen.
+  void _wunsch() => setState(() => _abschnitt = widget.ziel?.abschnitt);
+
   @override
   void initState() {
     super.initState();
     widget.registrieren(() => widget.pruefung());
+    _abschnitt = widget.ziel?.abschnitt;
+    widget.ziel?.addListener(_wunsch);
   }
 
   @override
   void dispose() {
+    widget.ziel?.removeListener(_wunsch);
     widget.registrieren(null);
     _draft.dispose();
     super.dispose();
@@ -357,6 +370,7 @@ class _TestVerwaltungState extends State<_TestVerwaltung> {
   Widget build(BuildContext context) => Column(
     children: [
       Text(widget.gesperrt ? 'Verwaltung gesperrt' : 'Verwaltungsinhalt'),
+      if (_abschnitt != null) Text('Abschnitt ${_abschnitt!.name}'),
       TextField(key: const ValueKey('test-entwurf'), controller: _draft),
     ],
   );

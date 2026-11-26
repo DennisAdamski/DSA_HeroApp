@@ -52,6 +52,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_rueckn
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_body.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/avatar_gallery_image.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_verwaltungs_ziel.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
@@ -305,12 +306,14 @@ class KartoBestandsAdapterImpl
     required String heroId,
     required bool korrekturenGesperrt,
     required ValueChanged<KartoVerlassenPruefung?> onVerlassenRegistriert,
+    KartoVerwaltungsZiel? ziel,
   }) {
     return _KartoCompatHost(
       child: WorkspaceManagementBody(
         heroId: heroId,
         korrekturenGesperrt: korrekturenGesperrt,
         onVerlassenRegistriert: onVerlassenRegistriert,
+        ziel: ziel,
       ),
     );
   }

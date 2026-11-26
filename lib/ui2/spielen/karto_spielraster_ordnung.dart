@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/liste_verschieben.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_verwaltungs_ziel.dart';
 
 /// Die Kacheln der Spielansicht und was jede erlaubt (SPIEL-07).
 ///
@@ -189,6 +190,26 @@ enum KartoSpielkachelArt {
 
   /// Gespeicherte Kennung; entspricht dem Namen.
   String get id => name;
+
+  /// Seite der Verwaltung, die diese Kachel im Bestand abbildet.
+  ///
+  /// Daraus entsteht der Shortcut im Kachelkopf. Kacheln ohne Entsprechung
+  /// (Marker, Standort, Wildnis, Würfelprotokoll) liefern `null` und bekommen
+  /// keinen Knopf; nur die Spielansicht kennt sie.
+  KartoVerwaltungsAbschnitt? get verwaltungsAbschnitt => switch (this) {
+    ressourcen ||
+    eigenschaften ||
+    effekte ||
+    zustand ||
+    merkmale => KartoVerwaltungsAbschnitt.uebersicht,
+    proben => KartoVerwaltungsAbschnitt.talente,
+    kampf => KartoVerwaltungsAbschnitt.kampf,
+    begleiter => KartoVerwaltungsAbschnitt.begleiter,
+    dabei => KartoVerwaltungsAbschnitt.inventar,
+    abenteuer => KartoVerwaltungsAbschnitt.notizen,
+    reiseroute => KartoVerwaltungsAbschnitt.reisebericht,
+    marker || standort || wildnis || protokoll => null,
+  };
 
   /// Kachel zur gespeicherten [id] oder `null`.
   static KartoSpielkachelArt? zurId(String id) =>

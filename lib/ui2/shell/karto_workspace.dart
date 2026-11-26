@@ -19,6 +19,7 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_heldenmarke.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_modus_navigation.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_navigationsgrund.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_sync_anzeige.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_verwaltungs_ziel.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_probenkuerzel.dart';
@@ -54,6 +55,15 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
   bool _verwaltungBesucht = false;
   bool _navigiert = false;
   bool _planStartVorgemerkt = false;
+  // Wunsch der Kachel-Shortcuts; die Verwaltung liest ihn beim Start und
+  // danach über ihren Listener.
+  final KartoVerwaltungsZiel _verwaltungsZiel = KartoVerwaltungsZiel();
+
+  @override
+  void dispose() {
+    _verwaltungsZiel.dispose();
+    super.dispose();
+  }
 
   // Hält Flutter-State-Änderungen im State statt in der Navigationserweiterung.
   void _setBereich(KartoArbeitsbereich ziel) {
@@ -373,6 +383,7 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
     aktion: _laufzeitAktion,
     // Dieselbe Editorprüfung wie vor aufgelegten Screens.
     vorHeldenbearbeitung: _pruefeEditor,
+    onVerwaltungOeffnen: _verwaltungOeffnen,
   );
 
   // Ansehen erhält die Sitzung; Schreibwege verlangen bestätigtes Verwerfen.
@@ -398,6 +409,7 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
           heroId: widget.heroId,
           korrekturenGesperrt: gesperrt,
           onVerlassenRegistriert: _registriereVerlassen,
+          ziel: _verwaltungsZiel,
         ),
       ),
     ],
