@@ -61,6 +61,10 @@ void main() {
       KartoSpielkachelArt.abenteuer.verwaltungsAbschnitt,
       KartoVerwaltungsAbschnitt.notizen,
     );
+    expect(
+      KartoSpielkachelArt.zauber.verwaltungsAbschnitt,
+      KartoVerwaltungsAbschnitt.magie,
+    );
     // Rein spielseitige Kacheln haben keine Seite und damit keinen Knopf.
     for (final art in [
       KartoSpielkachelArt.marker,

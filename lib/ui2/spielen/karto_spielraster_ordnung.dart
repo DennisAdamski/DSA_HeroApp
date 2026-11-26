@@ -226,6 +226,7 @@ enum KartoSpielkachelArt {
     merkmale => KartoVerwaltungsAbschnitt.uebersicht,
     proben => KartoVerwaltungsAbschnitt.talente,
     kampf => KartoVerwaltungsAbschnitt.kampf,
+    zauber => KartoVerwaltungsAbschnitt.magie,
     begleiter => KartoVerwaltungsAbschnitt.begleiter,
     dabei => KartoVerwaltungsAbschnitt.inventar,
     abenteuer => KartoVerwaltungsAbschnitt.notizen,
