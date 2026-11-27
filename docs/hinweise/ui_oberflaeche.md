@@ -491,7 +491,12 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   ZfW\*, Probenkürzeln, Kosten, Zauberdauer, Reichweite und Wirkungsdauer;
   ein Tipp klappt Zielobjekt, Modifikationen, Spezialisierungen und
   Komplexität auf. Mit Platz (normal/weit) kommen Reichweite, Dauer und
-  Merkmale in die Kurzzeile. Suche (ab sieben Zaubern), Sortierung (Name, ZfW\*)
+  Merkmale in die Kurzzeile; in der weiten Kachel stehen die Zauberkarten als
+  `KartoKartenraster` nebeneinander (`karto-zauber-raster`), sonst untereinander.
+  Dieselbe Stufe zeigt „Aktive Effekte“ als Karten statt Chips
+  (`InspectorArcaneEffectsView.alsKarten`); die Chipreihen der Kampfproben
+  setzen unter Kartograph ihre Beschriftung in schmaler Kachel über die Chips;
+  die Reiseroute-Tabelle weicht unter 520 dp der Zeitleiste. Suche (ab sieben Zaubern), Sortierung (Name, ZfW\*)
   und Merkmalsfilter leben nur im Widget. Liste, Filter und Sortierung rechnet
   `spiel_zauber_rules.dart` (ZfW\* über `herleiteZfw`), die Probe baut
   `zauberprobeAus` und läuft über `KartoGefechtsAdapter.gefechtsProbe`, die selbst

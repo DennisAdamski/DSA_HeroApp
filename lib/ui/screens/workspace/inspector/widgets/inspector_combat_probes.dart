@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_combat_quick_chip.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 
 /// Kampf-Schnellproben fuer Haupthand, Nebenhand und Schild.
 ///
@@ -181,21 +182,44 @@ class _ChipRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: 78,
-          child: Text(
-            label,
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ),
-        Expanded(child: Wrap(spacing: 6, runSpacing: 6, children: chips)),
-      ],
+    final beschriftung = Text(
+      label,
+      style: theme.textTheme.bodySmall?.copyWith(
+        fontWeight: FontWeight.bold,
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
+    );
+    final reihe = Wrap(spacing: 6, runSpacing: 6, children: chips);
+    // Kartograph: in schmaler Kachel steht die Beschriftung über den Chips;
+    // die klassische Optik bleibt unverändert.
+    if (kartoVariante(context) == null) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(width: 78, child: beschriftung),
+          Expanded(child: reihe),
+        ],
+      );
+    }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < _untereinanderBis) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [beschriftung, const SizedBox(height: 4), reihe],
+          );
+        }
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(width: 78, child: beschriftung),
+            Expanded(child: reihe),
+          ],
+        );
+      },
     );
   }
+
+  // Breite, unter der die Beschriftung über den Chips steht.
+  static const double _untereinanderBis = 260;
 }
