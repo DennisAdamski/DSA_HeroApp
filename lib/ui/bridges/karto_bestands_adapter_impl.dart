@@ -396,10 +396,14 @@ class KartoBestandsAdapterImpl
     required HeroComputedSnapshot werte,
   }) {
     return _KartoCompatHost(
-      child: InspectorArcaneEffectsView(
-        sheet: werte.hero,
-        state: werte.state,
-        combat: werte.combatPreviewStats,
+      child: Builder(
+        builder: (context) => InspectorArcaneEffectsView(
+          sheet: werte.hero,
+          state: werte.state,
+          combat: werte.combatPreviewStats,
+          // Die weite Kachel zeigt die Effekte als Karten statt als Chips.
+          alsKarten: KartoKachelSteuerung.istWeit(context),
+        ),
       ),
     );
   }

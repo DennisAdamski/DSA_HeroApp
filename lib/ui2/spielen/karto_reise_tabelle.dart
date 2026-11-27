@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/reisezeit_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseweg_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseroute.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
@@ -16,8 +17,7 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 /// Spalten sind Nummer, Datum, Ort, Abenteuer und Notiz, die Zeilen stehen in
 /// der gegebenen (zeitlichen) Reihenfolge. Unter dem Datum steht der Abstand
 /// zur vorigen Station. Unter [breiteMitNotizspalte] oder bei stark
-/// vergrößerter Schrift entfällt die Notizspalte; die Notiz steht dann
-/// gekürzt unter dem Ort.
+/// vergrößerter Schrift steht statt der Tabelle die [KartoReiseZeitleiste].
 class KartoReiseTabelle extends StatelessWidget {
   /// Tabelle der [etappen]; [abenteuer] liefert die Titel der Zuordnung.
   const KartoReiseTabelle({
@@ -57,13 +57,24 @@ class KartoReiseTabelle extends StatelessWidget {
         final breit =
             constraints.maxWidth >= breiteMitNotizspalte &&
             MediaQuery.textScalerOf(context).scale(1) <= schriftMitNotizspalte;
+        // Schmal oder bei großer Schrift: statt gequetschter Spalten die
+        // Zeitleiste, die jede Etappe als Karte untereinander setzt.
+        if (!breit) {
+          return KartoReiseZeitleiste(
+            key: const ValueKey<String>('karto-reise-tabelle-schmal'),
+            etappen: etappen,
+            onStation: onStation,
+            mitKartenlink: true,
+            wege: wege,
+            onReiseweg: onReiseweg,
+          );
+        }
         final karto = context.karto;
         return Column(
           key: const ValueKey<String>('karto-reise-tabelle'),
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _Zeile(
-              breit: breit,
               kopf: true,
               nummer: '#',
               datum: 'Datum',
@@ -75,7 +86,6 @@ class KartoReiseTabelle extends StatelessWidget {
             for (final etappe in etappen) ...[
               _Zeile(
                 key: ValueKey<String>('karto-reise-zeile-${etappe.station.id}'),
-                breit: breit,
                 nummer: '${etappe.nummer}',
                 datum: reiseStationDatumText(etappe.station) ?? '—',
                 abstand: etappe.nummer == 1
@@ -131,7 +141,6 @@ class KartoReisewegKnopf extends StatelessWidget {
 class _Zeile extends StatelessWidget {
   const _Zeile({
     super.key,
-    required this.breit,
     required this.nummer,
     required this.datum,
     required this.ort,
@@ -144,7 +153,6 @@ class _Zeile extends StatelessWidget {
     this.reisewegSchluessel = '',
   });
 
-  final bool breit;
   final bool kopf;
   final String nummer;
   final String datum;
@@ -207,32 +215,18 @@ class _Zeile extends StatelessWidget {
             ),
           ),
           zelle(
-            breit ? 3 : 4,
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (kopf)
-                  Text(ort, style: kopfStil)
-                else
-                  Text(
+            3,
+            kopf
+                ? Text(ort, style: kopfStil)
+                : Text(
                     ort.isEmpty ? 'Unbekannter Ort' : ort,
                     style: ort.isEmpty
                         ? leise
                         : texte.fliess.copyWith(fontWeight: FontWeight.w600),
                   ),
-                if (!kopf && !breit && notiz.isNotEmpty)
-                  Text(
-                    notiz,
-                    style: texte.legende.copyWith(color: karto.schriftLeise),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-              ],
-            ),
           ),
           zelle(3, Text(abenteuer, style: kopf ? kopfStil : texte.fliess)),
-          if (breit)
-            zelle(5, Text(notiz, style: kopf ? kopfStil : texte.fliess)),
+          zelle(5, Text(notiz, style: kopf ? kopfStil : texte.fliess)),
         ],
       ),
     );

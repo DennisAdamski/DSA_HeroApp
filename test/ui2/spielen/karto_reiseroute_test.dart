@@ -266,23 +266,18 @@ void main() {
     );
   });
 
-  testWidgets('schmal steht die Notiz unter dem Ort statt in eigener Spalte', (
+  testWidgets('schmal steht statt der Tabelle die Zeitleiste mit Karten', (
     tester,
   ) async {
     await zeige(tester, held: _held(stationen: const [_gareth]), breite: 390);
     await tester.tap(key('karto-reise-alle'));
     await tester.pumpAndSettle();
 
+    expect(key('karto-reise-tabelle'), findsNothing);
+    expect(key('karto-reise-tabelle-schmal'), findsOneWidget);
     expect(
       find.descendant(
-        of: key('karto-reise-tabelle'),
-        matching: find.text('Notiz'),
-      ),
-      findsNothing,
-    );
-    expect(
-      find.descendant(
-        of: key('karto-reise-zeile-s1'),
+        of: key('karto-reise-tabelle-schmal'),
         matching: find.text('Aufbruch am Südtor.'),
       ),
       findsOneWidget,

@@ -246,7 +246,8 @@ void main() {
     });
 
     testWidgets('Sortierung nach ZfW* und Richtung umdrehen', (tester) async {
-      await zeige(tester, held: _magier(ansicht: _sichtbar));
+      // Schmal, damit die Karten untereinander statt im Raster stehen.
+      await zeige(tester, held: _magier(ansicht: _sichtbar), breite: 390);
       double y(String id) => tester.getTopLeft(k('karto-zauber-$id')).dy;
       // Name aufsteigend: Armatrutz, Balsam, Ignifaxius.
       expect(y('spell_armatrutz'), lessThan(y('spell_balsam')));
@@ -320,6 +321,24 @@ void main() {
         expect(k('karto-zauber-leer'), findsOneWidget);
       },
     );
+
+    testWidgets('weit stehen die Zauberkarten nebeneinander', (tester) async {
+      await zeige(tester, held: _magier(ansicht: _sichtbar), breite: 1280);
+      expect(k('karto-zauber-raster'), findsOneWidget);
+      final a = tester.getTopLeft(k('karto-zauber-spell_armatrutz'));
+      final b = tester.getTopLeft(k('karto-zauber-spell_balsam'));
+      expect(a.dy, b.dy);
+      expect(a.dx, isNot(b.dx));
+    });
+
+    testWidgets('schmal stehen die Zauberkarten untereinander', (tester) async {
+      await zeige(tester, held: _magier(ansicht: _sichtbar), breite: 390);
+      expect(k('karto-zauber-raster'), findsNothing);
+      final a = tester.getTopLeft(k('karto-zauber-spell_armatrutz'));
+      final b = tester.getTopLeft(k('karto-zauber-spell_balsam'));
+      expect(a.dx, b.dx);
+      expect(a.dy, lessThan(b.dy));
+    });
 
     for (final breite in <double>[390, 744, 1280]) {
       testWidgets('läuft bei $breite dp und doppelter Schrift ohne Überlauf', (

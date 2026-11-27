@@ -9,6 +9,8 @@ import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_kartenraster.dart';
 
 /// Darstellende Chips laufender Zaubereffekte.
 ///
@@ -25,7 +27,12 @@ class InspectorArcaneEffectsView extends StatelessWidget {
     required this.combat,
     this.onVerwalten,
     this.zeigeLeerhinweis = true,
+    this.alsKarten = false,
   });
+
+  /// Zeigt jeden Effekt als Karte in einem Raster statt als Chip; die weite
+  /// Kachel der Spielansicht setzt es.
+  final bool alsKarten;
 
   /// Heldenbogen; `null` waehrend des Ladens.
   final HeroSheet? sheet;
@@ -74,26 +81,64 @@ class InspectorArcaneEffectsView extends StatelessWidget {
           )
         else ...[
           if (onVerwalten != null) const SizedBox(height: 8),
-          Wrap(
-            spacing: 6,
-            runSpacing: 4,
-            children: [
-              for (final chip in chips)
-                Chip(
-                  key: ValueKey<String>('arcane-effect-chip-${chip.effectId}'),
-                  avatar: Icon(
-                    chip.isExpired ? Icons.timer_off_outlined : Icons.bolt,
-                    size: 16,
+          if (alsKarten)
+            KartoKartenraster(
+              key: const ValueKey<String>('arcane-effect-karten'),
+              mindestbreite: 220,
+              kinder: [
+                for (final chip in chips)
+                  KartoFlaeche(
+                    key: ValueKey<String>(
+                      'arcane-effect-chip-${chip.effectId}',
+                    ),
+                    stufe: KartoFlaechenstufe.senke,
+                    klein: true,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Row(
+                        children: [
+                          Icon(
+                            chip.isExpired
+                                ? Icons.timer_off_outlined
+                                : Icons.bolt,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              describeActiveSpellEffectChip(chip),
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  label: Text(
-                    describeActiveSpellEffectChip(chip),
-                    style: Theme.of(context).textTheme.bodySmall,
+              ],
+            )
+          else
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: [
+                for (final chip in chips)
+                  Chip(
+                    key: ValueKey<String>(
+                      'arcane-effect-chip-${chip.effectId}',
+                    ),
+                    avatar: Icon(
+                      chip.isExpired ? Icons.timer_off_outlined : Icons.bolt,
+                      size: 16,
+                    ),
+                    label: Text(
+                      describeActiveSpellEffectChip(chip),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  visualDensity: VisualDensity.compact,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-            ],
-          ),
+              ],
+            ),
         ],
       ],
     );

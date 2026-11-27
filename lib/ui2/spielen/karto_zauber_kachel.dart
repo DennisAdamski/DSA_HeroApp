@@ -14,9 +14,13 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_kartenraster.dart';
 
 /// Ab so vielen Zaubern zeigt die Kachel das Suchfeld.
 const int kZauberSucheAb = 6;
+
+/// Schmalste Breite einer Zauberkarte im Raster der weiten Kachel.
+const double kZauberKarteMindestbreite = 280;
 
 /// Zauber als Kachel der Spielansicht, nach dem Vorbild der Magie-Seite:
 /// Kopf mit Repräsentation, Leiteigenschaft und Merkmalskenntnissen, darunter
@@ -146,6 +150,19 @@ class _KartoZauberKachelState extends ConsumerState<KartoZauberKachel> {
     final groesse = KartoKachelSteuerung.groesseVon(context);
     final magie = widget.werte.resourceActivation.magic.isEnabled;
 
+    Widget zeile(SpielZauberEintrag eintrag) => _ZauberZeile(
+      eintrag: eintrag,
+      groesse: groesse,
+      offen: _offen.contains(eintrag.zauber.id),
+      onUmschalten: () => setState(() {
+        if (!_offen.remove(eintrag.zauber.id)) {
+          _offen.add(eintrag.zauber.id);
+        }
+      }),
+      onWuerfeln: _bruecke == null ? null : () => _wuerfeln(eintrag),
+      onBeschreibung: () => _beschreibung(eintrag),
+    );
+
     return KartoAbschnitt(
       titel: 'Zauber',
       symbol: Icons.auto_fix_high_outlined,
@@ -196,23 +213,17 @@ class _KartoZauberKachelState extends ConsumerState<KartoZauberKachel> {
                 key: const ValueKey<String>('karto-zauber-keine-treffer'),
                 style: texte.fliess.copyWith(color: karto.schriftLeise),
               )
+            else if (groesse == KartoKachelGroesse.weit)
+              // Weit: Zauberkarten als Raster nebeneinander statt einer Spalte.
+              KartoKartenraster(
+                key: const ValueKey<String>('karto-zauber-raster'),
+                mindestbreite: kZauberKarteMindestbreite,
+                kinder: [for (final e in liste) zeile(e)],
+              )
             else
               for (final (i, eintrag) in liste.indexed) ...[
                 if (i > 0) const SizedBox(height: Abstand.normal),
-                _ZauberZeile(
-                  eintrag: eintrag,
-                  groesse: groesse,
-                  offen: _offen.contains(eintrag.zauber.id),
-                  onUmschalten: () => setState(() {
-                    if (!_offen.remove(eintrag.zauber.id)) {
-                      _offen.add(eintrag.zauber.id);
-                    }
-                  }),
-                  onWuerfeln: _bruecke == null
-                      ? null
-                      : () => _wuerfeln(eintrag),
-                  onBeschreibung: () => _beschreibung(eintrag),
-                ),
+                zeile(eintrag),
               ],
           ],
         ],
