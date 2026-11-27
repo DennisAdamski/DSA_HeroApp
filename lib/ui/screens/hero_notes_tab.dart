@@ -49,7 +49,12 @@ class HeroNotesTab extends ConsumerStatefulWidget {
     required this.onEditingChanged,
     required this.onRegisterDiscard,
     required this.onRegisterEditActions,
+    this.onOeffneReisebericht,
   });
+
+  /// Schlägt den Reisebericht auf; `null`, wo der Host keinen Abschnittswechsel
+  /// anbietet. Der Tab zeigt dann weder Knopf noch Snackbar-Aktion.
+  final VoidCallback? onOeffneReisebericht;
 
   /// ID des Helden, dessen Chroniken, Kontakte und Abenteuer geladen werden.
   final String heroId;
@@ -532,6 +537,7 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
                     onOpenPerson: _openAdventurePersonDialog,
                     onCompleteAdventure: _completeAdventureFor,
                     onReopenAdventure: _reopenAdventureFor,
+                    onOpenReisebericht: widget.onOeffneReisebericht,
                     revokeCheckForAdventure: (adventureId) =>
                         canRevokeAdventureRewards(
                           hero: hero,

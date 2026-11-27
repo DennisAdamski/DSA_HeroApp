@@ -456,8 +456,25 @@ extension _HeroNotesAdventureController on _HeroNotesTabState {
 
     _latestHero = gespeichert;
     _syncDraftFromHero(gespeichert, force: true);
+    final oeffneReisebericht = widget.onOeffneReisebericht;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${_adventureTitle(adventure)} abgeschlossen')),
+      SnackBar(
+        content: Text('${_adventureTitle(adventure)} abgeschlossen'),
+        // Der Reisebericht lebt von dem, was man gerade erlebt hat: der
+        // Einstieg steht direkt nach dem Abschluss bereit.
+        duration: oeffneReisebericht == null
+            ? const Duration(seconds: 4)
+            : const Duration(seconds: 10),
+        action: oeffneReisebericht == null
+            ? null
+            : SnackBarAction(
+                key: const ValueKey<String>(
+                  'notes-adventure-reisebericht-snackbar',
+                ),
+                label: 'Reisebericht ergänzen',
+                onPressed: oeffneReisebericht,
+              ),
+      ),
     );
   }
 

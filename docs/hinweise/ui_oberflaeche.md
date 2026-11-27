@@ -854,6 +854,16 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Dialog, ein Bestandseintrag wird nicht von selbst befüllt; unveränderte Felder
   stempeln kein `lastModified`. Die „Quest“ ist das Abenteuer selbst und kein
   eigenes Feld. Die Karten zeigen eine leise Zeile „Ort · Datum“.
+  **Reisebericht nach dem Abschluss:** Der Abschluss läuft im Notizen-Tab der
+  Verwaltung (beide Oberflächen). Danach bietet eine Snackbar-Aktion „Reisebericht
+  ergänzen“ (Key `notes-adventure-reisebericht-snackbar`, 10 s) und bei jedem
+  abgeschlossenen Abenteuer ein Knopf (Key `notes-adventure-reisebericht-<id>`)
+  den Weg in den Reisebericht-Tab. Weg: `HeroNotesTab.onOeffneReisebericht` ←
+  `WorkspaceTabCallbacks.onOeffneAbschnitt` ← `WorkspaceManagementCoordinator.waehleAbschnitt`,
+  also durch dieselbe Prüfung ungespeicherter Änderungen wie ein Reiterwechsel.
+  Ohne Host-Callback (`null`) entfallen Aktion und Knopf. Es wird nichts
+  geschrieben und nichts gebucht; der Reisebericht bleibt heldenweit und bucht
+  wie bisher beim Speichern.
   **Suche** (`karto_abenteuer_suche.dart`): Suchknopf im Abenteuerabschnitt und
   im Blatt, Suchfeld darunter. `sucheInAbenteuern` durchsucht Titel/Text/Ort/Datum
   der Notizen und Name/Beschreibung/Ort/Datum der Personen **aller** Abenteuer

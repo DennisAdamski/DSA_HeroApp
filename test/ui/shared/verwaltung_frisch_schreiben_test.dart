@@ -124,7 +124,8 @@ void main() {
     }
 
     Future<void> schliesseAb(WidgetTester tester) async {
-      await tester.tap(find.text('Abenteuer'));
+      // `.first` ist der Reiter; im geöffneten Abschnitt gibt es den Titel nochmals.
+      await tester.tap(find.text('Abenteuer').first);
       await _pumpOhneUeberlauf(tester);
       final knopf = find.byKey(
         const ValueKey<String>('notes-adventure-complete-adv_1'),
@@ -161,6 +162,72 @@ void main() {
       expect(gespeichert.apTotal, 1140);
       expect(abenteuer.rewardsApplied, isTrue);
       expect(abenteuer.notes.single.title, 'Spur im Nebel');
+    });
+
+    testWidgets('bietet nach dem Abschluss den Weg zum Reisebericht an', (
+      tester,
+    ) async {
+      var reiseberichtGeoeffnet = 0;
+      await zeige(
+        tester,
+        (registriere) => HeroNotesTab(
+          heroId: 'demo',
+          onDirtyChanged: (_) {},
+          onEditingChanged: (_) {},
+          onRegisterDiscard: (_) {},
+          onRegisterEditActions: registriere,
+          onOeffneReisebericht: () => reiseberichtGeoeffnet++,
+        ),
+      );
+      // Vor dem Abschluss gibt es keinen Reisebericht-Knopf.
+      await tester.tap(find.text('Abenteuer').first);
+      await _pumpOhneUeberlauf(tester);
+      expect(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-reisebericht-adv_1'),
+        ),
+        findsNothing,
+      );
+
+      await schliesseAb(tester);
+
+      final snackbar = find.byKey(
+        const ValueKey<String>('notes-adventure-reisebericht-snackbar'),
+      );
+      expect(snackbar, findsOneWidget);
+      await tester.tap(snackbar);
+      await _pumpOhneUeberlauf(tester);
+      expect(reiseberichtGeoeffnet, 1);
+
+      // Das abgeschlossene Abenteuer behält den Weg als Knopf.
+      final knopf = find.byKey(
+        const ValueKey<String>('notes-adventure-reisebericht-adv_1'),
+      );
+      await tester.ensureVisible(knopf);
+      await tester.tap(knopf);
+      await _pumpOhneUeberlauf(tester);
+      expect(reiseberichtGeoeffnet, 2);
+    });
+
+    testWidgets('ohne Abschnittswechsel erscheint kein Reisebericht-Angebot', (
+      tester,
+    ) async {
+      await zeige(tester, notizen);
+
+      await schliesseAb(tester);
+
+      expect(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-reisebericht-snackbar'),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-reisebericht-adv_1'),
+        ),
+        findsNothing,
+      );
     });
 
     testWidgets(

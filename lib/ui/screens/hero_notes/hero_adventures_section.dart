@@ -24,6 +24,7 @@ class _AdventuresSection extends StatelessWidget {
     required this.onCompleteAdventure,
     required this.onReopenAdventure,
     required this.revokeCheckForAdventure,
+    this.onOpenReisebericht,
   });
 
   final List<HeroAdventureEntry> entries;
@@ -49,6 +50,9 @@ class _AdventuresSection extends StatelessWidget {
   final Future<void> Function(String adventureId) onReopenAdventure;
   final AdventureRewardRevokeCheck Function(String adventureId)
   revokeCheckForAdventure;
+
+  /// Schlägt den Reisebericht auf; `null` blendet den Knopf aus.
+  final VoidCallback? onOpenReisebericht;
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +124,7 @@ class _AdventuresSection extends StatelessWidget {
                         onOpenPerson: onOpenPerson,
                         onCompleteAdventure: onCompleteAdventure,
                         onReopenAdventure: onReopenAdventure,
+                        onOpenReisebericht: onOpenReisebericht,
                       ),
                   ],
                 ),
@@ -197,6 +202,7 @@ class _AdventureDetailCard extends StatelessWidget {
     required this.onOpenPerson,
     required this.onCompleteAdventure,
     required this.onReopenAdventure,
+    this.onOpenReisebericht,
   });
 
   final HeroAdventureEntry entry;
@@ -220,6 +226,9 @@ class _AdventureDetailCard extends StatelessWidget {
   final Future<void> Function(int personIndex) onOpenPerson;
   final Future<void> Function(String adventureId) onCompleteAdventure;
   final Future<void> Function(String adventureId) onReopenAdventure;
+
+  /// Schlägt den Reisebericht auf; `null` blendet den Knopf aus.
+  final VoidCallback? onOpenReisebericht;
 
   @override
   Widget build(BuildContext context) {
@@ -292,6 +301,22 @@ class _AdventureDetailCard extends StatelessWidget {
                 ],
               ],
             ),
+            if (!isEditing &&
+                entry.status == HeroAdventureStatus.completed &&
+                onOpenReisebericht != null) ...[
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  key: ValueKey<String>(
+                    'notes-adventure-reisebericht-${entry.id}',
+                  ),
+                  onPressed: onOpenReisebericht,
+                  icon: const Icon(Icons.map_outlined),
+                  label: const Text('Reisebericht ergänzen'),
+                ),
+              ),
+            ],
             if (rewardLocked && isEditing) ...[
               const SizedBox(height: 8),
               Text(

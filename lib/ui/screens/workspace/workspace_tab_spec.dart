@@ -58,7 +58,13 @@ class WorkspaceTabCallbacks {
     required this.onEditingChanged,
     required this.onRegisterDiscard,
     required this.onRegisterEditActions,
+    this.onOeffneAbschnitt,
   });
+
+  /// Bittet den Host, einen anderen Abschnitt aufzuschlagen (etwa vom
+  /// Abenteuer-Abschluss zum Reisebericht). Der Wechsel läuft durch die
+  /// Prüfung ungespeicherter Änderungen; `null`, wo der Host ihn nicht kennt.
+  final ValueChanged<String>? onOeffneAbschnitt;
 
   /// Meldet, ob der Tab ungespeicherte Aenderungen besitzt.
   final ValueChanged<bool> onDirtyChanged;
@@ -235,6 +241,9 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
         onEditingChanged: callbacks.onEditingChanged,
         onRegisterDiscard: callbacks.onRegisterDiscard,
         onRegisterEditActions: callbacks.onRegisterEditActions,
+        onOeffneReisebericht: callbacks.onOeffneAbschnitt == null
+            ? null
+            : () => callbacks.onOeffneAbschnitt!(WorkspaceTabIds.reisebericht),
       ),
     ),
     WorkspaceTabSpec(

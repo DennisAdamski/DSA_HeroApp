@@ -117,6 +117,7 @@ class WorkspaceManagementCoordinator extends ChangeNotifier {
   /// Erstellt die Host-Callbacks für einen Verwaltungsabschnitt.
   WorkspaceTabCallbacks callbacksForTab(String tabId) {
     return WorkspaceTabCallbacks(
+      onOeffneAbschnitt: waehleAbschnitt,
       onDirtyChanged: (isDirty) => _updateDirty(tabId, isDirty),
       onEditingChanged: (isEditing) => _updateEditing(tabId, isEditing),
       onRegisterDiscard: (action) => _registry.registerDiscard(tabId, action),
