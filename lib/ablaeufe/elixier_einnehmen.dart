@@ -31,19 +31,23 @@ class ElixierEinnehmen {
   /// Nimmt [mittel] in [stufe] für den Helden [heroId] ein.
   ///
   /// Gibt die angelegten Eigenschaftsänderungen zurück (bei einer Wiederholung
-  /// leer). Wirft einen [StateError], wenn die Stufe keine Eigenschaften
-  /// verändert.
+  /// oder bei [erbrochen] leer). Wirft einen [StateError], wenn die Stufe weder
+  /// Eigenschaften noch Zustände auf Zeit anlegt.
+  ///
+  /// Mit [erbrochen] (der Nutzer meldet die misslungene Einnahmeprobe) bleibt
+  /// das Mittel ohne Wirkung: Es entstehen keine Wirkungsquellen, nur der
+  /// Protokolleintrag.
   Future<List<AlchimikumEigenschaft>> uebernimm({
     required String heroId,
     required AlchimikumDef mittel,
     required String stufe,
     required String vorgangId,
+    bool erbrochen = false,
   }) async {
     final wirkung = alchimikumStufe(mittel, stufe);
-    if (wirkung == null || !wirkung.hatEigenschaftsWirkung) {
+    if (wirkung == null || !wirkung.hatElixierWirkung) {
       throw StateError(
-        '${mittel.name} verändert in Qualität $stufe keine '
-        'Eigenschaften.',
+        '${mittel.name} legt in Qualität $stufe keine Wirkung an.',
       );
     }
     final jetzt = uhr();
@@ -55,6 +59,17 @@ class ElixierEinnehmen {
       aenderung: (aktuell) {
         if (elixierBereitsEingenommen(aktuell, vorgangId)) {
           return aktuell;
+        }
+        if (erbrochen) {
+          return aktuell.withAppendedDiceLog(
+            baueElixierProtokoll(
+              mittel: mittel,
+              stufe: stufe,
+              eigenschaften: const <AlchimikumEigenschaft>[],
+              zeitpunkt: jetzt,
+              erbrochen: true,
+            ),
+          );
         }
         final instanzen = elixierInstanzen(
           mittel: mittel,
@@ -74,6 +89,7 @@ class ElixierEinnehmen {
             mittel: mittel,
             stufe: stufe,
             eigenschaften: wirkung.eigenschaften,
+            zustaende: wirkung.zustaende,
             zeitpunkt: jetzt,
           ),
         );

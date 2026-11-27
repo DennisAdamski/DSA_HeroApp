@@ -143,6 +143,89 @@ void main() {
       }
     });
 
+    test('Zustände auf Zeit nennen Namen und Dauer vollständig', () {
+      const einheiten = {'spielrunden', 'stunden', 'tage'};
+      var gesehen = 0;
+      for (final mittel in roh) {
+        for (final q in (mittel['qualitaeten'] as List).cast<Map>()) {
+          for (final z in ((q['zustaende'] as List?) ?? const []).cast<Map>()) {
+            gesehen++;
+            final grund = '${mittel['id']} ${q['stufe']}: $z';
+            expect('${z['name']}', isNotEmpty, reason: grund);
+            if (z['dauer'] == null) {
+              // Gewürfelte oder offene Dauer: kein Wert, auch keine Einheit.
+              expect(z['einheit'], isNull, reason: grund);
+              continue;
+            }
+            expect(z['dauer'] as int, greaterThan(0), reason: grund);
+            expect(einheiten, contains(z['einheit']), reason: grund);
+          }
+        }
+      }
+      expect(gesehen, greaterThan(0));
+    });
+
+    test('Mittel ohne Stufen tragen höchstens einen LeP-Wurf', () {
+      for (final mittel in roh) {
+        final wurf = mittel['lepWurf'];
+        if (wurf == null) {
+          continue;
+        }
+        expect(
+          (mittel['qualitaeten'] as List),
+          isEmpty,
+          reason: '${mittel['id']}: lepWurf nur ohne Stufen',
+        );
+        expect(_wurf.hasMatch('$wurf'), isTrue, reason: '${mittel['id']}');
+      }
+    });
+
+    test(
+      'Wandlungselixiere, Zaubertrank, Heilkräuter und Verbände sind da',
+      () {
+        final nachId = {for (final m in roh) m['id']: m};
+        const mutandica = [
+          'alch_hauch_der_jugend',
+          'alch_ifirnstrunk',
+          'alch_levitationselixier',
+          'alch_unsichtbarkeitselixier',
+          'alch_unverwundbarkeitselixier',
+          'alch_rethonikum',
+          'alch_purpurwasser',
+          'alch_verwandlungselixier',
+        ];
+        for (final id in mutandica) {
+          expect(nachId[id]?['gruppe'], 'Mutandica', reason: id);
+          final stufen = (nachId[id]!['qualitaeten'] as List).cast<Map>();
+          expect(stufen, hasLength(6), reason: id);
+          expect(
+            stufen.every((q) => (q['zustaende'] as List).isNotEmpty),
+            isTrue,
+            reason: id,
+          );
+        }
+        final zaubertrank = (nachId['alch_zaubertrank']!['qualitaeten'] as List)
+            .cast<Map>();
+        expect(zaubertrank.map((q) => q['aspWurf']), [
+          '1W6',
+          '2W6',
+          '3W6',
+          '3W6+6',
+          '5W6+6',
+          '2W20+5',
+        ]);
+        expect(nachId['alch_rote_pfeilbluete']!['lepWurf'], '3W6+2');
+        expect(nachId['alch_wirselkraut_salbe']!['lepWurf'], '1W6+4');
+        for (final id in const [
+          'alch_wundverband',
+          'alch_wundverband_mastix',
+          'alch_finagebast',
+        ]) {
+          expect(nachId[id]?['art'], 'verband', reason: id);
+        }
+      },
+    );
+
     test('Startliste ist vollständig vorhanden', () {
       expect(
         roh.map((e) => e['id']),

@@ -29,6 +29,27 @@ const _mut = AlchimikumDef(
   ],
 );
 
+const _fingerfertigkeit = AlchimikumDef(
+  id: 'alch_fingerfertigkeitselixier',
+  name: 'Fingerfertigkeitselixier',
+  qualitaeten: <AlchimikumQualitaet>[
+    AlchimikumQualitaet(
+      stufe: 'F',
+      eigenschaften: <AlchimikumEigenschaft>[
+        AlchimikumEigenschaft(
+          eigenschaft: 'FF',
+          wert: 7,
+          dauer: 7,
+          einheit: 'stunden',
+        ),
+      ],
+      zustaende: <AlchimikumZustand>[
+        AlchimikumZustand(name: 'Kleptomanie 7', dauer: 7, einheit: 'stunden'),
+      ],
+    ),
+  ],
+);
+
 const _start = HeroState(
   currentLep: 20,
   currentAsp: 0,
@@ -101,6 +122,42 @@ void main() {
     final z = (await repo.loadHeroState('demo'))!;
     expect(z.activeSpellEffects.instanzen, hasLength(2));
     expect(effektiveTempAttributeMods(z).mu, 6);
+  });
+
+  test('ein Zustand auf Zeit läuft ohne Eigenschaftswert mit', () async {
+    final repo = FakeRepository(states: {'demo': _start});
+    await ablauf(repo).uebernimm(
+      heroId: 'demo',
+      mittel: _fingerfertigkeit,
+      stufe: 'F',
+      vorgangId: 'v1',
+    );
+
+    final z = (await repo.loadHeroState('demo'))!;
+    expect(z.activeSpellEffects.instanzen, hasLength(2));
+    final zustand = z.activeSpellEffects.instanzen.last;
+    expect(zustand.quelle, 'Qualität F · Kleptomanie 7');
+    expect(zustand.duration?.amount, 7);
+    expect(effektiveTempAttributeMods(z).ff, 7);
+    expect(z.diceLog.single.subtitle, contains('Kleptomanie 7 · 7 Stunden'));
+  });
+
+  test('erbrochen: keine Wirkungsquellen, nur das Protokoll', () async {
+    final repo = FakeRepository(states: {'demo': _start});
+    final angelegt = await ablauf(repo).uebernimm(
+      heroId: 'demo',
+      mittel: _mut,
+      stufe: 'C',
+      vorgangId: 'v1',
+      erbrochen: true,
+    );
+
+    expect(angelegt, isEmpty);
+    final z = (await repo.loadHeroState('demo'))!;
+    expect(z.activeSpellEffects.instanzen, isEmpty);
+    expect(effektiveTempAttributeMods(z).mu, 0);
+    expect(z.diceLog.single.title, elixierErbrochenProtokollTitel);
+    expect(z.diceLog.single.subtitle, contains('keine Wirkung'));
   });
 
   test(

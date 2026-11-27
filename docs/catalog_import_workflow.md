@@ -35,7 +35,12 @@ Separate runtime catalog:
   v3-verschlüsselt im Repo liegen (`wirkung`, `qualitaeten[].wirkung`);
   Elixiere tragen je Qualitätsstufe `eigenschaften` (Kürzel, Zahl, Dauer und
   Einheit `spielrunden`/`stunden`/`tage`), nur wenn das Regelwerk alle drei
-  nennt; Prüfung über `test/catalog/alchimika_catalog_test.dart`)
+  nennt; `zustaende` (Name, Dauer, Einheit; bei gewürfelter Dauer ohne die beiden
+  letzten, Würfelausdruck im Namen) bilden Nachteile/Zustände auf Zeit
+  als reine Anzeige ab, `einnahmeProbe` die Probe beim Einnehmen, `lepWurf` am
+  Mittel den LeP-Vorschlag bei Mitteln ohne Stufen; Prüfung über
+  `test/catalog/alchimika_catalog_test.dart`; neue Texte danach mit
+  `python tool/encrypt_catalog_fields.py --format v3` verschlüsseln)
 
 Synchronizable custom entries in hero storage:
 

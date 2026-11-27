@@ -39,6 +39,9 @@ String alchimikumInventarName(AlchimikumDef mittel, String? stufe) {
 /// Vorbelegung für „Anwenden“ oder `null`, wenn die Stufe keine Wirkung auf
 /// Vitalwerte oder Wunden hat.
 Vitalwirkung? alchimikumVitalwirkung(AlchimikumDef mittel, String? stufe) {
+  if (!mittel.hatQualitaeten && mittel.lepWurf.isNotEmpty) {
+    return Vitalwirkung(lepWurf: mittel.lepWurf);
+  }
   final wirkung = alchimikumStufe(mittel, stufe);
   if (wirkung == null || !wirkung.hatVitalwirkung) {
     return null;
@@ -70,6 +73,8 @@ String alchimikumBeschreibung(AlchimikumDef mittel, String? stufe) {
     if (wirkung != null && wirkung.wirkungText.isNotEmpty)
       'Qualität ${wirkung.stufe}: ${wirkung.wirkungText}',
     if (wirkung != null) ..._wurfZeilen(wirkung),
+    if (!mittel.hatQualitaeten && mittel.lepWurf.isNotEmpty)
+      'Wurf: LeP ${mittel.lepWurf}',
     if (mittel.haltbarkeit.isNotEmpty) 'Haltbarkeit: ${mittel.haltbarkeit}',
     if (mittel.preisText.isNotEmpty) 'Preis: ${mittel.preisText}',
     if (mittel.beleg.buch.isNotEmpty) 'Quelle: ${mittel.beleg.kurz}',

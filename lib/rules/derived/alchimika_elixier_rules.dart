@@ -25,6 +25,9 @@ import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 /// Titel des Protokolleintrags.
 const String elixierProtokollTitel = 'Elixier eingenommen';
 
+/// Titel des Protokolleintrags, wenn der Held das Elixier erbricht.
+const String elixierErbrochenProtokollTitel = 'Elixier erbrochen';
+
 /// Das Katalogmittel hinter [bezug] oder `null` (ohne Katalog, ohne Verweis
 /// oder bei unbekannter ID).
 AlchimikumDef? alchimikumZuBezug(
@@ -58,9 +61,25 @@ List<AlchimikumEigenschaft> elixierEigenschaften(
 }
 
 /// Ob [eintrag] „Einnehmen“ anbietet: Der Katalog nennt für sein Mittel und
-/// seine Stufe Eigenschaftsänderungen.
-bool hatElixierWirkung(RulesCatalog? katalog, HeroInventoryEntry eintrag) =>
-    elixierEigenschaften(katalog, eintrag).isNotEmpty;
+/// seine Stufe Eigenschaftsänderungen oder Zustände auf Zeit.
+bool hatElixierWirkung(RulesCatalog? katalog, HeroInventoryEntry eintrag) {
+  final bezug = eintrag.alchimikum;
+  final mittel = alchimikumZuBezug(katalog, bezug);
+  if (mittel == null || bezug == null) {
+    return false;
+  }
+  return alchimikumStufe(mittel, bezug.stufe)?.hatElixierWirkung ?? false;
+}
+
+/// Ob [mittel] bereits als Wirkungsquelle von [zustand] läuft: Eine weitere
+/// Einnahme derselben Art hat laut Regelwerk meist Nebenwirkungen
+/// (Meisterentscheid, Wege der Alchimie S. 34). Nur ein Hinweis, die App
+/// rechnet und blockiert nichts.
+bool istMehrfachEinnahme(HeroState zustand, AlchimikumDef mittel) {
+  return zustand.activeSpellEffects.instanzen.any(
+    (i) => i.effectId == mittel.id,
+  );
+}
 
 /// Eigenschaftsänderung [wert] für das Kürzel [kuerzel] (`MU` … `KK`);
 /// `null` bei unbekanntem Kürzel (dann wird nichts geraten).
@@ -98,16 +117,30 @@ SpellDurationUnit? _einheit(String name) {
 
 /// Kurztext einer Eigenschaftsänderung für Dialog und Protokoll, z. B.
 /// `MU +3 · 3 Spielrunden`.
-String beschreibeElixierEigenschaft(AlchimikumEigenschaft e) {
-  final einheit = switch (e.einheit) {
-    'spielrunden' => e.dauer == 1 ? 'Spielrunde' : 'Spielrunden',
-    'stunden' => e.dauer == 1 ? 'Stunde' : 'Stunden',
-    'tage' => e.dauer == 1 ? 'Tag' : 'Tage',
-    'kampfrunden' => e.dauer == 1 ? 'Kampfrunde' : 'Kampfrunden',
-    'minuten' => e.dauer == 1 ? 'Minute' : 'Minuten',
-    _ => e.einheit,
+String beschreibeElixierEigenschaft(AlchimikumEigenschaft e) =>
+    '${e.eigenschaft} ${mitVorzeichen(e.wert, nullText: '+0')} · '
+    '${_dauerText(e.dauer, e.einheit)}';
+
+/// Kurztext einer Einnahmeprobe, z. B. `Selbstbeherrschung +3`.
+String beschreibeElixierEinnahmeProbe(AlchimikumEinnahmeProbe p) =>
+    '${p.talent} ${mitVorzeichen(p.zuschlag, nullText: '+0')}';
+
+/// Kurztext eines Zustands auf Zeit, z. B. `Kleptomanie 7 · 7 Stunden`; ohne
+/// feste Dauer `… · Dauer offen`.
+String beschreibeElixierZustand(AlchimikumZustand z) => z.dauer <= 0
+    ? '${z.name} · Dauer offen'
+    : '${z.name} · ${_dauerText(z.dauer, z.einheit)}';
+
+String _dauerText(int dauer, String einheit) {
+  final name = switch (einheit) {
+    'spielrunden' => dauer == 1 ? 'Spielrunde' : 'Spielrunden',
+    'stunden' => dauer == 1 ? 'Stunde' : 'Stunden',
+    'tage' => dauer == 1 ? 'Tag' : 'Tage',
+    'kampfrunden' => dauer == 1 ? 'Kampfrunde' : 'Kampfrunden',
+    'minuten' => dauer == 1 ? 'Minute' : 'Minuten',
+    _ => einheit,
   };
-  return '${e.eigenschaft} ${mitVorzeichen(e.wert, nullText: '+0')} · ${e.dauer} $einheit';
+  return '$dauer $name';
 }
 
 /// Die Wirkungsquellen eines eingenommenen Elixiers: je Eigenschaftsänderung
@@ -147,6 +180,22 @@ List<SpellEffectInstance> elixierInstanzen({
       ),
     );
   }
+  // Zustände tragen keinen Eigenschaftswert: reine Anzeige im Effektdialog.
+  for (var i = 0; i < wirkung.zustaende.length; i++) {
+    final z = wirkung.zustaende[i];
+    final einheit = _einheit(z.einheit);
+    instanzen.add(
+      SpellEffectInstance(
+        id: neueId(),
+        effectId: mittel.id,
+        vorgangsId: '$vorgangsId#z$i',
+        quelle: 'Qualität $stufe · ${z.name}',
+        duration: einheit == null || z.dauer <= 0
+            ? null
+            : SpellDuration(amount: z.dauer, unit: einheit),
+      ),
+    );
+  }
   return List<SpellEffectInstance>.unmodifiable(instanzen);
 }
 
@@ -178,12 +227,19 @@ DiceLogEntry baueElixierProtokoll({
   required String stufe,
   required List<AlchimikumEigenschaft> eigenschaften,
   required DateTime zeitpunkt,
+  List<AlchimikumZustand> zustaende = const <AlchimikumZustand>[],
+  bool erbrochen = false,
 }) {
   return diceLogEntryFromRoll(
-    title: elixierProtokollTitel,
+    title: erbrochen ? elixierErbrochenProtokollTitel : elixierProtokollTitel,
     subtitle: [
       '${mittel.name} (Qualität $stufe)',
-      for (final e in eigenschaften) beschreibeElixierEigenschaft(e),
+      if (erbrochen)
+        'keine Wirkung'
+      else ...[
+        for (final e in eigenschaften) beschreibeElixierEigenschaft(e),
+        for (final z in zustaende) beschreibeElixierZustand(z),
+      ],
     ].join(' · '),
     diceValues: const <int>[],
     total: 0,

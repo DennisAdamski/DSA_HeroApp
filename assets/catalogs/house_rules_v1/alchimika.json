@@ -452,6 +452,13 @@
             "einheit": "stunden"
           }
         ],
+        "zustaende": [
+          {
+            "name": "Kleptomanie 7",
+            "dauer": 7,
+            "einheit": "stunden"
+          }
+        ],
         "wirkung": "enc:3:lFaiZAVeXlSpyx+s1TYkWc5mJuXzFF+n4tvM7QPX2xb51TxjB+uEL8aKRYPUihUN5SBbvBLJV0X9bpALdU1zxptUs43PPpsOxzZN2o+MJ9LJdVorZ/EBJnvnAp1pULXJm6Mwcvbl54OWz2fRihIFBB5oIn4="
       }
     ]
@@ -954,6 +961,10 @@
     "preisSilber": 400,
     "preisText": "um 40 D",
     "wirkung": "enc:3:uKUFWdFGQJMpKofHRqIobQlJeJ7m0ZKWe4SbEtBIH9aRwyjXhYpdQddK2Q7OvpKiyJJFeJx/TNFz6rXUbCrsWkpe5GWPm7ZYmtwl3NhuMsJJYNERMxu1WeGblQ==",
+    "einnahmeProbe": {
+      "talent": "Selbstbeherrschung",
+      "zuschlag": 3
+    },
     "qualitaeten": [
       {
         "stufe": "A",
@@ -1029,6 +1040,820 @@
           }
         ],
         "wirkung": "enc:3:ldqSCwk3N6jpEE1uxETNsHo0SjJIM0tqiVI79DSYRt+O07q+zcETF2m7kYzMA6OXTRd1GATOJXRQR4xU3dBxPJH+zPWhJCFR362HFQeYyUCnibSQkBIjgF0ErXIrPutxYjDB02+B3Ex3Sv5K5gRiH9C0WWuaPGV8ecLTCMx7"
+      }
+    ]
+  },
+  {
+    "id": "alch_hauch_der_jugend",
+    "name": "Hauch der Jugend",
+    "art": "elixier",
+    "gruppe": "Mutandica",
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "65",
+      "chunkId": 2880
+    },
+    "brauProbe": 7,
+    "analyseProbe": 4,
+    "labor": "Hexenküche",
+    "haltbarkeit": "1W6 Jahre",
+    "verbreitung": "3",
+    "preisSilber": 600,
+    "preisText": "etwa 60 D, wegen des sentimentalen Werts oft ein Vielfaches",
+    "wirkung": "enc:3:/Colpz9Sa5gLoFUSRs/hADkf+8RYhxJzW9JB3iw6fUsSz2oB6caT04+ddM2sFbr7ikdIdp7AEmluuJeM3gaGVNURPJ7vXoKiuHJgd4ndyB5AU26+kc8HvXcgVyZPuzeEQbG4cXHIjRfn/Cjk1VSOT93qqfUuV7RYpXG1kv3Ru0Dc3VblAoKYX5kYux2M5GYxF9SlP8oKCRAkjfuy8TLS7TjmTzeFKXPXw0Q/AoOcGzgx15NhY2MLyMNnUKcMM5Etbw==",
+    "qualitaeten": [
+      {
+        "stufe": "A",
+        "zustaende": [
+          {
+            "name": "Verjüngt",
+            "dauer": 1,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "B",
+        "zustaende": [
+          {
+            "name": "Verjüngt",
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ]
+      },
+      {
+        "stufe": "C",
+        "zustaende": [
+          {
+            "name": "Verjüngt",
+            "dauer": 2,
+            "einheit": "stunden"
+          }
+        ]
+      },
+      {
+        "stufe": "D",
+        "zustaende": [
+          {
+            "name": "Verjüngt",
+            "dauer": 3,
+            "einheit": "stunden"
+          }
+        ]
+      },
+      {
+        "stufe": "E",
+        "zustaende": [
+          {
+            "name": "Verjüngt",
+            "dauer": 7,
+            "einheit": "stunden"
+          }
+        ],
+        "wirkung": "enc:3:U3Hmt2GjYv+4xoBlIbRP+Ocs1gL72N6TKTJdRRHwZ3anMsv4DVYv5t262d7uomeBuF1IsOa7Td1jQ2cuZtBECVfAIOjO2d1vSdY17NAEBLc6EEFS+VLOEo2kEAnnnCJRymsuDH+K"
+      },
+      {
+        "stufe": "F",
+        "zustaende": [
+          {
+            "name": "Zum Kind verwandelt",
+            "dauer": 1,
+            "einheit": "tage"
+          }
+        ],
+        "wirkung": "enc:3:aPThliLYVvaIB1snsVk/sGaqMv3/PrtizCJ2AyVHpdppQpkPPtmC/pNKnXCQv6a3HOirQwgrZgQxQ9fs1f8OoKtQwOeON5+d8IbflhamZcGJZ5fA+vUva64gSxvn4Vm2C6xBW/9+Hq27ITedOhL+3wzxBWifUEOCyiecTJWyngbVLtgTD0yS"
+      }
+    ]
+  },
+  {
+    "id": "alch_ifirnstrunk",
+    "name": "Ifirnstrunk",
+    "art": "elixier",
+    "gruppe": "Mutandica",
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "66",
+      "chunkId": 2881
+    },
+    "brauProbe": 4,
+    "analyseProbe": 4,
+    "labor": "Hexenküche",
+    "haltbarkeit": "3W20 Wochen",
+    "verbreitung": "4",
+    "preisSilber": 350,
+    "preisText": "etwa 35 D",
+    "wirkung": "enc:3:jAD7/MCQS1XnRx0T/euzgAjj5rgb4C7iKdiVZ9M0c+1PGIL/+an8tzXLInqxD204a6ACYM3d8KUdtPSupF2ImT/CyQTCMey4NrLYM0Gsuw7ZzlE6ugJS3iz5VNotTCv+jDYVA2+rkOA752qhxEm6N4Hha+XgN8Gnzv2xYOPvTb6CvgiXtk13BSHgTEdoK9jBlwNyFYDuOsrl8yZinsmtzJXJZcv+W242oWXrYiN3bhynYJSIbalXQ3hg6HsbK9W/4wlv/ROS89Wql1JvZLPnRHUVTyTdZroDMRR20rE=",
+    "qualitaeten": [
+      {
+        "stufe": "A",
+        "zustaende": [
+          {
+            "name": "Kälteschutz",
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ]
+      },
+      {
+        "stufe": "B",
+        "zustaende": [
+          {
+            "name": "Kälteschutz",
+            "dauer": 4,
+            "einheit": "stunden"
+          }
+        ]
+      },
+      {
+        "stufe": "C",
+        "zustaende": [
+          {
+            "name": "Kälteschutz",
+            "dauer": 12,
+            "einheit": "stunden"
+          }
+        ]
+      },
+      {
+        "stufe": "D",
+        "zustaende": [
+          {
+            "name": "Kälteschutz",
+            "dauer": 1,
+            "einheit": "tage"
+          }
+        ]
+      },
+      {
+        "stufe": "E",
+        "zustaende": [
+          {
+            "name": "Kälteschutz",
+            "dauer": 3,
+            "einheit": "tage"
+          }
+        ]
+      },
+      {
+        "stufe": "F",
+        "zustaende": [
+          {
+            "name": "Kälteschutz, Schwimmhäute",
+            "dauer": 3,
+            "einheit": "tage"
+          }
+        ],
+        "wirkung": "enc:3:1G4Elxhat9PJTqn3Al4I9TAtU1JY49Vai3G3ywhZCyO4u+QXwcXZiblU0f3PA++dgwnzUdcISEfI3GO4zIoantQOx6I8r/ORYBCEJB4rboNBvlvk"
+      }
+    ]
+  },
+  {
+    "id": "alch_levitationselixier",
+    "name": "Levitationselixier",
+    "art": "elixier",
+    "gruppe": "Mutandica",
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "66",
+      "chunkId": 2882
+    },
+    "brauProbe": 6,
+    "analyseProbe": 0,
+    "labor": "Alchimistenlabor",
+    "haltbarkeit": "1W6+9 Monate",
+    "verbreitung": "3 (alte Rezeptur 5)",
+    "preisSilber": 700,
+    "preisText": "etwa 70 D",
+    "wirkung": "enc:3:pBE6DOs+yUPpeZCJdGynmhB/Rh2XXh4W4OMl9FkmblChWu/e5YeAK4/Buhm6c5SM+vrdtL8Ktlfl3E6eQasBs/RoWK+wVonxtXO3t9HyB81301N33Ej7h1SLVNAoc1ugT3e739N9kPv7isEtn7k4KmzHZhNoEWeDihOEdnsDAON1JEUYdFI=",
+    "qualitaeten": [
+      {
+        "stufe": "A",
+        "zustaende": [
+          {
+            "name": "Leichtigkeit",
+            "dauer": 1,
+            "einheit": "spielrunden"
+          }
+        ],
+        "wirkung": "enc:3:7CU9Pt/d70fDSFmOhh7it/cY/VpPA3/TR5zlf9TMPfOtUauQx50iKfTIGfF8CZCOAujHXefNq6sR0bTxeT5EmcL31nGrAgZF"
+      },
+      {
+        "stufe": "B",
+        "zustaende": [
+          {
+            "name": "Leichter Körper",
+            "dauer": 1,
+            "einheit": "spielrunden"
+          }
+        ],
+        "wirkung": "enc:3:MWslRj/3zG6yUDgcpOz1XpGrlEXdYD8mwaDjm30f4/dwLvIadP7sMDuFsKx+qW70SAgSuhykUIreZMl1D1Gvc9E+vDefHaqGDdX4MmdaBKf731x6PjWAeBqf/5an7n8VZ8Q/3zzt2nIZYro5TCY="
+      },
+      {
+        "stufe": "C",
+        "zustaende": [
+          {
+            "name": "Leichter Körper",
+            "dauer": 2,
+            "einheit": "spielrunden"
+          }
+        ],
+        "wirkung": "enc:3:p1hDxckPjcy2MIRG757T6eawuu4KQE6EFn49vNSc1ktTq2YAyk18ouI87iidgHttp/evMqbS"
+      },
+      {
+        "stufe": "D",
+        "zustaende": [
+          {
+            "name": "Leichter Körper",
+            "dauer": 3,
+            "einheit": "spielrunden"
+          }
+        ],
+        "wirkung": "enc:3:x3y4M2Yl54vjqHCT6IB4h4nb0GILPXq8kC1ASfvKRrdjfFVsauXdR7EyIS4fx/CUOWLt+zxIQg=="
+      },
+      {
+        "stufe": "E",
+        "zustaende": [
+          {
+            "name": "Schwerelos",
+            "dauer": 5,
+            "einheit": "spielrunden"
+          }
+        ],
+        "wirkung": "enc:3:3Zfj0MLjo4xl8y5RDtX8p2mWYMscdzeuE4aEQSEMul0wJlgYuFeaesamO7rHzwsNQ6OrFv16jgW3hAWRwjcsKu6EmuZqHrdInOzSzwg0V7EH27Z4oiyNjtB3RmE="
+      },
+      {
+        "stufe": "F",
+        "zustaende": [
+          {
+            "name": "Schwerelos",
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ],
+        "wirkung": "enc:3:sWO+GWeC1Ow+tscpFH2V8U+xgJbvEpXgw02zkGduFdPXgCmyyA4ZDH06CPz76j06vvXYKZLtV1YXkE5BtNUEUw8VXLVToYLWcf5ILwxzlPyFagFUU3zB4/yxNcLda51eLV3BwIQYpYw08dXmlw0uHFNYOR3PiVgPPvcXKPbdui15p1gOCKuTbYsHAQ=="
+      }
+    ]
+  },
+  {
+    "id": "alch_unsichtbarkeitselixier",
+    "name": "Unsichtbarkeitselixier",
+    "art": "elixier",
+    "gruppe": "Mutandica",
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "68",
+      "chunkId": 2885
+    },
+    "brauProbe": 10,
+    "analyseProbe": 6,
+    "labor": "Alchimistenlabor",
+    "haltbarkeit": "3W6+72 Monate",
+    "verbreitung": "4",
+    "preisSilber": 600,
+    "preisText": "um 60 D",
+    "wirkung": "enc:3:y/+twxmKQru7biyMqmMtwSs0+pAWKJYEraVPjvRiOOtNdtGK/idgslaxK/xJQDcgemoSpi7g/Cs+DWR7CtiMTa2uzURZQggj/Gkyf3MMSRb2EYBfjQ6/bpLZzV8bi+ZqLwbuo9GzqZ38WdzVOCOptbZ/39Faq6g=",
+    "qualitaeten": [
+      {
+        "stufe": "A",
+        "zustaende": [
+          {
+            "name": "Teilweise unsichtbar",
+            "dauer": 7,
+            "einheit": "spielrunden"
+          }
+        ],
+        "wirkung": "enc:3:ipKNd9YIXPPjrKgRhKySkm33j62EXj8nVLzMAdZAhD4zZqwk1EPExsUzCt7TC8eOQowZUKeF7zBvY6eAZj7ugSl8/U23Rs87CXVy5bUerGivCDfX1vH9Aw=="
+      },
+      {
+        "stufe": "B",
+        "zustaende": [
+          {
+            "name": "Durchscheinend",
+            "dauer": 7,
+            "einheit": "spielrunden"
+          }
+        ],
+        "wirkung": "enc:3:nlihKAwbof6AMBepjjZcru6sY7p7f9pX9HS3ZHX+56OaOxSt0RMXNFxBT1VliAFCPhw7oLSfO032Rnle0o2pfeLvzvdvaSUpJ/Xkucslj461YAT8KOysZ2Z6Fjax3sEaEA9YfOkbBac="
+      },
+      {
+        "stufe": "C",
+        "zustaende": [
+          {
+            "name": "Unsichtbar (flackert)",
+            "dauer": 1,
+            "einheit": "spielrunden"
+          }
+        ],
+        "wirkung": "enc:3:uvJLPzMjIVsokKFpfuj5FL+RfPkmT6vd2TWwXb72FcqVrpbHmZOI8qz/ZUoLyCZoBJHWSzs1+6/86BMybzEKdkKFDMNwNABkDzOK7oMV"
+      },
+      {
+        "stufe": "D",
+        "zustaende": [
+          {
+            "name": "Unsichtbar",
+            "dauer": 3,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "E",
+        "zustaende": [
+          {
+            "name": "Unsichtbar",
+            "dauer": 7,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "F",
+        "zustaende": [
+          {
+            "name": "Unsichtbar (etwa 3 Monate)",
+            "dauer": 90,
+            "einheit": "tage"
+          }
+        ],
+        "wirkung": "enc:3:oSc/WR5Y68Xd84GAzLxbZZ1YiLEy4CZ3Y44UbhNs+ZMcCsecKlwYVo5p0xdMmqkp+O1uSDOBJ1DhNEDDYbD9qzAevTcHbRFVuzL6UkPWf87zej93lQ3U/le2zXQvrEcf5sv68iO7hBwXwSsQ8v9/s1mxYOazNptLGuVjcX2D64B7Uqa5SES3"
+      }
+    ]
+  },
+  {
+    "id": "alch_unverwundbarkeitselixier",
+    "name": "Unverwundbarkeitselixier",
+    "art": "elixier",
+    "gruppe": "Mutandica",
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "68",
+      "chunkId": 2886
+    },
+    "brauProbe": 5,
+    "analyseProbe": 2,
+    "labor": "archaisches Labor",
+    "haltbarkeit": "1W3+5 Monate",
+    "verbreitung": "5",
+    "preisSilber": 350,
+    "preisText": "etwa 35 D",
+    "wirkung": "enc:3:oR5nuXbeqGHGDaY0e6StEzwB8ilYdR+ejExU/ZWSxkQCLP3ZHDVKAM6NLNSl4FbvGzEX1HDYaL7eMJuSwWAaDVyTV0lFUMDQXshP3zDHeE0ljrWwD2Zaa5lPc2ObECTtrjV4gjY1opbOzf+Yho+RnsWCg126c2JOrCD48Q4=",
+    "qualitaeten": [
+      {
+        "stufe": "A",
+        "zustaende": [
+          {
+            "name": "Wundschwelle +1",
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ]
+      },
+      {
+        "stufe": "B",
+        "zustaende": [
+          {
+            "name": "Natürlicher RS 1",
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ]
+      },
+      {
+        "stufe": "C",
+        "zustaende": [
+          {
+            "name": "Natürlicher RS 2",
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ]
+      },
+      {
+        "stufe": "D",
+        "zustaende": [
+          {
+            "name": "Natürlicher RS 2, Wundschwelle +1",
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ]
+      },
+      {
+        "stufe": "E",
+        "zustaende": [
+          {
+            "name": "Natürlicher RS 3",
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ]
+      },
+      {
+        "stufe": "F",
+        "zustaende": [
+          {
+            "name": "Natürlicher RS 3, Wundschwelle +2",
+            "dauer": 1,
+            "einheit": "tage"
+          }
+        ],
+        "wirkung": "enc:3:gUoNYuGRrhZM+0Vw5vS320X9HX1km4tycM3VvTlQsISTMDplEh7Acu5Wkn+GMVNqWF/OBA=="
+      }
+    ]
+  },
+  {
+    "id": "alch_zaubertrank",
+    "name": "Zaubertrank",
+    "art": "trank",
+    "gruppe": "Magika",
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "74",
+      "chunkId": 2897
+    },
+    "brauProbe": 8,
+    "analyseProbe": 4,
+    "labor": "Hexenküche",
+    "haltbarkeit": "2W6+30 Monate",
+    "verbreitung": "5",
+    "preisText": "mindestens 60 D; bestätigte Qualität bis zu 10 D pro AsP",
+    "wirkung": "enc:3:v9WDhaUpt+vcmR3OWvPtnjs1RvwO27V/pWxRWwXn6B/aTykCFHDuw3SnL8NEf1TPFL2mZj1DHCgbGrvBp8dFuA0MpYZBaBmjMscokPvCBY8DqrzBtcaV98memm9GLVwi7YMyOMmjefEp/zxzlUlRhhYHNdHeN7VGIDS0j+iD5G/kWz7fl968G37wMqjtfwvPiWHwUQrintDaJG9FDCEFC50/6yMgfUTYG0zVxm68",
+    "qualitaeten": [
+      {
+        "stufe": "A",
+        "aspWurf": "1W6",
+        "wirkung": "enc:3:/GbrDZvIEDc1VINAqJCpUZmfUJ3R1QjUCKZsPCqIUnp93xrsemeXnWrTG2i1gnSPVg94qUPgp+dGREX8tuGXD32I2XHmCTWDd+LbB8tMWEBY0Vp2NS3JUXs0l+RZPag="
+      },
+      {
+        "stufe": "B",
+        "aspWurf": "2W6",
+        "wirkung": "enc:3:Sh7UDKRSEHeT9RKDhLcvWBf5pbNEHVwEGYZ3RppRyZM8orsHpFLHCr2WqfG+cZZAMcBTfiXk+BPzUZY7RmlKQqCwtrB0GU22skGQZCcXyYEFlP1/2OsTgiRcNyJjGG4a7oQLe8cA9Kvi6m+pfsRPHt9+/ACSg7IzZUM="
+      },
+      {
+        "stufe": "C",
+        "aspWurf": "3W6"
+      },
+      {
+        "stufe": "D",
+        "aspWurf": "3W6+6",
+        "wirkung": "enc:3:tQj3/WUP4F81bt573yxc5CfeenH+uteg/KhiYyVIcJeQqlbKM+Xkfxbzt8KMYyzRBw1fuxByN2dOXPgNGfYcSEBixOuxOa40rJe/FFORVRQJeDcELXPqMpqV7kSZpPrcCz3l"
+      },
+      {
+        "stufe": "E",
+        "aspWurf": "5W6+6",
+        "wirkung": "enc:3:y5dc08P8kvX4E5pP04J9hAFVuOkt3URqhEp+sp3I2Wo3mg=="
+      },
+      {
+        "stufe": "F",
+        "aspWurf": "2W20+5",
+        "wirkung": "enc:3:MGel6IeH2ipD3kcmS5WpFYO1+QkuebdOYLqlmSkpJp79N70qeY5eYC4R5UPbqHrGHs3LXnpBAGIb7OQQQ08qqWZ2GxQ9gt/MgA=="
+      }
+    ]
+  },
+  {
+    "id": "alch_rote_pfeilbluete",
+    "name": "Rote Pfeilblüte (Aufguss)",
+    "art": "kraut",
+    "gruppe": "Heilkräuter",
+    "beleg": {
+      "buch": "Wege des Schwerts",
+      "seite": "160",
+      "chunkId": 7230
+    },
+    "verbreitung": "südaventurische Dschungel und Sümpfe",
+    "preisSilber": 100,
+    "preisText": "10 D pro Portion Aufguss",
+    "lepWurf": "3W6+2",
+    "wirkung": "enc:3:2gYTlbUYuLMmf51+xuzrVTNNOO+Q8U7Xkp1DEOIWff4+tyaQLMoKS+04z3abOBRpjJUSRP64Vnto/xiA8szmAKssIW+vM5+hUBKuf1VjkRsuZAmjWzCopIOIj7niy5CD1/T6eASss6Gu2hknr3uCunFJrrOUO7+gvDOda5xnb/GY8+4Hi1cpQePRHLZEM2ndGmaDX0Qr2xO23D1KDGw7684nxnxnDGJ689gDNxEaONWu",
+    "qualitaeten": []
+  },
+  {
+    "id": "alch_wirselkraut_salbe",
+    "name": "Wirselkraut-Salbe",
+    "art": "salbe",
+    "gruppe": "Heilkräuter",
+    "beleg": {
+      "buch": "Wege des Schwerts",
+      "seite": "160",
+      "chunkId": 7230
+    },
+    "verbreitung": "Steppen in ganz Aventurien",
+    "preisSilber": 50,
+    "preisText": "5 D pro Portion Salbe",
+    "lepWurf": "1W6+4",
+    "wirkung": "enc:3:9MXB5t0o31Xa9ohowiqtID1gPpeFfdppnzk5HHMTSgsRAWcIqDQCkrUtEyHiM0DbjGd/MB/9rjgqvo9OA6dzg6wgEe1NX2td+lkrj2MNGdS71fyFOkJ9ikiHFzb404zaqBgHCh5qY33woZbuCOuUy44dNJLxZeA5hU1i2wugaU30iYR4/XlXFX7GAm7r6QGfFewFLg==",
+    "qualitaeten": []
+  },
+  {
+    "id": "alch_tarnele_salbe",
+    "name": "Tarnele-Salbe",
+    "art": "salbe",
+    "gruppe": "Heilkräuter",
+    "beleg": {
+      "buch": "Wege des Schwerts",
+      "seite": "160",
+      "chunkId": 7230
+    },
+    "verbreitung": "Wiesen, Wald und Sumpf in Mittel- und Nordaventurien",
+    "preisSilber": 2,
+    "preisText": "2 S pro Portion Salbe",
+    "wirkung": "enc:3:XH6+dzHVO1SzlmGAYR32EcBLjmLncGXtmz1YDLOtLF+GMQPD1aI3vLscFP/6oxtDScdUOpJQ7K2kf+zwP91CzIRkGYAK8vu1kodIMY1kUaEJfbyq17R81KuCBUivKHU=",
+    "qualitaeten": []
+  },
+  {
+    "id": "alch_einbeere",
+    "name": "Vierblättrige Einbeere",
+    "art": "kraut",
+    "gruppe": "Heilkräuter",
+    "beleg": {
+      "buch": "Wege des Schwerts",
+      "seite": "160",
+      "chunkId": 7230
+    },
+    "verbreitung": "Wälder und Waldränder nördlich des Yaquir",
+    "preisSilber": 4,
+    "preisText": "4 S pro Beere; Einbeerentrank 15 D pro Flasche (40+2W6 LeP)",
+    "wirkung": "enc:3:sRKalwO3HpcwlQKqJzpH+m3zLmIU8ERpDSCmtHJ25dBvFbsQnOjXg5v1tONVmxdjJm2s8tVg+/zV6uDiIl13pD/PfFmJNqUrcmByZHYs5cQl0CuAgekhVYR1HAw7NBihYsk+NEWUk84tdGzEJm1cEAZIX9W5ICYj83OPi6qENas0J681VlHmZVQIjuMaXYznk24GsEPJF7QmumNkSlN3J3Okh4WQckUSEySpzxDLGKQFZBTZOwSBPUwr",
+    "qualitaeten": []
+  },
+  {
+    "id": "alch_wundverband",
+    "name": "Wundverband",
+    "art": "verband",
+    "gruppe": "Verbandszeug",
+    "beleg": {
+      "buch": "Wege des Entdeckers",
+      "seite": "75",
+      "chunkId": 6242
+    },
+    "preisText": "1 Heller (für eine Behandlung)",
+    "wirkung": "enc:3:K1KRvu0GXnCNUqhK3h8CbnF/iO1VGTGbcHyrlHpyuOhpQwbPvOmGbGLPCietllwxL/js110zCX/KPzxA+jj4mYEY4Cum2QJtyFwM+QygYYlQ5sS571q42GzktBj9C3WSVWMgnn2XEGRJrg0xflix1UvUrJ5/0t051c68MV0u5mGJ",
+    "qualitaeten": []
+  },
+  {
+    "id": "alch_wundverband_mastix",
+    "name": "Wundverband mit Mastix",
+    "art": "verband",
+    "gruppe": "Verbandszeug",
+    "beleg": {
+      "buch": "Wege des Entdeckers",
+      "seite": "75",
+      "chunkId": 6242
+    },
+    "preisSilber": 1,
+    "preisText": "1 S (für eine Behandlung)",
+    "wirkung": "enc:3:nskg3eEzw0ZXd5eZYzgYbA9PmyrEZgoAhvwwCNZjCgaEJLU5/6jduO6HoOiqQua2ojejyZnhITALUO1u9TteTRVwoHhYaBZA7sAgA6RpEaODO476dK1VNVa8Hnse918EvjkAgyaPv2tNs/7kVAdwkkKtiJafHKT3ytDhaDZGfkC3n1c81BOWC7pvTxp6+v4CgJYIAA7QjH2dIMxX+Km8B1HMTRzI5BUS25Y8klSiwu7jJTMlFw8PtMCe7hahrdC2u5FhRNERVVRFInw=",
+    "qualitaeten": []
+  },
+  {
+    "id": "alch_finagebast",
+    "name": "Finagebast",
+    "art": "verband",
+    "gruppe": "Verbandszeug",
+    "beleg": {
+      "buch": "Wege des Entdeckers",
+      "seite": "75",
+      "chunkId": 6242
+    },
+    "preisSilber": 16,
+    "preisText": "16 S (für eine Behandlung)",
+    "wirkung": "enc:3:q3UcQM2P5JRIMAbwwq+Z4QZo7fQRpVK5h4nmX1F3t7kZz2RlPO+ZUw+0WA1nsc6fqqlrPA2WMqqUfA9wLChlVfUadb84yJnNtKisx9iN8qlQAR93DeJwus7Wqf3Q3vChwuB4CGHkrAKegqArgmlhAxT8mo74lz14J0TnyFGB957qu+iXxItYOPYvy6U8Zn3Cx4N2sVYIe8w9AOhkuLaWFv6uiaytLPptY5JXhLlHRkmruYE2rg==",
+    "qualitaeten": []
+  },
+  {
+    "id": "alch_rethonikum",
+    "name": "Rethonikum",
+    "art": "elixier",
+    "gruppe": "Mutandica",
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "67",
+      "chunkId": 2884
+    },
+    "brauProbe": 5,
+    "analyseProbe": 3,
+    "labor": "Alchimistenlabor",
+    "haltbarkeit": "1W6+12 Monate",
+    "verbreitung": "3",
+    "preisSilber": 500,
+    "preisText": "etwa 50 D; bestätigte Qualität E mindestens 200 D",
+    "wirkung": "enc:3:9uXukB/WdVVFR/kHzLAVY8UlETlTJbJUftvBvwPIHn5E/gSt5isuzLHDEBURMWZXgLrAFqceBY6Q+3wUmGU19kTzo9dy1E53N2dbpAfXnW9hzlpuatv1NVqHqD5SE+VaObOSBlS2LixJ7Qi6IvGk3VFIqQXdSsvT1XqoSt/kD9cLr5BlHU8xrJ+t2yJsfJb+gmylEErjauSA6LoFUhqQn/papzSiwDEmZdEK",
+    "qualitaeten": [
+      {
+        "stufe": "A",
+        "zustaende": [
+          {
+            "name": "Verlangsamt",
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ],
+        "wirkung": "enc:3:5BhjHmteCRPkzn1QPWHrkVRVVEWoizkbxjz/pDR2ANCRLU0qo77XGsQoTxAtLcx2EvlkOu5oV12msdEEt98r9dWft3fDZijewqzm5Kc+eUNNFUECj56ejPtnm2pYI7OPWl57/NHTjYGZC3KtwBtyfNZ2"
+      },
+      {
+        "stufe": "B",
+        "zustaende": [
+          {
+            "name": "Lethargie (1W6 Stunden)"
+          }
+        ],
+        "wirkung": "enc:3:1D3Gv8e1yXEV/lEr09YRiNSp4GT4oh+sF5a2sL6XLIi3/Mzzn3mFvr/bkBHawrj3dc8gLSg0+hxn21QkW1FgSwfJGyRuKklNTTO25kDrmZOWZN/Jz6q6a4Ws95nynzuKEn3Q++cS"
+      },
+      {
+        "stufe": "C",
+        "zustaende": [
+          {
+            "name": "Starre (2W6 Stunden)"
+          }
+        ],
+        "wirkung": "enc:3:zEoYz7iwbXd1OA2SucFJ/okzP8BnwbHzmtq3vTcJdpB+sP8P+7/npgiNjBco3d8iEKrBMebwmFoL8w5Sun3WhXIEdt91K55kFtf0bxisrEeqYDBk4/Z6L7ptWR0HSfkHqxn8D8kYbnfInBv3aM9nm5+56wuT"
+      },
+      {
+        "stufe": "D",
+        "zustaende": [
+          {
+            "name": "Starre (3W6 Stunden)"
+          }
+        ],
+        "wirkung": "enc:3:JCTVPFarfPlrPXs+BtsLfOYdPCMh+wYsT+jrAf59cZYGHRP8mWXpe1+PJUbEj7MO6IPNKwJLDg2X8TIBG7DCl3NLLYUuJCXq6cGHNzgtd88JEPM9U8bhSTXUsFQtIS6AKThFaV4l"
+      },
+      {
+        "stufe": "E",
+        "zustaende": [
+          {
+            "name": "Starre (7W6 Stunden)"
+          }
+        ],
+        "wirkung": "enc:3:ArfR8OC58Nte9b3Kc2FOlUdXh+NXOTxJnxs1fwIlevqgahLTr+L7fmjE+5fu4/qzxRzk+zP7amQfzP45i8JmycGSuCLhAwG3MQ=="
+      },
+      {
+        "stufe": "F",
+        "zustaende": [
+          {
+            "name": "Starre (ohne automatisches Ende)"
+          }
+        ],
+        "wirkung": "enc:3:0rPjl5s6TUm+eIjqLJ+4ASCTgay4CTdYv7NypP4W2km0Jl6uBKlwDIQmDmUNgcYFntSazO0R4skS75HpfmDT3t6b5JHMag4kqhaR"
+      }
+    ]
+  },
+  {
+    "id": "alch_purpurwasser",
+    "name": "Purpurwasser",
+    "art": "elixier",
+    "gruppe": "Mutandica",
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "67",
+      "chunkId": 2883
+    },
+    "brauProbe": 6,
+    "analyseProbe": 6,
+    "labor": "archaisches Labor",
+    "haltbarkeit": "nahezu unbegrenzt",
+    "verbreitung": "1",
+    "preisText": "nicht erhältlich",
+    "wirkung": "enc:3:s0NICOF0tiZKjOln9hRvJy4v96BY9hDxdj1sS4z3yjjmc9MX5O5pL/cWd0VpSk76QgY35wfXcJJgOTF+5d4QHjdXbj53RwbLMMxf6g824W59Ej6r1yC/m8cIgg/ngDU3wrOkgQxNvVzLl7Q2Zqi6N8HZSZTjY0Y=",
+    "qualitaeten": [
+      {
+        "stufe": "A",
+        "zustaende": [
+          {
+            "name": "Unter Wasser atmen",
+            "dauer": 1,
+            "einheit": "spielrunden"
+          }
+        ]
+      },
+      {
+        "stufe": "B",
+        "zustaende": [
+          {
+            "name": "Unter Wasser atmen (1W6 Spielrunden)"
+          }
+        ]
+      },
+      {
+        "stufe": "C",
+        "zustaende": [
+          {
+            "name": "Unter Wasser atmen (3W6 Spielrunden)"
+          }
+        ],
+        "wirkung": "enc:3:DyIPJUkCyT07+7avq4m4B5y2UVYCY004y0/uYVrLnuQAo4MZryJKb64O9qwvPE8R9S9AfDs55rX10Q=="
+      },
+      {
+        "stufe": "D",
+        "zustaende": [
+          {
+            "name": "Unter Wasser atmen (3W6 Stunden)"
+          }
+        ],
+        "wirkung": "enc:3:lZ0/noEX8tkCOiXMYNhgwXJcO20fhtcaOllZZx00pfERb4ND2pS/22W8QVsq3IO1Yn4QKZCo91GL2w=="
+      },
+      {
+        "stufe": "E",
+        "zustaende": [
+          {
+            "name": "Unter Wasser atmen (bis zur Luft)"
+          }
+        ],
+        "wirkung": "enc:3:fiQ/ETdavkJThnagoEVnZRnzzdd5v5B2hcuxPxKnrAxpdmkxAXADhh7wj6EBYEMQ8WBaop/NQWeU6VFIIo2eJ28QA8pb9oZLRP4VVESceARww3SftPShKTOOGkKHKQ=="
+      },
+      {
+        "stufe": "F",
+        "zustaende": [
+          {
+            "name": "Keine Landluft",
+            "dauer": 7,
+            "einheit": "spielrunden"
+          }
+        ],
+        "wirkung": "enc:3:CH6En2S6PX6/4H8kDDAfeaYm0DXF15r3XP/5nnQeGCF4DP2m/+3H/OC6PTiSNoeK4mIhEgtkgq1CBnM2IAWSf6PMQQoiReBvBSIR5cxwi1HdFXpLJaGGkBy8REQIfeEdXXuwCkU="
+      }
+    ]
+  },
+  {
+    "id": "alch_verwandlungselixier",
+    "name": "Verwandlungselixier",
+    "art": "elixier",
+    "gruppe": "Mutandica",
+    "beleg": {
+      "buch": "Wege der Alchimie (2. Auflage 2012)",
+      "seite": "69",
+      "chunkId": 2887
+    },
+    "brauProbe": 8,
+    "analyseProbe": 5,
+    "labor": "Hexenküche",
+    "haltbarkeit": "1W3+10 Monate",
+    "verbreitung": "5",
+    "preisSilber": 700,
+    "preisText": "um 70 D",
+    "wirkung": "enc:3:rae+Hjfp20NcFLBenasCkMWGSHSY/Pcu0ZyY/qtKCQaxX4hotuu6rSFFuu0EkZc1XIdJyxFaNlyi8bgOGcHcSggFdIPil7afTJpQrM/FHtT5laDNQajqVJZ3+2GHTJFFFMjaWuFtS1fkQkVwjUYkZ0PqikW6gT20X9Z0ljmGFUe9l57kw2ztbbyfQpyX",
+    "qualitaeten": [
+      {
+        "stufe": "A",
+        "zustaende": [
+          {
+            "name": "Fell oder Flaum (1W6 Stunden)"
+          }
+        ],
+        "wirkung": "enc:3:mGsGOR+i1b8cHFRVNoPkr6ya526D/UMJSK7FExfrSBbfCOJr23xc3C1K+GHIZQUDGfO1S8nW6FluH6Z8IUTAq6EYwXkuwvk3BqsOOcITyfnePEcFj+/+2lnHRSwl+Q=="
+      },
+      {
+        "stufe": "B",
+        "zustaende": [
+          {
+            "name": "Geschrumpft",
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ],
+        "wirkung": "enc:3:EaGyWL/DwbiDrgxPNG7sgG2D3fW8Q2wogDSG6fqeW0d0RsnOS7l5JNyvWvIqwj+Ia3/7eWdQb/pnO8s1OZH5oyFFc0yZsw=="
+      },
+      {
+        "stufe": "C",
+        "zustaende": [
+          {
+            "name": "Verwandelt",
+            "dauer": 1,
+            "einheit": "spielrunden"
+          }
+        ],
+        "wirkung": "enc:3:a8r381rkdnvIKFYBpIzGobvqEkq6HUSYYtPOKRPjoN6Nd71xFCyli0LPINyl0HXNI2Zf2Z76vy46B/Jv8KKCU5/uyS3MMG30JCFBvbWZPIWZA+oZ97Fzo30="
+      },
+      {
+        "stufe": "D",
+        "zustaende": [
+          {
+            "name": "Verwandelt (1W6 Spielrunden)"
+          }
+        ],
+        "wirkung": "enc:3:ytle4fgVRtja5c2TU/1vLhFpUNM2I/FQQlGZNeng+Xpc2A=="
+      },
+      {
+        "stufe": "E",
+        "zustaende": [
+          {
+            "name": "Verwandelt (höchstens)",
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ],
+        "wirkung": "enc:3:oZreGZYoytAHOI5mh87L5dRQd83ROjsuEX46v5a+ehr8aNc4YJMv3kfB/DkowLJCvDqidoJlnfdvUzBVXAdF33lr0BM="
+      },
+      {
+        "stufe": "F",
+        "zustaende": [
+          {
+            "name": "Verwandelt (höchstens)",
+            "dauer": 1,
+            "einheit": "stunden"
+          }
+        ],
+        "wirkung": "enc:3:0X7IBjMSDl9TyjKlflurKJfyj1I37888XP6Vye5JFO7zV/r9VqOMMTUL91EK6fV8NCmHxyXQs+HtIvEYUjVYTtFYiCz3JeLkHm1mxzHOoABanlKnkw4="
       }
     ]
   }

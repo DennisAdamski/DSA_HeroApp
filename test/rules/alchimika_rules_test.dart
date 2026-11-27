@@ -50,6 +50,29 @@ void main() {
       expect(alchimikumVitalwirkung(_heiltrank, 'F'), isNull);
       expect(alchimikumVitalwirkung(_pulver, null), isNull);
     });
+
+    test('ein Mittel ohne Stufen schlägt seinen LeP-Wurf vor', () {
+      const salbe = AlchimikumDef(
+        id: 'alch_wirselkraut_salbe',
+        name: 'Wirselkraut-Salbe',
+        lepWurf: '1W6+4',
+      );
+      final wirkung = alchimikumVitalwirkung(salbe, null)!;
+      expect(wirkung.lepWurf, '1W6+4');
+      expect(wirkung.lep, 0);
+      expect(
+        mitAlchimikum(const HeroInventoryEntry(), salbe, null).beschreibung,
+        contains('Wurf: LeP 1W6+4'),
+      );
+      // Mit Stufen gilt nur der Wert der Stufe, nie der des Mittels.
+      const mitStufen = AlchimikumDef(
+        id: 'a',
+        name: 'A',
+        lepWurf: '9W6',
+        qualitaeten: <AlchimikumQualitaet>[AlchimikumQualitaet(stufe: 'A')],
+      );
+      expect(alchimikumVitalwirkung(mitStufen, 'A'), isNull);
+    });
   });
 
   group('wundenAusLep', () {
