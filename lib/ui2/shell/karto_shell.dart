@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/debug/karto_token_sheet.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_heldenwahl.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_sync_schalter.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_workspace.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_feinschliff.dart';
 import 'package:dsa_heldenverwaltung/ui_shared/feedback/open_feedback.dart';
@@ -73,6 +74,12 @@ class _KartoShellState extends ConsumerState<KartoShell> {
       appBar: AppBar(
         title: const Text('Heldenauswahl'),
         actions: [
+          // Ohne Konto bleibt der Schalter unsichtbar.
+          KartoSyncSchalter(
+            kompakt: true,
+            onEinstellungen: () =>
+                _aktion(() => widget.bestand.einstellungen(context)),
+          ),
           IconButton(
             tooltip: 'Feedback senden',
             icon: const Icon(Icons.feedback_outlined),

@@ -380,8 +380,13 @@ class FirestoreHeroSyncGateway
       case 'unauthenticated':
       case 'permission-denied':
         return SyncAuthException(message, cause: error);
+      // `cancelled` und `resource-exhausted` meldet das Web-SDK auch, wenn
+      // ein Tab im Hintergrund die Verbindung verlor oder Anfragen gedrosselt
+      // wurden; beides vergeht von selbst.
       case 'unavailable':
       case 'deadline-exceeded':
+      case 'cancelled':
+      case 'resource-exhausted':
         return SyncNetworkException(message, cause: error);
       case 'aborted':
       case 'failed-precondition':
