@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_object_diff.dart';
 import 'package:dsa_heldenverwaltung/state/sync_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_sync_anzeige.dart';
 
@@ -18,6 +19,33 @@ SyncConflict _konflikt(String id) => SyncConflict(
   remoteSummary: 'online',
   detectedAt: DateTime.utc(2026),
 );
+
+/// Zählt Abgleiche und liefert danach [nachher] als Stand.
+class _Controller extends AppSyncController {
+  _Controller(this.nachher);
+
+  SyncStatusSnapshot nachher;
+  int abgleiche = 0;
+
+  @override
+  SyncStatusSnapshot get currentStatus =>
+      abgleiche == 0 ? const SyncStatusSnapshot(accountId: 'u') : nachher;
+
+  @override
+  Stream<SyncStatusSnapshot> watchStatus() => const Stream.empty();
+
+  @override
+  Future<void> syncNow() async => abgleiche++;
+
+  @override
+  Future<void> resolveConflict(
+    String conflictId,
+    SyncResolutionChoice resolution,
+  ) async {}
+
+  @override
+  SyncObjectDiff? conflictDiff(String conflictId) => null;
+}
 
 void main() {
   final jetzt = DateTime(2026, 10, 19, 14, 30);
@@ -45,6 +73,8 @@ void main() {
       )!;
       expect(anzeige.stufe, KartoSyncStufe.entscheidung);
       expect(anzeige.text, 'Sync: 2 Konflikte offen');
+      // Konflikte entscheidet man nur in den Einstellungen.
+      expect(anzeige.aktion, KartoSyncAktion.einstellungen);
     });
 
     test('ein Konflikt steht im Singular', () {
@@ -87,6 +117,8 @@ void main() {
       expect(fehler(SyncErrorKind.auth).text, 'Sync: Anmeldung erneuern');
       expect(fehler(SyncErrorKind.decode).text, 'Sync fehlgeschlagen');
       expect(fehler(SyncErrorKind.unknown).stufe, KartoSyncStufe.fehler);
+      // Nach einem Fehler gleicht ein Tipp erneut ab.
+      expect(fehler(SyncErrorKind.network).aktion, KartoSyncAktion.abgleichen);
     });
 
     test('laufender Abgleich ist ruhig und gekennzeichnet', () {
@@ -135,6 +167,7 @@ void main() {
       WidgetTester tester,
       SyncStatusSnapshot status, {
       Size size = const Size(1440, 1000),
+      AppSyncController? controller,
     }) async {
       await pumpAcceptanceWorkspace(
         tester,
@@ -143,6 +176,8 @@ void main() {
         size: size,
         overrides: [
           syncStatusProvider.overrideWith((ref) => Stream.value(status)),
+          if (controller != null)
+            syncControllerProvider.overrideWithValue(controller),
         ],
       );
     }
@@ -176,6 +211,69 @@ void main() {
         find.byKey(const ValueKey('karto-sync-anzeige')),
       );
       expect(knopf.tooltip, startsWith('Abgeglichen '));
+    });
+
+    testWidgets('ein Tipp gleicht sofort ab und meldet das Ergebnis', (
+      tester,
+    ) async {
+      final controller = _Controller(
+        SyncStatusSnapshot(accountId: 'u', lastSuccessfulSync: DateTime.now()),
+      );
+      await pumpMitStatus(
+        tester,
+        const SyncStatusSnapshot(
+          accountId: 'u',
+          lastFailure: SyncFailure(
+            kind: SyncErrorKind.network,
+            message: 'offline',
+          ),
+        ),
+        controller: controller,
+      );
+      await tester.tap(find.byKey(const ValueKey('karto-sync-anzeige')));
+      await tester.pump();
+      expect(controller.abgleiche, 1);
+      expect(find.text('Abgeglichen.'), findsOneWidget);
+    });
+
+    testWidgets('ein fehlgeschlagener Abgleich nennt den Grund', (
+      tester,
+    ) async {
+      final controller = _Controller(
+        const SyncStatusSnapshot(
+          accountId: 'u',
+          lastFailure: SyncFailure(
+            kind: SyncErrorKind.network,
+            message: 'Cloud nicht erreichbar',
+          ),
+        ),
+      );
+      await pumpMitStatus(
+        tester,
+        const SyncStatusSnapshot(accountId: 'u'),
+        controller: controller,
+        size: const Size(390, 800),
+      );
+      await tester.tap(find.byKey(const ValueKey('karto-sync-anzeige')));
+      await tester.pump();
+      expect(controller.abgleiche, 1);
+      expect(
+        find.text('Sync fehlgeschlagen: Cloud nicht erreichbar'),
+        findsOneWidget,
+      );
+      expect(find.text('Details'), findsOneWidget);
+    });
+
+    testWidgets('offene Konflikte gleichen nicht ab', (tester) async {
+      final controller = _Controller(const SyncStatusSnapshot(accountId: 'u'));
+      await pumpMitStatus(
+        tester,
+        SyncStatusSnapshot(accountId: 'u', openConflicts: [_konflikt('a')]),
+        controller: controller,
+      );
+      await tester.tap(find.byKey(const ValueKey('karto-sync-anzeige')));
+      await tester.pump();
+      expect(controller.abgleiche, 0);
     });
   });
 }

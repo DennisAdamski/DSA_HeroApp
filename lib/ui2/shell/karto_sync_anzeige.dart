@@ -16,6 +16,15 @@ enum KartoSyncStufe {
   fehler,
 }
 
+/// Was ein Tipp auf die Anzeige auslöst.
+enum KartoSyncAktion {
+  /// Sofort abgleichen; das ist der Normalfall, auch nach einem Fehler.
+  abgleichen,
+
+  /// Die Einstellungen öffnen, weil nur dort Konflikte entschieden werden.
+  einstellungen,
+}
+
 /// Darstellbare Zusammenfassung des Konto-Syncs für den Workspace.
 @immutable
 class KartoSyncAnzeige {
@@ -25,6 +34,7 @@ class KartoSyncAnzeige {
     required this.icon,
     required this.text,
     this.laeuft = false,
+    this.aktion = KartoSyncAktion.abgleichen,
   });
 
   /// Dringlichkeit; bestimmt Farbe und Betonung.
@@ -38,6 +48,9 @@ class KartoSyncAnzeige {
 
   /// Ob gerade ein Abgleich läuft.
   final bool laeuft;
+
+  /// Was ein Tipp auslöst.
+  final KartoSyncAktion aktion;
 }
 
 /// Ordnet einen [SyncStatusSnapshot] einer [KartoSyncAnzeige] zu.
@@ -59,6 +72,7 @@ KartoSyncAnzeige? beschreibeKartoSync(
       text: konflikte == 1
           ? 'Sync: 1 Konflikt offen'
           : 'Sync: $konflikte Konflikte offen',
+      aktion: KartoSyncAktion.einstellungen,
     );
   }
   if (status.ausstehendeVorgaenge > 0) {
