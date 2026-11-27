@@ -185,19 +185,38 @@ class PrivacyPolicyScreen extends StatelessWidget {
               'Auslieferung des Kartenbilds Art. 6 Abs. 1 lit. f DSGVO.',
         ),
         const _LegalSection(
-          title: '7. Empfänger und Drittlandtransfers',
+          title: '7. Optionales Klangpult über Freesound',
+          text:
+              'Das Klangpult für den Spieltisch ist optional. Es setzt voraus, '
+              'dass du dich mit deinem eigenen Konto bei Freesound '
+              '(freesound.org, betrieben von der Universitat Pompeu Fabra, '
+              'Barcelona) anmeldest. Die Anmeldung läuft im Browser direkt '
+              'bei Freesound; die App erhält nur ein Zugangstoken, das auf '
+              'deinem Gerät bleibt und nicht mit dem Konto synchronisiert '
+              'wird. Wählst du eine Szene, Musik oder einen Effekt, sendet die '
+              'App die Suchbegriffe mit diesem Token an '
+              'Freesound und lädt den gewählten Klang von dort. Dabei erhält '
+              'Freesound technisch bedingt deine IP-Adresse und die üblichen '
+              'Geräte- oder Browserangaben. Heldendaten oder Kontodaten '
+              'werden nicht übertragen. Rechtsgrundlage ist Art. 6 Abs. 1 '
+              'lit. b DSGVO für die von dir angeforderte Funktion.\n\n'
+              'Informationen: https://freesound.org/help/privacy/',
+        ),
+        const _LegalSection(
+          title: '8. Empfänger und Drittlandtransfers',
           text:
               'Empfänger sind Google/Firebase für Authentifizierung, Hosting, '
               'Datenbank, Storage, Functions und App Check, GitHub für '
               'öffentlich abgesendetes Feedback, OpenAI nur bei '
               'freiwilliger Bildgenerierung sowie der Betreiber von Avesmaps '
-              'für den Abruf der Ortsdaten. Dabei können Daten in den USA '
+              'für den Abruf der Ortsdaten sowie Freesound nur bei genutztem '
+              'Klangpult. Dabei können Daten in den USA '
               'verarbeitet werden. Maßgeblich sind die jeweiligen '
               'Verarbeitungsbedingungen, Angemessenheitsbeschlüsse und '
               'Standardvertragsklauseln.',
         ),
         const _LegalSection(
-          title: '8. Speicherdauer und Löschung',
+          title: '9. Speicherdauer und Löschung',
           text:
               'Lokale Daten bleiben bis zu ihrer Löschung in der App oder im '
               'Betriebssystem erhalten. Kontodaten, synchronisierte Helden, '
@@ -209,7 +228,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               'Sicherheits- und Anbieterfristen.',
         ),
         _LegalSection(
-          title: '9. Deine Rechte',
+          title: '10. Deine Rechte',
           text:
               'Du hast nach Maßgabe der DSGVO insbesondere Rechte auf Auskunft, '
               'Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit und '
@@ -220,7 +239,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               'Datenschutzaufsichtsbehörde.',
         ),
         const _LegalSection(
-          title: '10. Stand und Änderungen',
+          title: '11. Stand und Änderungen',
           text:
               'Stand: 13. November 2026. Bei neuen Telemetrie-, Analyse- oder '
               'Marketingfunktionen sowie bei geänderten Dienstleistern wird '

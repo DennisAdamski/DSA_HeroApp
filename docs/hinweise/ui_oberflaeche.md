@@ -125,6 +125,26 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   jeder schnelle Klick zählt; UI2 kennt keine Grenze. Den
   Re-Entrancy-Guard reicht `KartoWorkspace` als `KartoLaufzeitAktion` herein;
   die Spielansicht macht keinen zweiten Fehlerweg auf.
+- **Kachel-Shortcut in die Verwaltung.** Jede Kachel, die im Bestand eine Seite
+  hat, trägt in der Kopfzeile neben Vergrößern und Einklappen einen leisen
+  `arrow_outward`-Knopf (Key `karto-kachel-<id>-oeffnen`, Tooltip „<Seite> in der
+  Verwaltung öffnen“, `KartoKachelSteuerung.onOeffnen`, wie die übrige
+  Kopf-Bedienung nur bei Zeiger/Fokus sichtbar). Die Zuordnung steht allein in
+  `KartoSpielkachelArt.verwaltungsAbschnitt`: Ressourcen, Eigenschaften, Effekte,
+  Zustand und Vor-/Nachteile → Übersicht, Häufige Proben → Talente, Kampf,
+  Begleiter, Dabei → Inventar, Abenteuer → Chroniken/Kontakte/Abenteuer,
+  Reiseroute → Reisebericht; Marker, Standort, Wildnis und Protokoll haben keine
+  Seite und keinen Knopf. Weg: `KartoSpielansicht.onVerwaltungOeffnen` →
+  `_verwaltungOeffnen` im Workspace (Editorprüfung, dann Bereich „Verwalten“)
+  → `KartoVerwaltungsZiel` (`karto_verwaltungs_ziel.dart`, `ChangeNotifier`, meldet
+  auch denselben Abschnitt zweimal) → `KartoBestandsAdapter.verwaltung(ziel:)` →
+  `WorkspaceManagementBody` liest das Ziel beim Start und per Listener nach dem
+  Build und ruft `WorkspaceManagementCoordinator.waehleAbschnitt`. Der Wechsel
+  läuft über den `TabController` und damit durch dieselbe Prüfung ungespeicherter
+  Änderungen wie ein Tippen auf den Reiter; ein für den Helden unsichtbarer
+  Abschnitt (Magie ohne Zauberkunde) lässt die Ansicht unverändert. UI2 kennt
+  nur den Enum `KartoVerwaltungsAbschnitt`; die Tab-IDs bleiben in `lib/ui/`.
+  Der Vergrößern-Dialog trägt den Knopf nicht.
 - **Kachelraster der Spielansicht (SPIEL-07).** Statt Haupt- und Seitenspalte
   stehen die Abschnitte als Kacheln im `KartoKachelraster`
   (`karto_kachelraster.dart`): Rastereinheit mindestens 300 dp
@@ -399,9 +419,34 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Erschwernis, TaW aus den Bestandteil-Talenten, die Probe über
   `KartoGefechtsAdapter.gefechtsProbe` (schreibt selbst ins Würfelprotokoll,
   kein Import aus `lib/ui`; ohne Gefechtsbrücke bleibt der Knopf gesperrt) und
-  die Ergebnisanzeige. Die Kachel schreibt nichts am Helden; Eingaben und
-  Ergebnis leben nur im Widget, jede Eingabe verwirft das Ergebnis. AsP werden
-  nicht abgebucht. Das Vergrößern-Popup liefert das Raster; in `weit` zeigt die
+  die Ergebnisanzeige. Eingaben und Ergebnis leben nur im Widget, jede
+  Eingabe verwirft das Ergebnis samt offener Buchungen. Geschrieben wird nur
+  auf Knopfdruck und frisch: eingesetzte AsP beim Würfeln
+  (`gefechtsZustand`), „N Tagesrationen ins Inventar“
+  (`aendereHeldAusserhalbPlanung` mit `mitWildnisPosten`, Datum aus dem
+  frisch geladenen Helden, bei offener Steigerungsrunde gesperrt) und nach
+  „Geschossverlust würfeln“ (Schusszahl per Schritt, nicht bei 1W6+1) das
+  Abbuchen über `gefechtsAusruestung` mit `mitJagdGeschossverlust`; Tabellen-
+  waffen und Waffen ohne gewähltes Geschoss nennen nur den Verlust. Keys:
+  `karto-wildnis-rationen-buchen`/`-gebucht`, `karto-wildnis-munition`,
+  `karto-wildnis-verlust-wuerfeln`, `karto-wildnis-verlust`,
+  `karto-wildnis-verlust-buchen`/`-gebucht`, `karto-wildnis-buchungsfehler`.
+  **Funde ins Inventar (26.11.2026):** `WildnisErgebnis.funde` trägt neben den
+  Rationen die gefundenen Kräuter (je Fund ein Eintrag mit Menge = Grundmengen,
+  Wirkung und Größe der Grundmenge in der Beschreibung, Herkunft „Kräutersuche
+  am Datum“), Würzkräuter (Menge = Punkte) und Konservierungskräuter (Menge =
+  Tage); `karto-wildnis-funde-buchen`/`-gebucht` bucht alle in einem Schreibgang
+  (`mitWildnisFunden`, ein Dokument). **Am Tisch ausgespielt:** unter dem
+  Würfelknopf klappt „Fund eintragen“ auf (`erlaubtHandFund`; Kräuter,
+  Nahrung sammeln, Jagd, Fallen und Fischen): Kraut aus dem Katalog (die der
+  Landschaft zuerst, am Ende „Heilkraut, Pflanze offen“) bzw. nur die Menge,
+  dann `karto-wildnis-hand-buchen`. Ohne Wurf der App, gleiche Buchung, gleiche
+  Herkunft; bei Rationen braucht es die Landschaft für die Haltbarkeit
+  (`karto-wildnis-hand-hinweis`). Keys: `karto-wildnis-hand-umschalten`,
+  `-hand-wahl-<Kraut>`, `-hand-menge-plus`/`-minus`, `-hand-gebucht`.
+  Neue Tätigkeiten erlauben das über `erlaubtHandFund`, `handFundWahl` und
+  `handFund`.
+  `KartoWildnisKachel.wuerfler` erlaubt Tests feste Würfe. Das Vergrößern-Popup liefert das Raster; in `weit` zeigt die
   Vorschau mehr Zeilen (`kWildnisVorschauWeit` statt `kWildnisVorschauKurz`),
   „Alle N anzeigen“ blendet in jeder Größe die ganze Liste ein. Zeilen mit
   `WildnisErgebnisZeile.erlaeuterung`/`quelle` klappen per Antippen auf
@@ -417,8 +462,91 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `vorschau`) plus Regelfunktion in `lib/rules/derived/`, dann ein Eintrag in
   `kartoWildnisTaetigkeiten`; Kachel und Raster bleiben unverändert. Als
   erste ist `KartoKraeutersucheTaetigkeit` (KL/IN/FF laut WdE S. 113, nicht das
-  MU/IN/FF des Standard-Metatalents) umgesetzt. Standardplatz: vor dem
+  MU/IN/FF des Standard-Metatalents) umgesetzt.
+  **Nahrungsbeschaffung (23.11.2026):** Nahrung sammeln, Pirsch- und
+  Ansitzjagd, Tierfallen, Angeln und Speerfischen erben von
+  `KartoRationenTaetigkeit` (`karto_rationen_taetigkeit.dart`: Regionen,
+  keine Jahreszeit, keine Daten, `probeEingabe` liefert die
+  `WildnisProbeEingabe` oder `null` für „nicht möglich“, `erschwernisTeile`
+  für die Aufschlüsselung, Vorschau „Aussichten“ mit Erfolgschance und
+  erwarteten Tagesrationen). Die Schnittstelle kennt dafür
+  `grundTaw(held, optionen)` (TaW abhängig von Waffe oder Speertalent),
+  `brauchtJahreszeit` (sonst blendet die Kachel die Wahl aus und verlangt sie
+  nicht), `gelaendekundeStaffel` (Beschriftung der Chips), `sperrgrund`
+  (Zusammenfassung „nicht möglich“, Key `karto-wildnis-sperrgrund`, Würfeln
+  und Vorschau gesperrt) und `vorschauTitel`. Der Kontext trägt `held`,
+  `katalog`, `dauerMinuten` (Dauern sind Minuten, Key
+  `karto-wildnis-dauer-60`) und eine nullbare `jahreszeit`. Passt eine
+  dynamische Antwort nicht mehr, gilt `dynamischerStandard` (Jagd: erste
+  Fernwaffe des Helden, sonst Kurzbogen) bzw. die feste Vorgabe, sonst die
+  erste Antwort. Rationen-Tätigkeiten nennen über `inventarGegenstand` und
+  `inventarBeschreibung`, was gebucht wird. Beim Wechsel der Tätigkeit bleiben
+  Landschaft und Handwerte für Gelände-/Ortskenntnis erhalten, wenn die neue
+  Tätigkeit denselben Landschaftsschlüssel kennt. Standardplatz: vor dem
   Würfelprotokoll, damit bestehende Anordnungen nicht verschoben werden.
+  **Zauber (26.11.2026):** Die Kachel „Zauber“ (`KartoSpielkachelArt.zauber`,
+  `ui2/spielen/karto_zauber_kachel.dart`) zeigt die Magie-Seite im Kartograph-
+  Design: Kopf mit Repräsentation, Leiteigenschaft und Merkmalskenntnissen
+  (`spielZauberKopf`), AsP-Marke, darunter die gelernten Zauber als Zeilen mit
+  ZfW\*, Probenkürzeln, Kosten, Zauberdauer, Reichweite und Wirkungsdauer;
+  ein Tipp klappt Zielobjekt, Modifikationen, Spezialisierungen und
+  Komplexität auf. Mit Platz (normal/weit) kommen Reichweite, Dauer und
+  Merkmale in die Kurzzeile. Suche (ab sieben Zaubern), Sortierung (Name, ZfW\*)
+  und Merkmalsfilter leben nur im Widget. Liste, Filter und Sortierung rechnet
+  `spiel_zauber_rules.dart` (ZfW\* über `herleiteZfw`), die Probe baut
+  `zauberprobeAus` und läuft über `KartoGefechtsAdapter.gefechtsProbe`, die selbst
+  ins Würfelprotokoll schreibt; die Kachel schreibt nichts am Helden. Die
+  geschützten Langtexte (Wirkung, Varianten) zeigt weiterhin der Probendialog.
+  **Optional:** `KartoSpielkachelArt.standardAusgeblendet` (neu) lässt eine
+  Kachel ohne gespeicherten Eintrag ausgeblendet; die Zauberkachel ist die
+  einzige. Hinzugefügt wird sie im Anordnen-Modus über den Chip „Zauber
+  einblenden“ (`karto-kachel-zauber-einblenden`) und mit „Fertig“ gespeichert;
+  ab dann steht ein Eintrag im Bogen und entscheidet. Bestehende Anordnungen und
+  die Vorlage ohne Eintrag bleiben unverändert, „Standard“ blendet sie wieder
+  aus. Verfügbar nur für Helden mit aktivierter Magie oder mindestens einem
+  Zauber mit ZfW (`fuehrtZauber`); ein gespeicherter Eintrag bleibt sonst erhalten.
+  Kein neues Modellfeld, kein Hash- oder Sync-Einfluss.
+  **Klangpult (26.11.2026, nach Vorbild PocketBard):** keine Spieltisch-Kachel,
+  sondern `KartoKlangpultHuelle` (`karto_klangkulisse.dart`) in
+  `MaterialApp.builder` oberhalb des App-Navigators, damit es auf jeder Route
+  (auch im Gefecht) erreichbar ist. Immer eingehängt (`sichtbar`), damit das
+  Umschalten den Navigator nicht neu aufbaut. Eine Lasche am rechten Rand öffnet
+  das Pult (breit Seitenleiste 380 px, schmal unteres Panel). Das Pult hat einen
+  eigenen `Navigator` mit `HeroControllerScope.none` für Overlay und den
+  Anmeldedialog. Abschaltbar über `AppSettings.klangpult` (Standard aus;
+  Einstellungen › Vernetzte Dienste). `klangpultSichtbarProvider` gilt nur für
+  den Kartographen, und ein Ausblenden stoppt alles (`ref.listen` in
+  `app_shell.dart`). Inhalt: elf Szenen (`kKlangszenen` in `klangstimmung.dart`)
+  mit 2–3 Ambiente-Ebenen (Schleifen mit eigener Stärke), Musik in den Lagen
+  Erkunden, Kampf und Sieg (Sieg einmalig) und angehefteten Einzeleffekten
+  (zufällig einer der fünf besten Treffer). Szenen-, Lagen- und Klangwechsel
+  blenden über `kKlangBlende` (1,5 s, Timer in `AudioplayersKlangKanal`), und
+  die wirksame Lautstärke ist Gesamt × Stärke. Suchtreffer bleiben für die
+  Sitzung gemerkt (ein Szenenwechsel kostet nur beim ersten Mal Anfragen).
+  Unter „Quellen“ steht die Namensnennung aller laufenden Klänge (Titel,
+  Urheber, Lizenz, Rücklink). Jede
+  Nutzerin meldet sich mit ihrem eigenen Freesound-Konto an (OAuth2 mit PKCE,
+  `FreesoundOAuth`, öffentlicher Client ohne Secret). Der Browser öffnet die
+  Freesound-Zustimmung; Rücksprung ist die Freesound-eigene Seite, die den Code
+  zum Kopieren zeigt, damit keine Plattform einen
+  eigenen Rücksprung braucht. Die App sendet bewusst keinen `redirect_uri`
+  (`kFreesoundRedirectUri` leer): Freesound lehnt die identische Adresse als
+  Parameter mit „Oops! there were some errors“ ab, ohne ihn gilt die registrierte. Der Code (oder die ganze Adresse) kommt in den
+  Dialog von `FreesoundAnmeldungBereich` (`lib/ui_shared/`), der im Pult
+  und in den Einstellungen unter „Vernetzte Dienste“ steht. Zugang und
+  Erneuerungstoken liegen nur im sicheren Gerätespeicher
+  (`SichereFreesoundZugangAblage`, ohne Konto-Sync, im Browser notfalls nur für
+  die Sitzung); das Token wird vor Ablauf (24 h) und bei 401 einmal erneuert,
+  scheitert das, ist die Nutzerin abgemeldet. Die Client-ID kommt per
+  `--dart-define=FREESOUND_CLIENT_ID=...`; ohne sie zeigt der Bereich „nicht
+  eingerichtet“. Das Client-Secret gehört nie in die App. Die App liefert
+  keinen Schlüssel aus. `klangkulisseProvider` ist geräteweit und nicht
+  `autoDispose`, damit der Klang beim Wechsel von Held oder Seite weiterläuft.
+  `freesoundAktivProvider` ist ohne Override aus (stummer Spieler, keine
+  Netzanfrage, stumme Kanäle über `klangKanalFabrikProvider`) und wird in `AppStartupGate._buildScope` eingeschaltet. Gespielt
+  werden die MP3-Vorschauen vom CDN (ohne Token). Limit laut Freesound
+  60 Anfragen pro Minute, 2000 pro Tag (ob je App oder je Konto, sagt die Doku nicht). Tests:
+  `test/state/klangkulisse_providers_test.dart`.
   **Vor- und Nachteile:** In `weit` zeigt die eingeklappte Übersicht
   (`KartoMerkmalsuebersicht`) je Art bis zu `kMerkmaleZeilenWeit` (3) statt einer
   Zeile, also mehr Einträge ohne Aufklappen; aufgeklappt stehen Vorteile und

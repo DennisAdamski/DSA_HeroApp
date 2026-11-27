@@ -13387,6 +13387,145 @@
       "summary": "Prüft das Lesen der Ortsfakten (Einwohner, Oberhaupt, Verkehrswege, Bauwerke je Siedlung; Unlesbares und leere Einträge fallen weg, ungültige Wurzel und fehlendes Asset ergeben einen leeren Katalog) und die Datei ortsfakten.json selbst (datiert, über 1000 Siedlungen und Bauwerke, Gareth und Punin mit Einwohnern, Oberhaupt und Tempeln, Schlüssel fast immer Seiten des Ortsverzeichnisses, nur kurze Angaben).",
       "rationale": "Testdatei, lib/catalog/ortsfakten_loader.dart und tool/import_wiki_ortsfakten.py gelesen: maschinell aus Infoboxen der Wiki Aventurica (CC BY-SA) ausgelesene Kurzfakten ohne Beschreibungstext. Geprüft wird die Datenhaltung, keine Regel des Regelwerks; Einwohnerzahlen sind Wiki-Angaben ohne Regelbehauptung.",
       "sources": []
+    },
+    "test/rules/derived/fallen_fischen_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Sichert Angeln, Speerfischen und Tierfallen ab (Wege des Entdeckers S. 110–111): Angeln mit dem Talent Fischen/Angeln ohne Metatalent, Region südliche Sümpfe −4, nördliche Sümpfe −2, Gebirge +2, Hochgebirge und Ewiges Eis +8, Wüste nicht möglich, sonst ±0; Speerfischen TaW = (Wildnisleben + Tierkunde + Selbstbeherrschung + Speere oder Wurfspeere) / 4, MU/IN/GE, Waffe Fischspeer/Efferdbart −3, Wurfspeer ±0, angespitzter Stock +3, Scharfschütze −3; Tierfallen TaW = (2 × Fallenstellen + Tierkunde + Fährtensuchen + Wildnisleben) / 5, höchstens das Doppelte des niedrigsten und höchstens der TaW Fallenstellen, KL/IN/FF, Geländekunde −5/−3, Ortskenntnis −7, Wälder und Dschungel −4, Hochgebirge, Ewiges Eis und Wüste nicht möglich, schmackhaft +1. Bei allen dreien sind die TaP* die Tagesrationen; je 3 AsP −1.",
+      "rationale": "Datei und lib/rules/derived/fallen_fischen_rules.dart gelesen, die Zahlen per DSA-MCP gegen den Buchtext geprüft. App-Entscheidungen: Die Tierfallen-Regionsliste nennt das Gebirge zweimal (+2 in der Sammelzeile, +4 einzeln); es gilt der eigene Eintrag +4. Scharfschütze beim Speerfischen zählt nur mit Wurfspeeren, weil die SF zur Waffe passen muss (Fußnote zur Hetzjagd S. 109, auf die das Angeln verweist). Angeln bleibt ohne Metatalent-Deckel.",
+      "sources": [
+        {
+          "title": "Wege des Entdeckers – Angeln und Speerfischen",
+          "pages": "110–111",
+          "mcpChunks": [
+            6301,
+            6302
+          ],
+          "checkedOn": "2026-11-24"
+        },
+        {
+          "title": "Wege des Entdeckers – Tierfallen aufstellen",
+          "pages": "111",
+          "mcpChunks": [
+            6303,
+            6304
+          ],
+          "checkedOn": "2026-11-24"
+        }
+      ]
+    },
+    "test/rules/derived/hetzjagd_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Sichert die Hetzjagd ab (Wege des Entdeckers S. 109 f.): TaW = (Wildnisleben + Tierkunde + zweimal Reiten + Fernkampftalent der Waffe) / 5, höchstens das Doppelte des niedrigsten; Tierkunde und Reiten müssen aktiviert sein; MU/IN/GE; eine Stunde; TaP* = Tagesrationen; nicht wiederholbar. Waffentabelle (Efferdbart +10, Dschadra, Holzspeer, Speer, Wurfspeer und Balestrina +8, Balläster +6, Eisenwalder und Schleuder +5, Blasrohr +4, Kurz- und Kompositbogen +2, Elfenbogen und Orkischer Reiterbogen +1), persönliche Waffen nach Höchstreichweite (bis 15 Schritt +6 … über 80 Schritt −2) plus Ladezeit oder +6 fürs Aufheben, Region (lichter Wald, Grasland, Savanne −4 … Wüste, Ewiges Eis +12), Wetter, Beute, Scharfschütze −1, Meisterschütze zusammen −3, Schnellladen −2, Geländekunde, Ortskenntnis, AsP, Jagdglück, Jagdtier −3 bis −7, Jagd zu Pferde −3 (Reiten 7, Grasland, Heide, Savanne, Steppe, Tundra), Reiterkampf −2 und Berittener Schütze zusammen −7. Verbrauch: Schleudersteine 1W6+1, Pfeile bei einer 1 auf 1W20, Speere bei 3–6 und Wurfwaffen bei 3–8 auf 2W20.",
+      "rationale": "Datei, lib/rules/derived/hetzjagd_rules.dart und wildnis_ausbeute_rules.dart gelesen, alle Zahlen per DSA-MCP gegen den Buchtext geprüft. App-Entscheidungen ohne eindeutige Buchaussage: Schnellladen gleicht wie die Schützen-SF nur positive Zuschläge außer der Waffe aus (Fußnote **), die Jagd zu Pferde und die Reiter-Sonderfertigkeiten stehen außerhalb dieser Grenze; ein Jagdtier wirkt höchstens mit −7; Waffen der Pirschtabelle, die nicht in der Hetz-Tabelle stehen (Lang- und Kriegsbogen …), sowie Wurfmesser und Dolche zählen nicht („gehen zu leicht verloren“); Wurfwaffen erhalten statt der Ladezeit +6; die Zahl der Schüsse gibt der Spieler an.",
+      "sources": [
+        {
+          "title": "Wege des Entdeckers – Hetzjagd (Metatalent, Waffen, Sonderfertigkeiten, Region, Wetter, Verbrauch)",
+          "pages": "109–110",
+          "mcpChunks": [
+            6299,
+            6300
+          ],
+          "checkedOn": "2026-11-26"
+        },
+        {
+          "title": "Wege des Entdeckers – Pirschjagd (Verbrauch, Fußnote zu Schützen-SF)",
+          "pages": "108–109",
+          "mcpChunks": [
+            6296,
+            6297,
+            6298
+          ],
+          "checkedOn": "2026-11-26"
+        }
+      ]
+    },
+    "test/rules/derived/jagd_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Sichert Pirsch- und Ansitzjagd ab (Wege des Entdeckers S. 107–109): TaW = (Wildnisleben + Tierkunde + Fährtensuchen + Schleichen bzw. Sich Verstecken + Fernkampftalent der Waffe) / 5, höchstens das Doppelte des niedrigsten; MU/IN/GE; eine bzw. anderthalb Stunden; TaP* = Tagesrationen. Waffentabelle (Borndorn, Wurfdolch, Wurfmesser +10 bis Arbalone, Elfenbogen −3), persönliche Waffen nach Höchstreichweite (bis 15 Schritt +8 … über 200 Schritt −3, Wurfmesser und Wurfbeile +2), Scharfschütze −3, Meisterschütze zusammen −7, Geländekunde −3/−1, Ortskenntnis −7, Region (lichter Wald, Grasland, Savanne −4 … Wüste, Ewiges Eis +12), Wetter +2/+4/+6, nur schmackhaftes Fleisch +2, je 3 AsP −1, Jagdglück −5. Scharf- und Meisterschütze verrechnen sich nicht mit dem Zuschlag der Waffe, wohl aber mit anderen Zuschlägen (Beispiel Kurzbogen und Sturm). Verbrauch: Schleudersteine 1W6+1, Pfeile und Bolzen bei 3–5, Speere bei 3–7, Wurfwaffen bei 3–9 auf 2W20; die Haltbarkeit frischen Fleischs nach Klima (S. 121 f.).",
+      "rationale": "Datei, lib/rules/derived/jagd_rules.dart und wildnis_ausbeute_rules.dart gelesen, alle Zahlen per DSA-MCP gegen den Buchtext geprüft; die Talente der Tabellenwaffen gegen waffen.json. App-Entscheidungen ohne Buchaussage: Waffen des Helden werden über Waffenart oder Namen der Tabelle zugeordnet, sonst über die letzte Distanzstufe mit reiner Schrittzahl; Waffen des Talents Schleuder zählen nur, wenn sie in der Tabelle stehen (Lasso, Netze, Enterhaken sind keine Jagdwaffen); ein Überschuss der Schützen-SF über die übrigen Zuschläge verfällt; die Zahl der Schüsse gibt der Spieler an; eine Doppel-1 auf 2W20 zählt nicht als Verlust; die Schützen-SF werden je Fernkampftalent erkannt. Die Hetzjagd (S. 109 f.) steht in hetzjagd_rules_test.dart.",
+      "sources": [
+        {
+          "title": "Wege des Entdeckers – Pirschjagd, Ansitzjagd (Metatalente, Modifikationen, Verbrauch)",
+          "pages": "107–109",
+          "mcpChunks": [
+            6295,
+            6296,
+            6297,
+            6298
+          ],
+          "checkedOn": "2026-11-24"
+        },
+        {
+          "title": "Wege des Entdeckers – Haltbarkeit von frischem Fleisch oder Fisch",
+          "pages": "121–122",
+          "mcpChunks": [
+            6321,
+            6322
+          ],
+          "checkedOn": "2026-11-24"
+        }
+      ]
+    },
+    "test/rules/derived/nahrung_sammeln_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Sichert Nahrung sammeln ab (Wege des Entdeckers S. 112): TaW = (Wildnisleben + Sinnenschärfe + Pflanzenkunde) / 3, in landwirtschaftlichen Gebieten darf Ackerbau Pflanzenkunde ersetzen; MU/IN/FF; eine Stunde, jede Viertelstunde darüber −1; Region lichter Wald −6, Grasland −4, Dschungel, Savanne, Gebirge −2, dichter Wald und Maraskan ±0, südliche Sümpfe und Tundra +2, nördliche Sümpfe +4, Hochgebirge +6, Wüste und Ewiges Eis +12; Geländekunde −3/−1, Ortskenntnis −7, je 3 AsP −1. Ausbeute: eine nicht haltbare Tagesration, je 3 TaP* eine weitere, alternativ je TaP* eine Haltbarkeitsstufe; ohne passende Geländekunde verdeckter Giftwurf bei 19–20 (Dschungel 18–20, Maraskan 16–20). Haltbarkeitsstufen 1 bis 4 und Klima (S. 122).",
+      "rationale": "Datei und lib/rules/derived/nahrung_sammeln_rules.dart gelesen, die Zahlen per DSA-MCP gegen den Buchtext geprüft. App-Entscheidungen: TaP* fließen zuerst in Haltbarkeitsstufen bis zum gewählten Ziel, der Rest in Rationen; die Jahreszeit hat keinen festen Wert (das Buch nennt sie nur als Einfluss) und bleibt Meisterentscheid; der Giftwurf wird nur genannt, nicht gewürfelt; Klimahinweise nur für feucht-heiß (halbiert), kühl (+½) und Dauerfrost, die Viertelung bei warmer Umgebung ist nicht abgebildet.",
+      "sources": [
+        {
+          "title": "Wege des Entdeckers – Nahrung sammeln (Metatalent, Modifikationen, Vergiftungsgefahr)",
+          "pages": "112",
+          "mcpChunks": [
+            6305,
+            6306
+          ],
+          "checkedOn": "2026-11-24"
+        },
+        {
+          "title": "Wege des Entdeckers – Haltbarkeit von Pflanzenprodukten, Klima",
+          "pages": "122",
+          "mcpChunks": [
+            6323,
+            6324
+          ],
+          "checkedOn": "2026-11-24"
+        }
+      ]
+    },
+    "test/rules/derived/wildnis_ausbeute_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Sichert die Ausbeute der Wildnisproben ab: Eine Tagesration entspricht dem Essensbedarf eines Tages, etwa einem Stein Lebensmittel (Wege des Entdeckers S. 122); Rationen werden als manueller Verbrauchseintrag mit Menge und Herkunft ins Inventar gebucht und stapeln bei gleichem Namen, gleicher Herkunft und Beschreibung. Geschossverlust je Schuss auf 2W20 (Pfeile und Bolzen 3–5, Speere 3–7, Wurfwaffen 3–9) bzw. 1W6+1 Schleudersteine (S. 108 f.), abgebucht vom gespeicherten Bestand des gewählten Geschosses, höchstens bis 0.",
+      "rationale": "Datei und lib/rules/derived/wildnis_ausbeute_rules.dart gelesen, Rationsgröße und Verlustwerte per DSA-MCP geprüft. App-Entscheidungen: 1 Stein = 1000 g je Ration, Stapelregel und Herkunftstext, eine Doppel-1 zählt nicht als Verlust, bei leerem Bestand bleibt die Konfiguration unverändert (kein Schreiben), Waffen ohne Slot-ID oder aus der Tabelle werden nicht abgebucht.",
+      "sources": [
+        {
+          "title": "Wege des Entdeckers – Verbrauch an Geschossen bei Pirsch- und Ansitzjagd",
+          "pages": "108–109",
+          "mcpChunks": [
+            6297,
+            6298
+          ],
+          "checkedOn": "2026-11-24"
+        },
+        {
+          "title": "Wege des Entdeckers – Hunger: Ration und Essensbedarf",
+          "pages": "122",
+          "mcpChunks": [
+            6324
+          ],
+          "checkedOn": "2026-11-24"
+        }
+      ]
+    },
+    "test/rules/spiel_zauber_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Sichert die Darstellungsgrundlage der Zauberkachel am Spieltisch: nur Zauber mit ZfW erscheinen, ZfW* ist ZfW plus Modifikator (12 + 2 = 14), Suche, Merkmalsfilter und Sortierung (Name, ZfW*, Richtung), eindeutige Merkmalsliste, Verfügbarkeit der Kachel (aktivierte Magie oder ein Zauber mit ZfW) und die Kopfdaten (Tradition, Leiteigenschaft mit Vorrang des manuellen Feldes, Merkmalskenntnisse). 12 Tests.",
+      "rationale": "Alle Tests gelesen. Die Kataloge sind erfundene Testzauber; ZfW* nutzt die bestehende Herleitung (ZfW + Modifikator) und die Leiteigenschaft die vorhandene Traditionsauflösung. Neu sind nur Filter-, Sortier- und Verfügbarkeitsentscheidungen der Oberfläche, also eine Produktvertragsaussage ohne neue DSA-Regelbehauptung; daher keine MCP-Suche nötig.",
+      "sources": []
     }
   }
 }

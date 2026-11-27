@@ -16,6 +16,8 @@ import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_unterwegs.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/auth/open_sign_in.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_magic_tab.dart'
+    show zeigeZauberDetails;
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/elixier_einnehmen_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/vitalwirkung_anwenden_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/auxiliator_dialog.dart';
@@ -52,6 +54,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_rueckn
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_body.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/avatar_gallery_image.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_verwaltungs_ziel.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
@@ -305,12 +308,14 @@ class KartoBestandsAdapterImpl
     required String heroId,
     required bool korrekturenGesperrt,
     required ValueChanged<KartoVerlassenPruefung?> onVerlassenRegistriert,
+    KartoVerwaltungsZiel? ziel,
   }) {
     return _KartoCompatHost(
       child: WorkspaceManagementBody(
         heroId: heroId,
         korrekturenGesperrt: korrekturenGesperrt,
         onVerlassenRegistriert: onVerlassenRegistriert,
+        ziel: ziel,
       ),
     );
   }
@@ -755,6 +760,23 @@ class KartoBestandsAdapterImpl
       request: request,
     );
   }
+
+  /// Zeigt die Zauberdetails der Magie-Seite schreibgeschützt.
+  @override
+  Future<void> zauberDetailsOeffnen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String zauberId,
+  }) => _withKartoCompatContext(
+    context,
+    (themedContext) => zeigeZauberDetails(
+      context: themedContext,
+      ref: ref,
+      heroId: heroId,
+      zauberId: zauberId,
+    ),
+  );
 
   /// Schreibt den laufenden Wert über den gemeinsamen Zustandsweg.
   @override

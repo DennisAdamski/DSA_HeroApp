@@ -224,6 +224,7 @@ IconData spielkachelSymbol(KartoSpielkachelArt art) => switch (art) {
   KartoSpielkachelArt.eigenschaften => Icons.insights_outlined,
   KartoSpielkachelArt.kampf => Icons.shield_outlined,
   KartoSpielkachelArt.effekte => Icons.auto_awesome_outlined,
+  KartoSpielkachelArt.zauber => Icons.auto_fix_high_outlined,
   KartoSpielkachelArt.zustand => Icons.monitor_heart_outlined,
   KartoSpielkachelArt.marker => Icons.push_pin_outlined,
   KartoSpielkachelArt.begleiter => Icons.pets_outlined,

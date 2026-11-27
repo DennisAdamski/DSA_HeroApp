@@ -15,6 +15,7 @@ import 'package:dsa_heldenverwaltung/ui/bridges/karto_bestands_adapter_impl.dart
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_body.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_verwaltungs_ziel.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 
@@ -52,6 +53,7 @@ void main() {
     required HeroSheet hero,
     double width = 1200,
     double textScale = 1,
+    KartoVerwaltungsZiel? ziel,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(width, 900);
@@ -80,6 +82,7 @@ void main() {
               heroId: hero.id,
               korrekturenGesperrt: false,
               onVerlassenRegistriert: (_) {},
+              ziel: ziel,
             ),
           ),
         ),
@@ -148,6 +151,59 @@ void main() {
     final compat = Theme.of(tester.element(management)).extension<CodexTheme>();
     expect(compat?.parchment, kartoHell.blatt);
     expect(compat?.showDecoration, isFalse);
+  });
+
+  String aktiverTitel(WidgetTester tester) => tester
+      .widget<Text>(
+        find.byKey(const ValueKey<String>('management-active-title')),
+      )
+      .data!;
+
+  testWidgets('Kachel-Shortcut: ein beim Start gesetztes Ziel öffnet den Tab', (
+    tester,
+  ) async {
+    final ziel = KartoVerwaltungsZiel()
+      ..waehle(KartoVerwaltungsAbschnitt.inventar);
+    addTearDown(ziel.dispose);
+    await pumpManagement(tester, hero: hero(), ziel: ziel);
+
+    expect(aktiverTitel(tester), 'Inventar');
+    // Der Wunsch ist quittiert: ein Neubau stellt den Tab nicht erneut um.
+    expect(ziel.abschnitt, isNull);
+  });
+
+  testWidgets(
+    'Kachel-Shortcut: spätere Wünsche wechseln den Tab, auch erneut',
+    (tester) async {
+      final ziel = KartoVerwaltungsZiel();
+      addTearDown(ziel.dispose);
+      await pumpManagement(tester, hero: hero(), ziel: ziel);
+      expect(aktiverTitel(tester), 'Übersicht');
+
+      ziel.waehle(KartoVerwaltungsAbschnitt.kampf);
+      await tester.pumpAndSettle();
+      expect(aktiverTitel(tester), 'Kampf');
+
+      // Von Hand weitergeklickt; derselbe Wunsch führt wieder zurück.
+      await tester.tap(find.widgetWithText(Tab, 'Talente'));
+      await tester.pumpAndSettle();
+      expect(aktiverTitel(tester), 'Talente');
+      ziel.waehle(KartoVerwaltungsAbschnitt.kampf);
+      await tester.pumpAndSettle();
+      expect(aktiverTitel(tester), 'Kampf');
+    },
+  );
+
+  testWidgets('Kachel-Shortcut: ein unsichtbarer Abschnitt ändert nichts', (
+    tester,
+  ) async {
+    final ziel = KartoVerwaltungsZiel();
+    addTearDown(ziel.dispose);
+    await pumpManagement(tester, hero: hero(magic: false), ziel: ziel);
+
+    ziel.waehle(KartoVerwaltungsAbschnitt.magie);
+    await tester.pumpAndSettle();
+    expect(aktiverTitel(tester), 'Übersicht');
   });
 
   testWidgets('keeps magic conditional on the canonical visibility rule', (

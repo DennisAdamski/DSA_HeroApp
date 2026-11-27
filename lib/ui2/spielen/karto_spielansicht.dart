@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spiel_dabei_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spiel_zauber_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
@@ -19,6 +20,7 @@ import 'package:dsa_heldenverwaltung/ui2/foundation/karto_breakpoints.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_verwaltungs_ziel.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuerblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
@@ -37,6 +39,7 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spieltisch_siegel.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielraster_bedienung.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielraster_ordnung.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_wuerfelprotokoll.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_zauber_kachel.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_zuletzt_gewuerfelt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/standort/karto_standort_kachel.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/wildnis/karto_wildnis_kachel.dart';
@@ -76,6 +79,7 @@ class KartoSpielansicht extends ConsumerStatefulWidget {
     required this.bestand,
     required this.aktion,
     required this.vorHeldenbearbeitung,
+    this.onVerwaltungOeffnen,
   });
 
   /// ID im gemeinsam genutzten Heldenspeicher.
@@ -94,6 +98,13 @@ class KartoSpielansicht extends ConsumerStatefulWidget {
   /// Einträge aus dem Blatt. `false` bricht das Öffnen ab. Dieselbe Prüfung
   /// läuft vor dem Anordnen und dem Einklappen der Kacheln.
   final Future<bool> Function() vorHeldenbearbeitung;
+
+  /// Schlägt eine Seite der Verwaltung auf (Kachel-Shortcut, etwa das Inventar
+  /// von „Dabei“ aus).
+  ///
+  /// Der Workspace wechselt dafür den Arbeitsbereich. Ohne Rückruf zeigt keine
+  /// Kachel den Knopf.
+  final ValueChanged<KartoVerwaltungsAbschnitt>? onVerwaltungOeffnen;
 
   @override
   ConsumerState<KartoSpielansicht> createState() => _KartoSpielansichtState();
@@ -262,11 +273,13 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
     );
   }
 
-  // Ohne Begleiter entfällt ihre Kachel; ein gespeicherter Eintrag bleibt.
+  // Ohne Begleiter entfällt ihre Kachel, ohne Zauber die Zauberkachel; ein
+  // gespeicherter Eintrag bleibt.
   Set<KartoSpielkachelArt> _verfuegbar(HeroComputedSnapshot werte) => {
     for (final art in KartoSpielkachelArt.values)
-      if (art != KartoSpielkachelArt.begleiter ||
-          werte.hero.companions.isNotEmpty)
+      if ((art != KartoSpielkachelArt.begleiter ||
+              werte.hero.companions.isNotEmpty) &&
+          (art != KartoSpielkachelArt.zauber || fuehrtZauber(werte)))
         art,
   };
 
@@ -314,9 +327,26 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
             ? (wert) => _einklappen(art, wert)
             : null,
         onVergroessern: () => _vergroessern(art),
+        onOeffnen: _oeffnenFuer(art, werte),
+        oeffnenZiel: art.verwaltungsAbschnitt?.titel ?? '',
         child: _inhalt(context, werte, art, ref),
       ),
     );
+  }
+
+  // Der Shortcut fehlt ohne Workspace-Rückruf, bei Kacheln ohne Seite im
+  // Bestand und bei der Zauberkachel, solange die Magie-Seite verborgen ist.
+  VoidCallback? _oeffnenFuer(
+    KartoSpielkachelArt art,
+    HeroComputedSnapshot werte,
+  ) {
+    final abschnitt = art.verwaltungsAbschnitt;
+    final oeffnen = widget.onVerwaltungOeffnen;
+    if (abschnitt == null || oeffnen == null) return null;
+    if (art == KartoSpielkachelArt.zauber && !magieSeiteErreichbar(werte)) {
+      return null;
+    }
+    return () => oeffnen(abschnitt);
   }
 
   Widget _inhalt(
@@ -335,6 +365,13 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
     ),
     KartoSpielkachelArt.kampf => _kampf(werte),
     KartoSpielkachelArt.effekte => _effekte(context, werte),
+    // Schreibt nichts am Helden; gewürfelt wird über die Gefechtsbrücke.
+    KartoSpielkachelArt.zauber => KartoZauberKachel(
+      heroId: heroId,
+      werte: werte,
+      bestand: bestand,
+      aktion: aktion,
+    ),
     KartoSpielkachelArt.zustand => KartoAbschnitt(
       titel: 'Zustand',
       symbol: Icons.monitor_heart_outlined,

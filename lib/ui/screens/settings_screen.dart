@@ -28,6 +28,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/legal/legal_pages.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/sync_konflikt_karte.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui_shared/feedback/feedback_page.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/freesound_anmeldung.dart';
 import 'package:dsa_heldenverwaltung/domain/feedback/feedback_submission.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';

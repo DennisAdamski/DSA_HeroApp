@@ -25,6 +25,38 @@ Future<_SpellDetailsDialogResult?> _showSpellDetailsDialog({
   );
 }
 
+/// Öffnet die vollständige Beschreibung eines Zaubers schreibgeschützt.
+///
+/// Für die Spielansicht (UI2): liest Held, Katalog und Freischaltung frisch
+/// und schreibt nichts. Unbekannter Held, Katalog oder Zauber öffnen nichts.
+Future<void> zeigeZauberDetails({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String heroId,
+  required String zauberId,
+}) async {
+  final held = ref.read(heroByIdProvider(heroId));
+  final katalog = ref.read(heroRulesCatalogProvider(heroId)).valueOrNull;
+  if (held == null || katalog == null) return;
+  final def = katalog.spells.where((s) => s.id == zauberId).firstOrNull;
+  if (def == null) return;
+  await _showSpellDetailsDialog(
+    context: context,
+    def: def,
+    entry: held.spells[zauberId] ?? const HeroSpellEntry(),
+    isEditing: false,
+    effectiveAttributes:
+        ref
+            .read(heroComputedProvider(heroId))
+            .asData
+            ?.value
+            .effectiveAttributes ??
+        held.attributes,
+    contentUnlocked: ref.read(catalogContentVisibleProvider),
+    contentPassword: ref.read(catalogContentPasswordProvider),
+  );
+}
+
 /// Zusammengefuehrte Spell-Details aus Katalog und heldenspezifischen Overrides.
 class _ResolvedSpellDetails {
   const _ResolvedSpellDetails({

@@ -29,6 +29,16 @@ extension _KartoWorkspaceNavigation on _KartoWorkspaceState {
   Future<bool> _pruefeEditor() async =>
       await _verwaltungVerlassen?.call() ?? true;
 
+  // Kachel-Shortcut: erst der Bereich (mit Editorprüfung), dann der Abschnitt.
+  // Der Wunsch kommt erst nach dem Wechsel an, damit eine abgebrochene Prüfung
+  // nichts umstellt; ein noch ungebauter Verwaltungsbereich liest ihn beim Start.
+  Future<void> _verwaltungOeffnen(KartoVerwaltungsAbschnitt abschnitt) =>
+      _geschuetzt(() async {
+        if (!await _pruefeEditor() || !mounted) return;
+        _setBereich(KartoArbeitsbereich.verwalten);
+        _verwaltungsZiel.waehle(abschnitt);
+      });
+
   Future<void> _zurHeldenwahl() => _verlassen(
     () => ref.read(selectedHeroSelectionActionsProvider).clearSelection(),
   );

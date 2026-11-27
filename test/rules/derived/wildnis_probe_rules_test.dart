@@ -269,4 +269,75 @@ void main() {
       expect(haltbar.zeilen.single.detail, '4 Tage zusätzliche Haltbarkeit');
     });
   });
+
+  group('Geländekunde-Staffel', () {
+    test('Standard −3/−1, eigene Staffel für Tierfallen', () {
+      expect(
+        GelaendekundeStaffel.standard.erschwernis(Gelaendekunde.passend),
+        Gelaendekunde.passend.erschwernis,
+      );
+      expect(
+        GelaendekundeStaffel.standard.erschwernis(Gelaendekunde.aehnlich),
+        Gelaendekunde.aehnlich.erschwernis,
+      );
+      const fallen = GelaendekundeStaffel(passend: -5, aehnlich: -3);
+      expect(
+        wildnisProbenErschwernis(
+          WildnisProbeEingabe(
+            taw: 10,
+            eigenschaften: _eigenschaften,
+            basisErschwernis: 4,
+            gelaendekunde: Gelaendekunde.passend,
+            gelaendekundeStaffel: fallen,
+          ),
+        ),
+        -1,
+      );
+    });
+  });
+
+  group('Tagesrationen und Aussichten', () {
+    test('TaP* sind Tagesrationen, Misserfolg bringt keine', () {
+      final gut = wildnisRationenErgebnis(
+        _wurf(_probe(_eingabe(taw: 5)), <int>[1, 1, 1]),
+        erschwernis: 0,
+        hinweis: 'Pfeile',
+      );
+      expect(gut.zeilen.single.titel, '5 Tagesrationen');
+      expect(gut.hinweis, 'Pfeile');
+      final eine = wildnisRationenErgebnis(
+        _wurf(_probe(_eingabe(taw: 0)), <int>[1, 1, 1]),
+        erschwernis: 0,
+      );
+      expect(eine.zeilen.single.titel, '1 Tagesration');
+      final schlecht = wildnisRationenErgebnis(
+        _wurf(_probe(_eingabe()), <int>[20, 20, 20]),
+        erschwernis: 0,
+      );
+      expect(schlecht.zeilen, isEmpty);
+    });
+
+    test('Verteilung summiert sich zu 1 und wird gemerkt', () {
+      final request = _probe(_eingabe(taw: 6, basis: 2));
+      final verteilung = wildnisTapVerteilung(request);
+      expect(
+        verteilung.values.fold<double>(0, (a, b) => a + b),
+        closeTo(1, 1e-9),
+      );
+      expect(identical(wildnisTapVerteilung(request), verteilung), isTrue);
+      // TaW 6 bei Erschwernis 2: höchstens 4 TaP*.
+      expect(verteilung.keys.reduce((a, b) => a > b ? a : b), 4);
+    });
+
+    test('Aussicht: Chance, Erwartung und Höchstwert', () {
+      final request = _probe(_eingabe(taw: 6));
+      final verteilung = wildnisTapVerteilung(request);
+      final aussicht = wildnisAussicht(request);
+      expect(aussicht.erfolgschance, closeTo(1 - verteilung[0]!, 1e-9));
+      expect(aussicht.hoechsteAusbeute, 6);
+      final halb = wildnisAussicht(request, ausbeute: (tap) => tap ~/ 2);
+      expect(halb.hoechsteAusbeute, 3);
+      expect(halb.erwarteteAusbeute, lessThan(aussicht.erwarteteAusbeute));
+    });
+  });
 }

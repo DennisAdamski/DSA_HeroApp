@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/liste_verschieben.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_verwaltungs_ziel.dart';
 
 /// Die Kacheln der Spielansicht und was jede erlaubt (SPIEL-07).
 ///
@@ -58,6 +59,19 @@ enum KartoSpielkachelArt {
     ],
     standard: SpielkachelBreite.schmal,
     gewicht: 110,
+  ),
+
+  /// Gelernte Zauber mit ZfW*, Probe und Kurzangaben nach dem Vorbild der
+  /// Magie-Seite.
+  ///
+  /// **Optional:** steht in der Standardanordnung ausgeblendet und wird im
+  /// Anordnen-Modus bewusst hinzugefügt; nur bei Helden, die Zauber führen.
+  zauber(
+    'Zauber',
+    breiten: SpielkachelBreite.values,
+    standard: SpielkachelBreite.mittel,
+    gewicht: 360,
+    standardAusgeblendet: true,
   ),
 
   /// Wunden und Statuswerte; die Belastung steht in „Dabei“.
@@ -162,6 +176,7 @@ enum KartoSpielkachelArt {
     required this.gewicht,
     this.ausblendbar = true,
     this.einklappbar = true,
+    this.standardAusgeblendet = false,
   });
 
   /// Anzeigename im Anordnen-Modus.
@@ -184,11 +199,40 @@ enum KartoSpielkachelArt {
   /// Ob die Kachel von der Seite genommen werden darf.
   final bool ausblendbar;
 
+  /// Ob die Kachel (nur bei [ausblendbar]) ohne gespeicherten Eintrag
+  /// ausgeblendet ist und erst im Anordnen-Modus hinzugefügt wird.
+  ///
+  /// Gilt nur, solange der Held keinen Eintrag zur Kachel hat; ein
+  /// gespeicherter Eintrag entscheidet selbst. So bleibt eine neue optionale
+  /// Kachel in bestehenden Anordnungen und in der Vorlage unsichtbar.
+  final bool standardAusgeblendet;
+
   /// Ob die Kachel auf ihren Kopf eingeklappt werden darf.
   final bool einklappbar;
 
   /// Gespeicherte Kennung; entspricht dem Namen.
   String get id => name;
+
+  /// Seite der Verwaltung, die diese Kachel im Bestand abbildet.
+  ///
+  /// Daraus entsteht der Shortcut im Kachelkopf. Kacheln ohne Entsprechung
+  /// (Marker, Standort, Wildnis, Würfelprotokoll) liefern `null` und bekommen
+  /// keinen Knopf; nur die Spielansicht kennt sie.
+  KartoVerwaltungsAbschnitt? get verwaltungsAbschnitt => switch (this) {
+    ressourcen ||
+    eigenschaften ||
+    effekte ||
+    zustand ||
+    merkmale => KartoVerwaltungsAbschnitt.uebersicht,
+    proben => KartoVerwaltungsAbschnitt.talente,
+    kampf => KartoVerwaltungsAbschnitt.kampf,
+    zauber => KartoVerwaltungsAbschnitt.magie,
+    begleiter => KartoVerwaltungsAbschnitt.begleiter,
+    dabei => KartoVerwaltungsAbschnitt.inventar,
+    abenteuer => KartoVerwaltungsAbschnitt.notizen,
+    reiseroute => KartoVerwaltungsAbschnitt.reisebericht,
+    marker || standort || wildnis || protokoll => null,
+  };
 
   /// Kachel zur gespeicherten [id] oder `null`.
   static KartoSpielkachelArt? zurId(String id) =>
@@ -278,7 +322,9 @@ List<KartoSpielkachel> loeseSpielansichtAuf(
       breite: wunsch != null && art.breiten.contains(wunsch)
           ? wunsch
           : art.standard,
-      ausgeblendet: art.ausblendbar && (eintrag?.ausgeblendet ?? false),
+      ausgeblendet:
+          art.ausblendbar &&
+          (eintrag?.ausgeblendet ?? art.standardAusgeblendet),
       eingeklappt: art.einklappbar && (eintrag?.eingeklappt ?? false),
     );
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
@@ -8,10 +10,11 @@ import 'package:dsa_heldenverwaltung/domain/kraeuter_eintrag.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/aventurian_age_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/jagd_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kraeutersuche_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/meta_talent_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wildnis_ausbeute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wildnis_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wildnis_sonderfertigkeit_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
@@ -22,7 +25,12 @@ import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/wildnis/karto_fallen_fischen_taetigkeit.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/wildnis/karto_hetzjagd_taetigkeit.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/wildnis/karto_jagd_taetigkeit.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/wildnis/karto_kraeutersuche_taetigkeit.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/wildnis/karto_nahrung_taetigkeit.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/wildnis/karto_wildnis_taetigkeit.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
@@ -30,10 +38,23 @@ import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 
 /// Die Tätigkeiten der Wildnis-Kachel in der Reihenfolge des Umschalters.
 ///
-/// Eine neue Tätigkeit (Nahrung sammeln, Pirschjagd …) kommt als Unterklasse
-/// von [KartoWildnisTaetigkeit] hierher; die Kachel selbst bleibt unverändert.
+/// Eine neue Tätigkeit kommt als Unterklasse von
+/// [KartoWildnisTaetigkeit] hierher; die Kachel selbst bleibt unverändert.
 const List<KartoWildnisTaetigkeit> kartoWildnisTaetigkeiten =
-    <KartoWildnisTaetigkeit>[KartoKraeutersucheTaetigkeit()];
+    <KartoWildnisTaetigkeit>[
+      KartoKraeutersucheTaetigkeit(),
+      KartoNahrungSammelnTaetigkeit(),
+      KartoJagdTaetigkeit(Jagdart.pirsch),
+      KartoJagdTaetigkeit(Jagdart.ansitz),
+      KartoHetzjagdTaetigkeit(),
+      KartoTierfallenTaetigkeit(),
+      KartoAngelnTaetigkeit(),
+      KartoSpeerfischenTaetigkeit(),
+    ];
+
+/// Meldung, wenn eine offene Steigerungsrunde das Inventar sperrt.
+const String kWildnisInventarSperre =
+    'Während einer offenen Steigerungsrunde wird das Inventar nicht geändert.';
 
 /// Höchstzahl der Vorschauzeilen in einer normalen Kachel.
 const int kWildnisVorschauKurz = 3;
@@ -45,9 +66,12 @@ const int kWildnisVorschauWeit = 8;
 /// Geländekunde und Ortskenntnis aus dem Helden vorbelegen, die Probe über das
 /// Würfelprotokoll würfeln und die Ausbeute der gewählten Tätigkeit zeigen.
 ///
-/// Die Kachel schreibt nichts am Helden: Eingaben und Ergebnis leben nur im
-/// Widget; ins Würfelprotokoll schreibt `gefechtsProbe` selbst. Alle Angaben
-/// lassen sich von Hand ändern, auch Geländekunde und Ortskenntnis.
+/// Eingaben und Ergebnis leben nur im Widget; ins Würfelprotokoll schreibt
+/// `gefechtsProbe` selbst. Geschrieben wird nur auf ausdrücklichen Knopfdruck
+/// und immer frisch: eingesetzte AsP beim Würfeln (Zustand), erbeutete
+/// Tagesrationen ins Inventar (Bogen) und ausgewürfelter Geschossverlust
+/// (Kampfkonfiguration über die Gefechtsbrücke). Alle Angaben lassen sich von
+/// Hand ändern, auch Geländekunde und Ortskenntnis.
 class KartoWildnisKachel extends ConsumerStatefulWidget {
   /// Kachel für den Helden [heroId] mit den gespeicherten [werte].
   const KartoWildnisKachel({
@@ -57,6 +81,7 @@ class KartoWildnisKachel extends ConsumerStatefulWidget {
     required this.bestand,
     required this.aktion,
     this.taetigkeiten = kartoWildnisTaetigkeiten,
+    this.wuerfler,
   });
 
   /// ID im gemeinsam genutzten Heldenspeicher.
@@ -73,6 +98,10 @@ class KartoWildnisKachel extends ConsumerStatefulWidget {
 
   /// Wählbare Tätigkeiten.
   final List<KartoWildnisTaetigkeit> taetigkeiten;
+
+  /// Würfel für Auswertung und Geschossverlust; ohne Angabe Zufall (Tests
+  /// setzen feste Würfe).
+  final DiceRoller? wuerfler;
 
   @override
   ConsumerState<KartoWildnisKachel> createState() => _KartoWildnisKachelState();
@@ -105,6 +134,34 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
   WildnisErgebnis? _ergebnis;
   bool _wuerfelt = false;
 
+  // Buchungen zum aktuellen Ergebnis; ein neues Ergebnis setzt sie zurück.
+  bool _rationenGebucht = false;
+  bool _fundeGebucht = false;
+  int _schuesse = 1;
+  Geschossverlust? _verlust;
+  bool _verlustGebucht = false;
+  bool _bucht = false;
+  String? _buchungsFehler;
+
+  // Fund von Hand (Probe am Tisch ausgespielt): Auswahl, Menge und die
+  // Meldung zur letzten Buchung.
+  bool _handOffen = false;
+  String? _handWahl;
+  int _handMenge = 1;
+  String? _handGebucht;
+
+  DiceRoller get _wuerfel => widget.wuerfler ?? RandomDiceRoller();
+
+  void _vergissBuchungen() {
+    _rationenGebucht = false;
+    _fundeGebucht = false;
+    _handGebucht = null;
+    _schuesse = 1;
+    _verlust = null;
+    _verlustGebucht = false;
+    _buchungsFehler = null;
+  }
+
   /// Ob die Vorschau alle möglichen Funde zeigt statt der ersten.
   bool _alleFunde = false;
 
@@ -124,14 +181,23 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
   void _aendere(VoidCallback aenderung) => setState(() {
     aenderung();
     _ergebnis = null;
+    _vergissBuchungen();
   });
 
   void _waehleTaetigkeit(String id) => _aendere(() {
     _taetigkeitId = id;
-    _landschaft = null;
+    // Kennt die neue Tätigkeit dieselbe Landschaft (die Regionen der
+    // Nahrungsbeschaffung teilen ihre Schlüssel mit den Kräuterlandschaften),
+    // bleiben Wahl und Handwerte für Gelände- und Ortskenntnis erhalten.
+    final bleibt = _taetigkeit.landschaften.any(
+      (l) => l.schluessel == _landschaft,
+    );
+    if (!bleibt) {
+      _landschaft = null;
+      _gelaendekunde = null;
+      _ortskenntnis = null;
+    }
     _dauer = null;
-    _gelaendekunde = null;
-    _ortskenntnis = null;
     _optionen.clear();
     _alleFunde = false;
     _offeneZeilen.clear();
@@ -170,6 +236,7 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
     final datum = resolveCurrentAdventureDate(werte.hero);
     final monat = datum?.month ?? '';
     final jahreszeit = _jahreszeit ?? jahreszeitFuerMonat(monat);
+    final brauchtJahreszeit = taetigkeit.brauchtJahreszeit;
 
     final erkannt = landschaft == null
         ? WildnisSonderfertigkeiten.keine
@@ -182,26 +249,30 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
     final gelaendekunde = _gelaendekunde ?? erkannt.gelaendekunde;
     final ortskenntnis = _ortskenntnis ?? erkannt.ortskenntnis;
 
-    final dauer = _dauer ?? taetigkeit.dauern.first.stunden;
-    final taw = computeMetaTalentBaseTaw(
-      talentEntries: werte.hero.talents,
-      componentTalentIds: taetigkeit.talentKomponenten,
-    );
+    final dauer = taetigkeit.dauern.any((d) => d.minuten == _dauer)
+        ? _dauer!
+        : taetigkeit.dauern.first.minuten;
 
     KartoWildnisKontext? kontext;
-    if (landschaft != null && jahreszeit != null && daten.hasValue) {
+    if (landschaft != null &&
+        (jahreszeit != null || !brauchtJahreszeit) &&
+        daten.hasValue) {
       kontext = _baueKontext(
         taetigkeit: taetigkeit,
+        katalog: katalog,
         landschaft: landschaft,
         jahreszeit: jahreszeit,
         monat: monat,
-        taw: taw,
         dauer: dauer,
         gelaendekunde: gelaendekunde,
         ortskenntnis: ortskenntnis,
         daten: daten.value,
       );
     }
+    final taw =
+        kontext?.taw ??
+        taetigkeit.grundTaw(werte.hero, _effektiveOptionen(taetigkeit));
+    final sperrgrund = kontext == null ? null : taetigkeit.sperrgrund(kontext);
 
     final KartoGefechtsAdapter? bruecke = switch (widget.bestand) {
       final KartoGefechtsAdapter gefechtsBruecke => gefechtsBruecke,
@@ -255,27 +326,29 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
                 ],
                 onChanged: _waehleLandschaft,
               ),
-              _auswahl(
-                schluessel: 'jahreszeit',
-                bezeichnung: datum == null || monat.isEmpty
-                    ? 'Jahreszeit'
-                    : 'Jahreszeit (${aventurianMonthLabel(monat)})',
-                wert: jahreszeit?.name,
-                hinweis: jahreszeit == null
-                    ? 'Kein Datum im Abenteuer: bitte wählen.'
-                    : null,
-                eintraege: [
-                  for (final j in Jahreszeit.values)
-                    (schluessel: j.name, text: j.bezeichnung),
-                ],
-                onChanged: (name) => _aendere(
-                  () => _jahreszeit = Jahreszeit.values.byName(name),
+              if (brauchtJahreszeit)
+                _auswahl(
+                  schluessel: 'jahreszeit',
+                  bezeichnung: datum == null || monat.isEmpty
+                      ? 'Jahreszeit'
+                      : 'Jahreszeit (${aventurianMonthLabel(monat)})',
+                  wert: jahreszeit?.name,
+                  hinweis: jahreszeit == null
+                      ? 'Kein Datum im Abenteuer: bitte wählen.'
+                      : null,
+                  eintraege: [
+                    for (final j in Jahreszeit.values)
+                      (schluessel: j.name, text: j.bezeichnung),
+                  ],
+                  onChanged: (name) => _aendere(
+                    () => _jahreszeit = Jahreszeit.values.byName(name),
+                  ),
                 ),
-              ),
             ],
           ),
           Abstand.luecke,
           _sonderfertigkeiten(
+            staffel: taetigkeit.gelaendekundeStaffel,
             erkannt: erkannt,
             gelaendekunde: gelaendekunde,
             ortskenntnis: ortskenntnis,
@@ -292,7 +365,7 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
                 wert: '$dauer',
                 eintraege: [
                   for (final d in taetigkeit.dauern)
-                    (schluessel: '${d.stunden}', text: d.text),
+                    (schluessel: '${d.minuten}', text: d.text),
                 ],
                 onChanged: (wert) => _aendere(() => _dauer = int.parse(wert)),
               ),
@@ -333,7 +406,13 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
             ],
           ),
           Abstand.luecke,
-          _zusammenfassung(taetigkeit, kontext, werte.probenEigenschaften, taw),
+          _zusammenfassung(
+            taetigkeit,
+            kontext,
+            werte.probenEigenschaften,
+            taw,
+            sperrgrund,
+          ),
           if (daten.hasError) ...[
             Abstand.luecke,
             Text(
@@ -352,7 +431,11 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
             alignment: Alignment.centerRight,
             child: FilledButton.icon(
               key: const ValueKey<String>('karto-wildnis-wuerfeln'),
-              onPressed: wurfKontext != null && bruecke != null && !_wuerfelt
+              onPressed:
+                  wurfKontext != null &&
+                      bruecke != null &&
+                      sperrgrund == null &&
+                      !_wuerfelt
                   ? () => _wuerfeln(taetigkeit, wurfKontext, bruecke)
                   : null,
               icon: const Icon(Icons.casino_outlined),
@@ -362,8 +445,19 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
           if (_ergebnis case final ergebnis?) ...[
             Abstand.luecke,
             _ErgebnisAnzeige(ergebnis: ergebnis),
+            _ausbeute(ergebnis, bruecke),
           ],
-          if (kontext != null) _vorschau(taetigkeit, kontext, weit),
+          if (taetigkeit.erlaubtHandFund) ...[
+            Abstand.luecke,
+            _handFund(
+              taetigkeit,
+              kontext,
+              landschaft,
+              daten.hasValue ? daten.value : null,
+            ),
+          ],
+          if (kontext != null && sperrgrund == null)
+            _vorschau(taetigkeit, kontext, weit),
         ],
       ),
     );
@@ -393,22 +487,27 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
   // zur Landschaft passt.
   KartoWildnisKontext _baueKontext({
     required KartoWildnisTaetigkeit taetigkeit,
+    required RulesCatalog? katalog,
     required WildnisLandschaft landschaft,
-    required Jahreszeit jahreszeit,
+    required Jahreszeit? jahreszeit,
     required String monat,
-    required int taw,
     required int dauer,
     required Gelaendekunde gelaendekunde,
     required bool ortskenntnis,
     required Object? daten,
   }) {
+    final held = widget.werte.hero;
+    // Der TaW hängt bei manchen Tätigkeiten von einer Wahl ab (Waffe,
+    // Speertalent); er folgt deshalb den jeweils geprüften Antworten.
     KartoWildnisKontext mit(Map<String, String> optionen) =>
         KartoWildnisKontext(
+          held: held,
+          katalog: katalog,
           landschaft: landschaft,
           jahreszeit: jahreszeit,
           monat: monat,
-          taw: taw,
-          dauerStunden: dauer,
+          taw: taetigkeit.grundTaw(held, optionen),
+          dauerMinuten: dauer,
           eigenschaften: _eigenschaften(taetigkeit),
           gelaendekunde: gelaendekunde,
           ortskenntnis: ortskenntnis,
@@ -425,7 +524,14 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
       if (dynamisch == null) continue;
       final gueltig = dynamisch(vorlaeufig);
       if (!gueltig.any((w) => w.schluessel == optionen[option.schluessel])) {
-        optionen[option.schluessel] = option.standard;
+        // Zurück auf die (kontextabhängige) Vorgabe; passt auch sie nicht,
+        // gilt die erste Antwort.
+        final vorgabe =
+            option.dynamischerStandard?.call(vorlaeufig) ?? option.standard;
+        optionen[option.schluessel] =
+            gueltig.isEmpty || gueltig.any((w) => w.schluessel == vorgabe)
+            ? vorgabe
+            : gueltig.first.schluessel;
       }
     }
     return mit(optionen);
@@ -478,16 +584,375 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
         }
         setState(() {
           if (asp > 0) _asp = 0;
-          _ergebnis = taetigkeit.auswerten(
-            kontext,
-            probe,
-            roller: RandomDiceRoller(),
-          );
+          _ergebnis = taetigkeit.auswerten(kontext, probe, roller: _wuerfel);
+          _vergissBuchungen();
         });
       });
     } finally {
       if (mounted) setState(() => _wuerfelt = false);
     }
+  }
+
+  // Bucht die Posten frisch ins Inventar (ein Dokument); das Datum der Herkunft
+  // stammt aus dem gespeicherten Helden. [danach] meldet den Erfolg.
+  Future<void> _bucheFunde(
+    List<WildnisPosten> posten,
+    VoidCallback danach,
+  ) async {
+    setState(() {
+      _bucht = true;
+      _buchungsFehler = null;
+    });
+    try {
+      await aendereHeldAusserhalbPlanung(ref, widget.heroId, (held) {
+        final datum = resolveCurrentAdventureDate(held);
+        return mitWildnisFunden(
+          held,
+          posten,
+          datum: datum == null ? '' : formatAventurianDate(datum),
+        );
+      }, sperre: kWildnisInventarSperre);
+      if (mounted) setState(danach);
+    } catch (fehler) {
+      if (mounted) {
+        setState(
+          () => _buchungsFehler =
+              'Nicht ins Inventar gebucht: ${schreibFehlerText(fehler)}',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _bucht = false);
+    }
+  }
+
+  // Bucht den Geschossverlust frisch über die Gefechtsbrücke ab.
+  Future<void> _bucheVerlust(
+    KartoGefechtsAdapter bruecke,
+    MainWeaponSlot waffe,
+    RangedProjectile geschoss,
+    int verloren,
+  ) async {
+    setState(() {
+      _bucht = true;
+      _buchungsFehler = null;
+    });
+    try {
+      final ok = await bruecke.gefechtsAusruestung(
+        context: context,
+        ref: ref,
+        heroId: widget.heroId,
+        aenderung: (config) => mitJagdGeschossverlust(
+          config,
+          waffe: waffe,
+          geschoss: geschoss,
+          verloren: verloren,
+        ),
+      );
+      if (!mounted) return;
+      setState(() {
+        if (ok) {
+          _verlustGebucht = true;
+        } else {
+          _buchungsFehler = 'Geschosse nicht abgebucht.';
+        }
+      });
+    } finally {
+      if (mounted) setState(() => _bucht = false);
+    }
+  }
+
+  // Knöpfe zum Ergebnis: Rationen ins Inventar, Geschossverlust würfeln und
+  // abbuchen.
+  Widget _ausbeute(WildnisErgebnis ergebnis, KartoGefechtsAdapter? bruecke) {
+    final rationen = ergebnis.rationen;
+    final funde = ergebnis.funde;
+    final munition = ergebnis.munition;
+    if (rationen == null && funde.isEmpty && munition == null) {
+      return const SizedBox.shrink();
+    }
+    final texte = Theme.of(context).textTheme;
+    final karto = context.karto;
+    final leise = texte.etikett.copyWith(color: karto.schriftLeise);
+    final bestand = munition == null
+        ? null
+        : jagdWaffeUndGeschoss(widget.werte.hero, munition.waffenSlotId);
+    final geschoss = bestand?.geschoss;
+    final verlust = _verlust;
+    Widget erledigt(String schluessel, String text) => Row(
+      children: [
+        Icon(Icons.check, size: 18, color: karto.moos),
+        const SizedBox(width: Abstand.knapp),
+        Expanded(
+          child: Text(
+            key: ValueKey<String>(schluessel),
+            text,
+            style: texte.fliess,
+          ),
+        ),
+      ],
+    );
+    return Padding(
+      padding: const EdgeInsets.only(top: Abstand.normal),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (rationen != null)
+            if (_rationenGebucht)
+              erledigt(
+                'karto-wildnis-rationen-gebucht',
+                '${rationen.anzahl} × ${rationen.gegenstand} ins Inventar '
+                    'gebucht',
+              )
+            else
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  key: const ValueKey<String>('karto-wildnis-rationen-buchen'),
+                  onPressed: _bucht
+                      ? null
+                      : () => _bucheFunde(<WildnisPosten>[
+                          rationen,
+                        ], () => _rationenGebucht = true),
+                  icon: const Icon(Icons.inventory_2_outlined),
+                  label: Text(
+                    rationen.anzahl == 1
+                        ? '1 Tagesration ins Inventar'
+                        : '${rationen.anzahl} Tagesrationen ins Inventar',
+                  ),
+                ),
+              ),
+          if (funde.isNotEmpty)
+            if (_fundeGebucht)
+              erledigt(
+                'karto-wildnis-funde-gebucht',
+                '${funde.map(_postenText).join(', ')} ins Inventar gebucht',
+              )
+            else
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  key: const ValueKey<String>('karto-wildnis-funde-buchen'),
+                  onPressed: _bucht
+                      ? null
+                      : () => _bucheFunde(funde, () => _fundeGebucht = true),
+                  icon: const Icon(Icons.inventory_2_outlined),
+                  label: Text(
+                    funde.length == 1
+                        ? '${_postenText(funde.single)} ins Inventar'
+                        : 'Alle ${funde.length} Funde ins Inventar',
+                  ),
+                ),
+              ),
+          if (munition != null) ...[
+            const SizedBox(height: Abstand.normal),
+            Text(
+              key: const ValueKey<String>('karto-wildnis-munition'),
+              geschoss == null
+                  ? 'Munition: ${munition.waffenName}'
+                  : 'Munition: ${munition.waffenName} · ${geschoss.name} '
+                        '(${geschoss.count})',
+              style: texte.etikett,
+            ),
+            if (verlust == null) ...[
+              if (munition.verbrauch.jeSchuss)
+                _Schritt(
+                  schluessel: 'schuesse',
+                  bezeichnung: 'Abgegebene Schüsse oder Würfe',
+                  wert: _schuesse,
+                  min: 1,
+                  max: 30,
+                  onChanged: (w) => setState(() => _schuesse = w),
+                ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  key: const ValueKey<String>('karto-wildnis-verlust-wuerfeln'),
+                  onPressed: () => setState(
+                    () => _verlust = wuerfleGeschossverlust(
+                      munition.verbrauch,
+                      schuesse: _schuesse,
+                      roller: _wuerfel,
+                    ),
+                  ),
+                  icon: const Icon(Icons.casino_outlined),
+                  label: const Text('Geschossverlust würfeln'),
+                ),
+              ),
+            ] else ...[
+              Text(
+                key: const ValueKey<String>('karto-wildnis-verlust'),
+                _verlustText(munition, verlust),
+                style: texte.fliess,
+              ),
+              if (verlust.verloren > 0)
+                if (bestand == null || geschoss == null || bruecke == null)
+                  Text(
+                    munition.waffenSlotId == null
+                        ? 'Ohne verknüpften Bestand: bitte von Hand '
+                              'anpassen.'
+                        : 'Kein Geschoss gewählt: Bestand bitte von Hand '
+                              'anpassen.',
+                    style: leise,
+                  )
+                else if (_verlustGebucht)
+                  erledigt(
+                    'karto-wildnis-verlust-gebucht',
+                    '${geschoss.name}: Verlust abgebucht',
+                  )
+                else
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: OutlinedButton.icon(
+                      key: const ValueKey<String>(
+                        'karto-wildnis-verlust-buchen',
+                      ),
+                      onPressed: _bucht
+                          ? null
+                          : () => _bucheVerlust(
+                              bruecke,
+                              bestand.waffe,
+                              geschoss,
+                              verlust.verloren,
+                            ),
+                      icon: const Icon(Icons.remove_circle_outline),
+                      label: Text(
+                        '${verlust.verloren > geschoss.count ? geschoss.count : verlust.verloren}'
+                        ' × ${geschoss.name} abbuchen',
+                      ),
+                    ),
+                  ),
+            ],
+          ],
+          if (_buchungsFehler case final fehler?)
+            Text(
+              key: const ValueKey<String>('karto-wildnis-buchungsfehler'),
+              fehler,
+              style: texte.fliess.copyWith(color: karto.siegel),
+            ),
+        ],
+      ),
+    );
+  }
+
+  static String _postenText(WildnisPosten p) => '${p.anzahl} × ${p.gegenstand}';
+
+  // Fund von Hand: eine am Tisch ausgespielte Probe lässt sich ohne Wurf der
+  // App eintragen. Auswahl (etwa das Kraut) und Menge bestimmt der Spieler,
+  // gebucht wird wie beim Wurfergebnis.
+  Widget _handFund(
+    KartoWildnisTaetigkeit taetigkeit,
+    KartoWildnisKontext? kontext,
+    WildnisLandschaft? landschaft,
+    Object? daten,
+  ) {
+    final texte = Theme.of(context).textTheme;
+    final karto = context.karto;
+    final wahlen = taetigkeit.handFundWahl(daten, landschaft);
+    final wahl = wahlen.any((w) => w.schluessel == _handWahl)
+        ? _handWahl
+        : (wahlen.isEmpty ? null : wahlen.first.schluessel);
+    final posten = taetigkeit.handFund(
+      kontext: kontext,
+      daten: daten,
+      wahl: wahl,
+      menge: _handMenge,
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            key: const ValueKey<String>('karto-wildnis-hand-umschalten'),
+            onPressed: () => setState(() => _handOffen = !_handOffen),
+            icon: Icon(_handOffen ? Icons.expand_less : Icons.edit_note),
+            label: const Text('Am Tisch ausgespielt: Fund eintragen'),
+          ),
+        ),
+        if (_handOffen) ...[
+          if (taetigkeit.handFundWahlTitel case final titel?)
+            _auswahl(
+              schluessel: 'hand-wahl',
+              bezeichnung: titel,
+              wert: wahl,
+              eintraege: wahlen,
+              onChanged: (w) => setState(() {
+                _handWahl = w;
+                _handGebucht = null;
+              }),
+            ),
+          _Schritt(
+            schluessel: 'hand-menge',
+            bezeichnung: taetigkeit.handFundEinheit,
+            wert: _handMenge,
+            min: 1,
+            max: 99,
+            onChanged: (m) => setState(() {
+              _handMenge = m;
+              _handGebucht = null;
+            }),
+          ),
+          if (posten == null)
+            Text(
+              key: const ValueKey<String>('karto-wildnis-hand-hinweis'),
+              daten == null
+                  ? 'Daten werden geladen …'
+                  : 'Landschaft wählen, dann lässt sich der Fund eintragen.',
+              style: texte.etikett.copyWith(color: karto.schriftLeise),
+            )
+          else if (_handGebucht case final meldung?)
+            Row(
+              children: [
+                Icon(Icons.check, size: 18, color: karto.moos),
+                const SizedBox(width: Abstand.knapp),
+                Expanded(
+                  child: Text(
+                    key: const ValueKey<String>('karto-wildnis-hand-gebucht'),
+                    meldung,
+                    style: texte.fliess,
+                  ),
+                ),
+              ],
+            )
+          else
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                key: const ValueKey<String>('karto-wildnis-hand-buchen'),
+                onPressed: _bucht
+                    ? null
+                    : () => _bucheFunde(
+                        <WildnisPosten>[posten],
+                        () => _handGebucht =
+                            '${_postenText(posten)} ins Inventar gebucht',
+                      ),
+                icon: const Icon(Icons.inventory_2_outlined),
+                label: Text('${_postenText(posten)} ins Inventar'),
+              ),
+            ),
+          if (_buchungsFehler case final fehler?)
+            Text(
+              key: const ValueKey<String>('karto-wildnis-hand-fehler'),
+              fehler,
+              style: texte.fliess.copyWith(color: karto.siegel),
+            ),
+        ],
+      ],
+    );
+  }
+
+  static String _verlustText(WildnisMunition munition, Geschossverlust v) {
+    final verloren = v.verloren == 0
+        ? 'kein Geschoss verloren'
+        : (v.verloren == 1
+              ? '1 Geschoss verloren'
+              : '${v.verloren} Geschosse verloren');
+    if (!munition.verbrauch.jeSchuss) {
+      return '1W6 = ${v.wuerfe.single} (+1): $verloren';
+    }
+    return '${munition.verbrauch.wuerfel}W20 je Schuss: '
+        '${v.wuerfe.join(' · ')} '
+        '(verloren bei ${munition.verbrauch.verlustBereich}): $verloren';
   }
 
   Widget _taetigkeitWahl(KartoWildnisTaetigkeit aktuell) {
@@ -576,6 +1041,7 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
   }
 
   Widget _sonderfertigkeiten({
+    required GelaendekundeStaffel staffel,
     required WildnisSonderfertigkeiten erkannt,
     required Gelaendekunde gelaendekunde,
     required bool ortskenntnis,
@@ -608,8 +1074,10 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
                 key: ValueKey<String>('karto-wildnis-gelaende-${stufe.name}'),
                 label: Text(switch (stufe) {
                   Gelaendekunde.keine => 'Keine',
-                  Gelaendekunde.aehnlich => 'Ähnlich (−1)',
-                  Gelaendekunde.passend => 'Passend (−3)',
+                  Gelaendekunde.aehnlich =>
+                    'Ähnlich (${_mitVorzeichen(staffel.aehnlich)})',
+                  Gelaendekunde.passend =>
+                    'Passend (${_mitVorzeichen(staffel.passend)})',
                 }),
                 selected: gelaendekunde == stufe,
                 onSelected: (_) => _aendere(() => _gelaendekunde = stufe),
@@ -646,6 +1114,7 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
     KartoWildnisKontext? kontext,
     Attributes eigenschaften,
     int taw,
+    String? sperrgrund,
   ) {
     final texte = Theme.of(context).textTheme;
     final eig = _eigenschaften(taetigkeit);
@@ -656,11 +1125,34 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
         style: texte.fliess.copyWith(color: context.karto.schriftLeise),
       );
     }
+    final leise = texte.etikett.copyWith(color: context.karto.schriftLeise);
+    if (sperrgrund != null) {
+      return KartoFlaeche(
+        stufe: KartoFlaechenstufe.senke,
+        klein: true,
+        innen: const EdgeInsets.all(Abstand.normal),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              key: const ValueKey<String>('karto-wildnis-zusammenfassung'),
+              'TaW ${taetigkeit.tawBeiDauer(kontext)} · nicht möglich',
+              style: texte.wert,
+            ),
+            Text(
+              key: const ValueKey<String>('karto-wildnis-sperrgrund'),
+              sperrgrund,
+              style: texte.fliess.copyWith(color: context.karto.siegel),
+            ),
+            Text('$probe · ${taetigkeit.regelHinweis}', style: leise),
+          ],
+        ),
+      );
+    }
     final erschwernis = taetigkeit.erschwernis(kontext);
     final tawBeiDauer = taetigkeit.tawBeiDauer(kontext);
     final hinweis = taetigkeit.erschwernisHinweis(kontext);
     final ziel = taetigkeit.zielAngaben(kontext);
-    final leise = texte.etikett.copyWith(color: context.karto.schriftLeise);
     return KartoFlaeche(
       stufe: KartoFlaechenstufe.senke,
       klein: true,
@@ -710,7 +1202,7 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
         key: const ValueKey<String>('karto-wildnis-vorschau'),
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Mögliche Funde (${zeilen.length})', style: texte.etikett),
+          Text(taetigkeit.vorschauTitel(zeilen.length), style: texte.etikett),
           const SizedBox(height: Abstand.eng),
           for (final (index, zeile) in zeilen.take(grenze).indexed)
             _FundZeile(

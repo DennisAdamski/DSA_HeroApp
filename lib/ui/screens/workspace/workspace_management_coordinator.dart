@@ -97,6 +97,23 @@ class WorkspaceManagementCoordinator extends ChangeNotifier {
     _syncVisibleTabs(visibleTabs);
   }
 
+  /// Schlägt den Abschnitt [tabId] auf wie ein Tippen auf seinen Reiter.
+  ///
+  /// Der Wechsel läuft über den [TabController] und damit durch dieselbe
+  /// Prüfung ungespeicherter Änderungen wie jeder andere Tabwechsel. Gibt
+  /// `false` zurück, wenn der Abschnitt für diesen Helden nicht sichtbar ist
+  /// (etwa die Magie ohne Zauberkunde); die Ansicht bleibt dann, wo sie ist.
+  bool waehleAbschnitt(String tabId) {
+    final index = _visibleTabs.indexWhere((tab) => tab.id == tabId);
+    if (index < 0) {
+      return false;
+    }
+    if (index != _tabController.index) {
+      _tabController.index = index;
+    }
+    return true;
+  }
+
   /// Erstellt die Host-Callbacks für einen Verwaltungsabschnitt.
   WorkspaceTabCallbacks callbacksForTab(String tabId) {
     return WorkspaceTabCallbacks(

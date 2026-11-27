@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kraeutersuche_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wildnis_ausbeute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wildnis_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/state/kraeuter_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/wildnis/karto_wildnis_taetigkeit.dart';
@@ -57,8 +58,8 @@ class KartoKraeutersucheTaetigkeit extends KartoWildnisTaetigkeit {
 
   @override
   List<KartoWildnisDauer> get dauern => const <KartoWildnisDauer>[
-    (stunden: kKraeuterSucheNormaleStunden, text: '1 Stunde'),
-    (stunden: kKraeuterSucheAusfuehrlicheStunden, text: '2 Stunden'),
+    (minuten: kKraeuterSucheNormaleStunden * 60, text: '1 Stunde'),
+    (minuten: kKraeuterSucheAusfuehrlicheStunden * 60, text: '2 Stunden'),
   ];
 
   @override
@@ -140,7 +141,7 @@ class KartoKraeutersucheTaetigkeit extends KartoWildnisTaetigkeit {
 
   @override
   int tawBeiDauer(KartoWildnisKontext kontext) =>
-      kraeuterSuchenTawBeiDauer(kontext.taw, kontext.dauerStunden);
+      kraeuterSuchenTawBeiDauer(kontext.taw, kontext.dauerMinuten ~/ 60);
 
   @override
   ResolvedProbeRequest baueProbe(KartoWildnisKontext kontext) =>
@@ -159,6 +160,58 @@ class KartoKraeutersucheTaetigkeit extends KartoWildnisTaetigkeit {
     return kraeuterErgebnisAlsWildnis(
       werteKraeutersucheAus(_eingabe(kontext), katalog, probe, roller: roller),
     );
+  }
+
+  @override
+  bool get erlaubtHandFund => true;
+
+  @override
+  String get handFundEinheit => 'Grundmengen';
+
+  @override
+  String? get handFundWahlTitel => 'Gefundenes Kraut';
+
+  /// Alle Kräuter des Katalogs, die der gewählten Landschaft zuerst, am Ende
+  /// die Pflanze, die der Meister noch festlegt.
+  @override
+  List<({String schluessel, String text})> handFundWahl(
+    Object? daten,
+    WildnisLandschaft? landschaft,
+  ) {
+    if (daten is! KraeuterKatalog) return const [];
+    final art = landschaft == null
+        ? null
+        : Kraeuterlandschaft.ausSchluessel(landschaft.schluessel);
+    bool hier(KrautEintrag k) =>
+        art != null && k.vorkommen.any((v) => v.landschaft == art);
+    final kraeuter = [...daten.kraeuter]
+      ..sort((a, b) {
+        final ort = (hier(a) ? 0 : 1).compareTo(hier(b) ? 0 : 1);
+        return ort != 0 ? ort : a.name.compareTo(b.name);
+      });
+    return [
+      for (final k in kraeuter)
+        (
+          schluessel: k.name,
+          text: hier(k) || art == null
+              ? k.name
+              : '${k.name} (andere Landschaft)',
+        ),
+      (schluessel: _krautOffen, text: 'Heilkraut, Pflanze offen'),
+    ];
+  }
+
+  @override
+  WildnisPosten? handFund({
+    required KartoWildnisKontext? kontext,
+    required Object? daten,
+    required String? wahl,
+    required int menge,
+  }) {
+    if (daten is! KraeuterKatalog || wahl == null || menge <= 0) return null;
+    if (wahl == _krautOffen) return kraeuterPostenUnbestimmt(menge);
+    final kraut = daten.kraeuter.where((k) => k.name == wahl).firstOrNull;
+    return kraut == null ? null : kraeuterPosten(kraut, menge);
   }
 
   @override
@@ -239,12 +292,16 @@ class KartoKraeutersucheTaetigkeit extends KartoWildnisTaetigkeit {
         'Unbekannte Landschaft ${kontext.landschaft.schluessel}.',
       );
     }
+    final jahreszeit = kontext.jahreszeit;
+    if (jahreszeit == null) {
+      throw StateError('Die Kräutersuche braucht eine Jahreszeit.');
+    }
     return KraeuterSucheEingabe(
       landschaft: landschaft,
-      jahreszeit: kontext.jahreszeit,
+      jahreszeit: jahreszeit,
       taw: kontext.taw,
       eigenschaften: kontext.eigenschaften,
-      dauerStunden: kontext.dauerStunden,
+      dauerStunden: kontext.dauerMinuten ~/ 60,
       gelaendekunde: kontext.gelaendekunde,
       ortskenntnis: kontext.ortskenntnis,
       eingesetzteAsp: kontext.eingesetzteAsp,
@@ -298,6 +355,7 @@ class KartoKraeutersucheTaetigkeit extends KartoWildnisTaetigkeit {
     return werte;
   }
 
+  static const String _krautOffen = '__offen__';
   static const String _ziel = 'ziel';
   static const String _zielBeliebig = 'beliebig';
   static const String _zielGezielt = 'gezielt';
