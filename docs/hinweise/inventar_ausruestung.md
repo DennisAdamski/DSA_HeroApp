@@ -56,4 +56,24 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `ElixierEinnehmen`): je Eigenschaftsänderung eine `SpellEffectInstance`
   (`effectId` = Mittel-ID) mit eigener Dauer. Sie rechnen **nur** über
   `effektiveTempAttributeMods`, Elixiere **addieren sich** (kein
-  Attributo-Höchstwert). Stand und offene Punkte: Roadmap (TRANK).
+  Attributo-Höchstwert). **Teilstand 3** (27. November 2026): Eine Stufe kann
+  zusätzlich `zustaende` tragen (`AlchimikumZustand`: Name, Dauer, Einheit, z. B.
+  „Kleptomanie 7“, 7 Stunden beim Fingerfertigkeitselixier F). Sie laufen als
+  `SpellEffectInstance` **ohne** Eigenschaftswert (`quelle` „Qualität F · …“,
+  Vorgangs-ID `<ID>#z<Nr>`), sind im Effektdialog zähl- und beendbar und
+  rechnen nichts; `nachteilEintraege` bleibt unberührt. `einnahmeProbe` am
+  Mittel (Mutelixier: Selbstbeherrschung +3 ohne Basiliskum) zeigt der Dialog
+  als Schalter „misslungen“; `ElixierEinnehmen(erbrochen: true)` legt dann keine
+  Quelle an und protokolliert nur „Elixier erbrochen“. Wirkt dasselbe Elixier
+  schon (`istMehrfachEinnahme`, gleiche `effectId`), steht ein Hinweis auf den
+  Meisterentscheid (WdA S. 34) im Dialog; blockiert oder gerechnet wird nichts.
+  **Teilstand 4** (27. November 2026): acht Wandlungselixiere (Hauch der Jugend,
+  Ifirnstrunk, Levitation, Unsichtbarkeit, Unverwundbarkeit, Rethonikum,
+  Purpurwasser, Verwandlungselixier; Wirkung als `zustaende`, Boni und RS nur
+  als Text; bei gewürfelter oder offener Dauer steht der Würfelausdruck im
+  Zustandsnamen und `dauer`/`einheit` fehlen: Die Quelle läuft ohne Dauer, der
+  Nutzer würfelt selbst und trägt sie im Effektdialog ein), der Zaubertrank (`aspWurf` je Stufe)
+  und Mittel **ohne** Stufen (`art` `kraut`/`salbe`/`verband`): `AlchimikumDef.lepWurf`
+  ersetzt dort den Stufenwert (Rote Pfeilblüte, Wirselkraut-Salbe); Einbeere,
+  Tarnele und die Wundverbände sind reiner Text. Die Heilkunde-Probe bleibt
+  Hinweis. Stand und offene Punkte: Roadmap (TRANK).

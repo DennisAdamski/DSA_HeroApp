@@ -6,7 +6,7 @@
     "test/catalog/alchimika_catalog_test.dart": {
       "kind": "official",
       "status": "verified",
-      "summary": "Sichert die Katalogdaten der Alchimika gegen das Buch: Heiltrank-Stufen A bis F (1W6, 1W6+2, 2W6+4, 3W6+6, alle fehlenden LeP, 3W6+25), Preis ab 10 Dukaten (= 100 Silber), je 7 zurückgewonnene LeP eine Wunde, Seite 56. Die acht Elixiere der Tugenden führen je Stufe A bis F die jeweilige Eigenschaft; die Stufen B bis D folgen dem Schema 2/2, 3/3 und 7/7 Punkte/Spielrunden, E und F nennen jeweils eine eigene Dauer. Alle genannten Werte stimmen mit dem Buchtext überein. Die übrigen Tests (eindeutige IDs, Belegfelder, Würfelausdruck-Syntax, Textlänge, Einheiten-Menge, Startlisten-IDs) sind technische Katalogverträge ohne Regelbehauptung.",
+      "summary": "Sichert die Katalogdaten der Alchimika gegen das Buch: Heiltrank-Stufen A bis F (1W6, 1W6+2, 2W6+4, 3W6+6, alle fehlenden LeP, 3W6+25), Preis ab 10 Dukaten (= 100 Silber), je 7 zurückgewonnene LeP eine Wunde, Seite 56. Die acht Elixiere der Tugenden führen je Stufe A bis F die jeweilige Eigenschaft; die Stufen B bis D folgen dem Schema 2/2, 3/3 und 7/7 Punkte/Spielrunden, E und F nennen jeweils eine eigene Dauer. Alle genannten Werte stimmen mit dem Buchtext überein. Zaubertrank (AsP-Würfel 1W6, 2W6, 3W6, 3W6+6, 5W6+6, 2W20+5), Rote Pfeilblüte (3W6+2 LeP) und Wirselkraut-Salbe (1W6+4 LeP) sowie die fünf Wandlungselixiere mit je sechs Stufen samt Dauer stehen so im Buchtext. Die übrigen Tests (eindeutige IDs, Belegfelder, Würfelausdruck-Syntax, Textlänge, Einheiten-Menge, Startlisten-IDs) sind technische Katalogverträge ohne Regelbehauptung.",
       "sources": [
         {
           "title": "Wege der Alchimie (2. Auflage 2012) – Heiltrank",
@@ -41,6 +41,40 @@
             740
           ],
           "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "Wege der Alchimie (2. Auflage 2012) – Wandlungselixiere (Hauch der Jugend, Ifirnstrunk, Levitation, Purpurwasser, Rethonikum, Unsichtbarkeit, Unverwundbarkeit, Verwandlung) und Zaubertrank",
+          "pages": "65–69, 74",
+          "mcpChunks": [
+            2879,
+            2880,
+            2881,
+            2882,
+            2883,
+            2884,
+            2885,
+            2886,
+            2887,
+            2897,
+            2898
+          ],
+          "checkedOn": "2026-11-27"
+        },
+        {
+          "title": "Wege des Schwerts – Verbreitete allgemeine Heilkräuter (Rote Pfeilblüte, Tarnele, Einbeere, Wirselkraut)",
+          "pages": "160",
+          "mcpChunks": [
+            7230
+          ],
+          "checkedOn": "2026-11-27"
+        },
+        {
+          "title": "Wege des Entdeckers – Verbandszeug und Heiltrank: Heilmittel",
+          "pages": "75",
+          "mcpChunks": [
+            6242
+          ],
+          "checkedOn": "2026-11-27"
         },
         {
           "title": "Geographia Aventurica (2. Auflage) – Währung",
@@ -1691,9 +1725,10 @@
       "summary": "Bestätigt: Mutelixier D = MU +7 für 7 Spielrunden und Fingerfertigkeitselixier E = FF +15 für 1 SR plus KK -7 für 3 SR stimmen mit Wege der Alchimie überein; die synthetischen Fixtures (Mutelixier A/E) spiegeln ebenfalls den Buchtext, sind aber Beispieleingaben. Alles zu Instanzen, Vorgangs-IDs, Unterdrücken/Beenden, Namen und Katalogverweisen ist technischer Vertrag. Offen bleibt die Behauptung, dass Elixiere mit gleichen und anderen Quellen sowie manuellen Boni addiert werden.",
       "sources": [
         {
-          "title": "Wege der Alchimie (2. Auflage 2012) – Mutelixier, Fingerfertigkeitselixier",
-          "pages": "39–42",
+          "title": "Wege der Alchimie (2. Auflage 2012) – Mutelixier, Fingerfertigkeitselixier, Mehrfacheinnahme",
+          "pages": "34, 39–42",
           "mcpChunks": [
+            2818,
             2828,
             2829,
             2833,

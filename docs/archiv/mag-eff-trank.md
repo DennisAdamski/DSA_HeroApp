@@ -118,3 +118,24 @@ Archiv der Architektur-Roadmap, Stand 16.10.2026. Dies ist der unveränderte Wor
   Mutelixier-Brechreiz ohne Basiliskum, Kleptomanie und Mibelsucht (Nachteile
   auf Zeit), Mehrfachanwendung desselben Elixiers (Regelwerk-Meisterhinweise
   nur als Text), Zauberelixiere und Wandlungselixiere, Heilkräuter/Verbandszeug.
+
+  **Teilstand 3 und 4 umgesetzt (27.11.2026) — Nebenwirkungen, Wandlungselixiere,
+  Heilkräuter.** Neu im Katalog: `AlchimikumQualitaet.zustaende`
+  (`AlchimikumZustand`), `AlchimikumDef.einnahmeProbe` und `AlchimikumDef.lepWurf`
+  (Mittel ohne Stufen). `ElixierEinnehmen` legt Zustände als Wirkungsquellen
+  ohne Eigenschaftswert an (Vorgangs-ID `<ID>#z<Nr>`) und kennt `erbrochen`
+  (Mutelixier ohne Basiliskum: Selbstbeherrschung +3, WdA S. 42, Ch. 2833/2834;
+  Misslingen = keine Wirkung, der Nutzer meldet das Ergebnis). Kleptomanie 7 für
+  7 Stunden beim Fingerfertigkeitselixier F (WdA S. 39, Ch. 2828); die
+  Mehrfacheinnahme ist nur ein Dialoghinweis (Meisterentscheid, WdA S. 34,
+  Ch. 2818). Katalog: Hauch der Jugend, Ifirnstrunk, Levitationselixier,
+  Unsichtbarkeitselixier, Unverwundbarkeitselixier, Rethonikum, Purpurwasser,
+  Verwandlungselixier (WdA S. 65–69; gewürfelte Dauer als Würfelausdruck im
+  Zustandsnamen, Quelle ohne Dauer), Zaubertrank
+  (S. 74), Rote Pfeilblüte, Wirselkraut-Salbe, Tarnele-Salbe, Vierblättrige
+  Einbeere (*Wege des Schwerts* S. 160), Wundverband, Wundverband mit Mastix,
+  Finagebast (*Wege des Entdeckers* S. 75). **Entscheidung:** Kein
+  Hausregel-Paket; Epische Stufen S. 29/31 f. wirken über Sonderfertigkeiten, nicht
+  über Katalogwerte eines Mittels. **Offen:** Mibelsucht (Krankheit, nur Text),
+  Elixier gegen Verfall (keine Dauer), Retro-Elixier (wirkt auf Kadaver, Dauer
+  in Wochen bis Jahren), Brandsalbe.

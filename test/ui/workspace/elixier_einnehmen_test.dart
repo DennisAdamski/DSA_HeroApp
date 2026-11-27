@@ -123,6 +123,28 @@ void main() {
     expect(fertig, 1);
   });
 
+  testWidgets('Mutelixier ohne Basiliskum: erbrochen wirkt nicht, Stück weg', (
+    tester,
+  ) async {
+    final repo = await zeige(
+      tester,
+      (eintrag) =>
+          ElixierPanel(heroId: 'demo', eintrag: eintrag, onFertig: () {}),
+    );
+
+    expect(find.textContaining('Selbstbeherrschung +3'), findsOneWidget);
+    await tester.tap(_key('elixier-erbrochen'));
+    await tester.pumpAndSettle();
+    await tester.tap(_key('elixier-einnehmen'));
+    await tester.pumpAndSettle();
+
+    final z = (await repo.loadHeroState('demo'))!;
+    expect(z.activeSpellEffects.instanzen, isEmpty);
+    expect(z.diceLog.single.subtitle, contains('keine Wirkung'));
+    final h = (await repo.loadHeroById('demo'))!;
+    expect(h.inventoryEntries.single.menge, 1);
+  });
+
   testWidgets('ohne Abbuchung bleibt der Bestand', (tester) async {
     final repo = await zeige(
       tester,

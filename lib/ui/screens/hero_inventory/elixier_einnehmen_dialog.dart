@@ -84,6 +84,7 @@ class ElixierPanel extends ConsumerStatefulWidget {
 
 class _ElixierPanelState extends ConsumerState<ElixierPanel> {
   bool _verbrauchen = true;
+  bool _erbrochen = false;
   bool _schreibt = false;
   bool _eingenommen = false;
   String? _fehler;
@@ -114,6 +115,7 @@ class _ElixierPanelState extends ConsumerState<ElixierPanel> {
               mittel: mittel,
               stufe: bezug.stufe,
               vorgangId: _vorgangId ??= const Uuid().v4(),
+              erbrochen: _erbrochen && mittel.einnahmeProbe != null,
             );
         _eingenommen = true;
       }
@@ -163,7 +165,7 @@ class _ElixierPanelState extends ConsumerState<ElixierPanel> {
     final stufe = mittel == null || bezug == null
         ? null
         : alchimikumStufe(mittel, bezug.stufe);
-    if (mittel == null || stufe == null || !stufe.hatEigenschaftsWirkung) {
+    if (mittel == null || stufe == null || !stufe.hatElixierWirkung) {
       return Text(
         'Zu diesem Gegenstand liegt keine Elixierwirkung im Katalog vor.',
         key: const ValueKey<String>('elixier-keine-wirkung'),
@@ -174,6 +176,12 @@ class _ElixierPanelState extends ConsumerState<ElixierPanel> {
         ref.watch(advancementSessionProvider(widget.heroId)) != null;
     final abbuchbar = inventarAbbuchbar(widget.eintrag) && !planung;
     final menge = inventarMenge(widget.eintrag);
+    final probe = mittel.einnahmeProbe;
+    final heldZustand = ref.watch(heroStateProvider(widget.heroId)).valueOrNull;
+    final mehrfach =
+        !_eingenommen &&
+        heldZustand != null &&
+        istMehrfachEinnahme(heldZustand, mittel);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -192,12 +200,52 @@ class _ElixierPanelState extends ConsumerState<ElixierPanel> {
               style: theme.textTheme.bodyLarge,
             ),
           ),
+        for (var i = 0; i < stufe.zustaende.length; i++)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2),
+            child: Text(
+              '${beschreibeElixierZustand(stufe.zustaende[i])} '
+              '(nicht berechnet)',
+              key: ValueKey<String>('elixier-zustand-$i'),
+              style: theme.textTheme.bodyLarge,
+            ),
+          ),
         if (stufe.wirkung.isNotEmpty) ...[
           const SizedBox(height: 8),
           Text(
             stufe.wirkungGesperrt ? lockedContentHint : stufe.wirkungText,
             key: const ValueKey<String>('elixier-hinweis'),
             style: theme.textTheme.bodySmall,
+          ),
+        ],
+        if (mehrfach) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Dieses Elixier wirkt bereits. Eine weitere Einnahme derselben Art '
+            'hat laut Regelwerk meist Nebenwirkungen (Meisterentscheid, Wege '
+            'der Alchimie S. 34); die App rechnet sie nicht.',
+            key: const ValueKey<String>('elixier-mehrfach'),
+            style: theme.textTheme.bodySmall,
+          ),
+        ],
+        if (probe != null) ...[
+          const SizedBox(height: 8),
+          CheckboxListTile(
+            key: const ValueKey<String>('elixier-erbrochen'),
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+            title: Text(
+              'Ohne Basiliskum: ${beschreibeElixierEinnahmeProbe(probe)} '
+              'misslungen',
+            ),
+            subtitle: const Text(
+              'Der Held erbricht, das Elixier wirkt nicht. Die Probe würfelt '
+              'die App nicht.',
+            ),
+            value: _erbrochen,
+            onChanged: _schreibt || _eingenommen
+                ? null
+                : (wert) => setState(() => _erbrochen = wert ?? false),
           ),
         ],
         const SizedBox(height: 8),

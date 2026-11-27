@@ -76,12 +76,22 @@ Reiseroute, Gruppen v2) und die optionalen Lernregeln aus ARCH-04.
   **Stand 16.10.2026:** Teilstand 1 (sechs Mittel, Editoranbindung,
   `Vitalwirkung` als Vorbelegung) und Teilstand 2 (acht Elixiere der Tugenden
   über MAG-EFF-Instanzen, `ElixierEinnehmen`) sind umgesetzt.
-  **Offen:** Mutelixier-Brechreiz ohne Basiliskum, Kleptomanie und Mibelsucht
-  (Nachteile auf Zeit), Mehrfachanwendung desselben Elixiers, Zauber- und
-  Wandlungselixiere, Verbandszeug und Heilkräuter (Heilkunde-Probe,
-  Zoo-Botanica), Hausregel-Abweichungen als eigenes Paket. Nicht Teil: Brauen,
-  Rezepturenerwerb, Labor. Belege je Eintrag mit Buch und Seite, nichts ohne
-  Beleg.
+  **Teilstand 3 und 4 (27.11.2026):** Mutelixier-Brechreiz (Schalter „Probe
+  misslungen“ → Elixier erbrochen, keine Wirkung), Kleptomanie 7 als Zustand auf
+  Zeit (Hinweis-Instanz ohne Rechnung), Hinweis bei Mehrfacheinnahme, acht
+  Wandlungselixiere, Zaubertrank, vier Heilkräuter und drei Wundverbände
+  (`zustaende`, `einnahmeProbe`, `lepWurf`; Details in
+  [inventar_ausruestung.md](hinweise/inventar_ausruestung.md)).
+  **Entschieden:** Hausregel-Abweichungen als eigenes Paket entfallen: Die
+  Hausregeln (Epische Stufen S. 29, 31 f.) ändern Tränke und Wundbehandlung nur
+  über Sonderfertigkeiten, keine Katalogwerte eines Mittels; ein Paket bräuchte
+  erst Alchimika als patchbare Sektion im Resolver.
+  **Offen:** Mibelsucht (Krankheit, 50 % bei Gewandtheit öfter als einmal pro
+  Monat, WdA S. 40) nur als Text; Elixier gegen Verfall (Lebensjahre, keine
+  Dauer) und Retro-Elixier (wirkt auf Kadaver, Dauer in Wochen bis Jahren, die
+  `SpellDurationUnit` nicht kennt), Brandsalbe/Heilkräuter der Zoo-Botanica; Nachwirkungen („am
+  nächsten Tag“) bleiben Text. Nicht Teil: Brauen, Rezepturenerwerb, Labor.
+  Belege je Eintrag mit Buch und Seite, nichts ohne Beleg.
 
 ## Spielabend: Vorschläge aus dem Spielerdurchgang (23.10.2026)
 

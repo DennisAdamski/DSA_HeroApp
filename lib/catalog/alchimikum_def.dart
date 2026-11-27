@@ -89,6 +89,78 @@ class AlchimikumEigenschaft {
   }
 }
 
+/// Ein Zustand auf Zeit, den ein Elixier in einer Qualitätsstufe auslöst und
+/// den die App nur **anzeigt**, z. B. der Nachteil „Kleptomanie 7“ für 7
+/// Stunden. Er läuft als Wirkungsquelle ohne Eigenschaftswert; gerechnet wird
+/// nichts.
+class AlchimikumZustand {
+  /// Erstellt einen Zustand.
+  const AlchimikumZustand({
+    required this.name,
+    required this.dauer,
+    required this.einheit,
+  });
+
+  /// Anzeigename, z. B. `Kleptomanie 7`.
+  final String name;
+
+  /// Dauer in [einheit]; 0 = keine feste Dauer (gewürfelt oder offen, der
+  /// Würfelausdruck steht im [name]; der Nutzer trägt die Dauer selbst ein).
+  final int dauer;
+
+  /// Einheit der Dauer, Name von `SpellDurationUnit`; leer ohne feste Dauer.
+  final String einheit;
+
+  /// Liest einen Zustand tolerant aus dem Katalog-JSON.
+  factory AlchimikumZustand.fromJson(Map<String, dynamic> json) {
+    return AlchimikumZustand(
+      name: readCatalogString(json, 'name', fallback: ''),
+      dauer: readCatalogInt(json, 'dauer', fallback: 0),
+      einheit: readCatalogString(json, 'einheit', fallback: ''),
+    );
+  }
+
+  /// Schreibt den Zustand zurück.
+  Map<String, dynamic> toJson() {
+    // Ohne feste Dauer (gewürfelt oder offen) entfallen Dauer und Einheit.
+    return <String, dynamic>{
+      'name': name,
+      if (dauer > 0) 'dauer': dauer,
+      if (einheit.isNotEmpty) 'einheit': einheit,
+    };
+  }
+}
+
+/// Probe beim Einnehmen eines Mittels (z. B. Selbstbeherrschung +3 gegen den
+/// Brechreiz des Mutelixiers ohne Basiliskum). Misslingt sie, wirkt das Mittel
+/// nicht. Die App würfelt nie: Der Nutzer meldet das Ergebnis.
+class AlchimikumEinnahmeProbe {
+  /// Erstellt eine Einnahmeprobe.
+  const AlchimikumEinnahmeProbe({required this.talent, this.zuschlag = 0});
+
+  /// Name des Talents, z. B. `Selbstbeherrschung`.
+  final String talent;
+
+  /// Erschwernis der Probe.
+  final int zuschlag;
+
+  /// Liest eine Einnahmeprobe tolerant aus dem Katalog-JSON.
+  factory AlchimikumEinnahmeProbe.fromJson(Map<String, dynamic> json) {
+    return AlchimikumEinnahmeProbe(
+      talent: readCatalogString(json, 'talent', fallback: ''),
+      zuschlag: readCatalogInt(json, 'zuschlag', fallback: 0),
+    );
+  }
+
+  /// Schreibt die Einnahmeprobe zurück.
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'talent': talent,
+      if (zuschlag != 0) 'zuschlag': zuschlag,
+    };
+  }
+}
+
 /// Wirkung eines Mittels in einer Qualitätsstufe (`A` bis `F`).
 ///
 /// Die Würfelausdrücke (`2W6+4`) sind nur **Vorschläge** für den Dialog
@@ -104,6 +176,7 @@ class AlchimikumQualitaet {
     this.lepProWunde = 0,
     this.wirkung = '',
     this.eigenschaften = const <AlchimikumEigenschaft>[],
+    this.zustaende = const <AlchimikumZustand>[],
   });
 
   /// Stufe `A` bis `F`.
@@ -112,8 +185,15 @@ class AlchimikumQualitaet {
   /// Eigenschaftsänderungen auf Zeit (Elixiere); jede läuft mit eigener Dauer.
   final List<AlchimikumEigenschaft> eigenschaften;
 
+  /// Zustände auf Zeit (z. B. ein Nachteil für die Wirkungsdauer); nur Anzeige.
+  final List<AlchimikumZustand> zustaende;
+
   /// Ob die Stufe Eigenschaften auf Zeit verändert.
   bool get hatEigenschaftsWirkung => eigenschaften.isNotEmpty;
+
+  /// Ob die Stufe beim Einnehmen Wirkungsquellen anlegt (Eigenschaften oder
+  /// Zustände).
+  bool get hatElixierWirkung => hatEigenschaftsWirkung || zustaende.isNotEmpty;
 
   /// Vorschlag für die zurückkehrenden LeP.
   final String lepWurf;
@@ -159,6 +239,10 @@ class AlchimikumQualitaet {
         json,
         'eigenschaften',
       ).map(AlchimikumEigenschaft.fromJson).toList(growable: false),
+      zustaende: readCatalogObjectList(
+        json,
+        'zustaende',
+      ).map(AlchimikumZustand.fromJson).toList(growable: false),
     );
   }
 
@@ -175,6 +259,8 @@ class AlchimikumQualitaet {
         'eigenschaften': eigenschaften
             .map((e) => e.toJson())
             .toList(growable: false),
+      if (zustaende.isNotEmpty)
+        'zustaende': zustaende.map((z) => z.toJson()).toList(growable: false),
     };
   }
 }
@@ -201,8 +287,17 @@ class AlchimikumDef {
     this.preisSilber,
     this.preisText = '',
     this.wirkung = '',
+    this.einnahmeProbe,
+    this.lepWurf = '',
     this.qualitaeten = const <AlchimikumQualitaet>[],
   });
+
+  /// Probe beim Einnehmen (nur Mutelixier); `null` ohne.
+  final AlchimikumEinnahmeProbe? einnahmeProbe;
+
+  /// Vorschlag für die zurückkehrenden LeP bei Mitteln **ohne** Qualitätsstufen
+  /// (Heilkräuter, Salben); bei Mitteln mit Stufen gilt der Wert der Stufe.
+  final String lepWurf;
 
   /// Stabile ID, z. B. `alch_heiltrank`.
   final String id;
@@ -259,6 +354,7 @@ class AlchimikumDef {
   /// Liest ein Mittel tolerant aus dem Katalog-JSON.
   factory AlchimikumDef.fromJson(Map<String, dynamic> json) {
     final belegJson = readCatalogObject(json, 'beleg');
+    final probeJson = readCatalogObject(json, 'einnahmeProbe');
     final preis = json['preisSilber'];
     final brau = json['brauProbe'];
     final analyse = json['analyseProbe'];
@@ -278,6 +374,10 @@ class AlchimikumDef {
       preisSilber: preis is num ? preis.toInt() : null,
       preisText: readCatalogString(json, 'preisText', fallback: ''),
       wirkung: readCatalogString(json, 'wirkung', fallback: ''),
+      lepWurf: readCatalogString(json, 'lepWurf', fallback: ''),
+      einnahmeProbe: probeJson == null
+          ? null
+          : AlchimikumEinnahmeProbe.fromJson(probeJson),
       qualitaeten: readCatalogObjectList(
         json,
         'qualitaeten',
@@ -301,6 +401,8 @@ class AlchimikumDef {
       if (preisSilber != null) 'preisSilber': preisSilber,
       if (preisText.isNotEmpty) 'preisText': preisText,
       if (wirkung.isNotEmpty) 'wirkung': wirkung,
+      if (einnahmeProbe != null) 'einnahmeProbe': einnahmeProbe!.toJson(),
+      if (lepWurf.isNotEmpty) 'lepWurf': lepWurf,
       'qualitaeten': qualitaeten
           .map((stufe) => stufe.toJson())
           .toList(growable: false),

@@ -265,7 +265,187 @@ void main() {
     });
   });
 
+  group('Zustände und Mehrfacheinnahme', () {
+    test('ein Zustand wird Quelle ohne Eigenschaftswert, nur mit Dauer', () {
+      const mittel = AlchimikumDef(
+        id: 'alch_z',
+        name: 'Z',
+        qualitaeten: <AlchimikumQualitaet>[
+          AlchimikumQualitaet(
+            stufe: 'F',
+            zustaende: <AlchimikumZustand>[
+              AlchimikumZustand(name: 'Furcht', dauer: 2, einheit: 'tage'),
+            ],
+          ),
+        ],
+      );
+      final instanzen = elixierInstanzen(
+        mittel: mittel,
+        stufe: 'F',
+        vorgangsId: 'v',
+        neueId: _id,
+      );
+      expect(instanzen.single.vorgangsId, 'v#z0');
+      expect(instanzen.single.quelle, 'Qualität F · Furcht');
+      expect(instanzen.single.duration?.unit, SpellDurationUnit.tage);
+      expect(instanzen.single.attributeMods, const AttributeModifiers());
+      expect(
+        elixierBereitsEingenommen(nimmElixierEin(_leer, instanzen), 'v'),
+        isTrue,
+      );
+    });
+
+    test('ein Zustand ohne feste Dauer wird Quelle ohne Dauer', () {
+      const mittel = AlchimikumDef(
+        id: 'alch_r',
+        name: 'R',
+        qualitaeten: <AlchimikumQualitaet>[
+          AlchimikumQualitaet(
+            stufe: 'C',
+            zustaende: <AlchimikumZustand>[
+              AlchimikumZustand(
+                name: 'Starre (2W6 Stunden)',
+                dauer: 0,
+                einheit: '',
+              ),
+            ],
+          ),
+        ],
+      );
+      final instanz = elixierInstanzen(
+        mittel: mittel,
+        stufe: 'C',
+        vorgangsId: 'v',
+        neueId: _id,
+      ).single;
+      expect(instanz.duration, isNull);
+      expect(instanz.quelle, 'Qualität C · Starre (2W6 Stunden)');
+      expect(
+        beschreibeElixierZustand(mittel.qualitaeten.single.zustaende.single),
+        'Starre (2W6 Stunden) · Dauer offen',
+      );
+      final json = mittel.qualitaeten.single.zustaende.single.toJson();
+      expect(json.containsKey('dauer'), isFalse);
+      expect(json.containsKey('einheit'), isFalse);
+    });
+
+    test('eine Stufe nur mit Zustand bietet „Einnehmen“ an', () {
+      const mittel = AlchimikumDef(
+        id: 'alch_z',
+        name: 'Z',
+        qualitaeten: <AlchimikumQualitaet>[
+          AlchimikumQualitaet(
+            stufe: 'F',
+            zustaende: <AlchimikumZustand>[
+              AlchimikumZustand(name: 'Furcht', dauer: 2, einheit: 'tage'),
+            ],
+          ),
+        ],
+      );
+      const katalog = RulesCatalog(
+        version: 't',
+        source: 't',
+        talents: <TalentDef>[],
+        spells: <SpellDef>[],
+        weapons: <WeaponDef>[],
+        alchimika: <AlchimikumDef>[mittel],
+      );
+      final eintrag = mitAlchimikum(const HeroInventoryEntry(), mittel, 'F');
+      expect(hatElixierWirkung(katalog, eintrag), isTrue);
+      expect(elixierEigenschaften(katalog, eintrag), isEmpty);
+    });
+
+    test('Mehrfacheinnahme erkennt dieselbe Art, nicht eine andere', () {
+      final zustand = nimmElixierEin(
+        _leer,
+        elixierInstanzen(
+          mittel: _mut,
+          stufe: 'E',
+          vorgangsId: 'v',
+          neueId: _id,
+        ),
+      );
+      expect(istMehrfachEinnahme(_leer, _mut), isFalse);
+      expect(istMehrfachEinnahme(zustand, _mut), isTrue);
+      expect(
+        istMehrfachEinnahme(
+          zustand,
+          const AlchimikumDef(id: 'alch_x', name: 'X'),
+        ),
+        isFalse,
+      );
+    });
+
+    test(
+      'AlchimikumQualitaet und Einnahmeprobe laufen verlustfrei durchs JSON',
+      () {
+        const stufe = AlchimikumQualitaet(
+          stufe: 'F',
+          zustaende: <AlchimikumZustand>[
+            AlchimikumZustand(
+              name: 'Kleptomanie 7',
+              dauer: 7,
+              einheit: 'stunden',
+            ),
+          ],
+        );
+        final zurueck = AlchimikumQualitaet.fromJson(stufe.toJson());
+        expect(zurueck.zustaende.single.name, 'Kleptomanie 7');
+        expect(
+          const AlchimikumQualitaet(stufe: 'A')
+              .toJson()
+              .containsKey('zustaende'),
+          isFalse,
+        );
+        const mittel = AlchimikumDef(
+          id: 'a',
+          name: 'A',
+          einnahmeProbe: AlchimikumEinnahmeProbe(
+            talent: 'Selbstbeherrschung',
+            zuschlag: 3,
+          ),
+        );
+        final gelesen = AlchimikumDef.fromJson(mittel.toJson());
+        expect(
+          beschreibeElixierEinnahmeProbe(gelesen.einnahmeProbe!),
+          'Selbstbeherrschung +3',
+        );
+        expect(
+          const AlchimikumDef(
+            id: 'a',
+            name: 'A',
+          ).toJson().containsKey('einnahmeProbe'),
+          isFalse,
+        );
+      },
+    );
+  });
+
   group('Echter Katalog', () {
+    test('Mutelixier verlangt ohne Basiliskum Selbstbeherrschung +3', () async {
+      final echt = await ladeEchtenRegelkatalog();
+      final mut = echt.catalog.alchimika.firstWhere(
+        (m) => m.id == 'alch_mutelixier',
+      );
+      expect(mut.einnahmeProbe?.talent, 'Selbstbeherrschung');
+      expect(mut.einnahmeProbe?.zuschlag, 3);
+    });
+
+    test(
+      'Fingerfertigkeitselixier F trägt den Nachteil Kleptomanie 7',
+      () async {
+        final echt = await ladeEchtenRegelkatalog();
+        final ff = echt.catalog.alchimika.firstWhere(
+          (m) => m.id == 'alch_fingerfertigkeitselixier',
+        );
+        final f = alchimikumStufe(ff, 'F')!;
+        expect(f.zustaende.single.name, 'Kleptomanie 7');
+        expect(f.zustaende.single.dauer, 7);
+        expect(f.zustaende.single.einheit, 'stunden');
+        expect(alchimikumStufe(ff, 'E')!.zustaende, isEmpty);
+      },
+    );
+
     test(
       'Mutelixier D wirkt wie im Regelwerk: MU +7 für 7 Spielrunden',
       () async {
