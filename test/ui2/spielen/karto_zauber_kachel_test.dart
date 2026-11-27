@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_verwaltungs_ziel.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
@@ -88,6 +89,7 @@ void main() {
     double breite = 1280,
     double skalierung = 1,
     RulesCatalog? katalog,
+    ValueChanged<KartoVerwaltungsAbschnitt>? verwaltungOeffnen,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(breite, 2600);
@@ -125,6 +127,7 @@ void main() {
               bestand: bestand ?? TestBestand(),
               aktion: (auftrag) => auftrag(),
               vorHeldenbearbeitung: () async => true,
+              onVerwaltungOeffnen: verwaltungOeffnen,
             ),
           ),
         ),
@@ -226,6 +229,22 @@ void main() {
       expect(k('karto-zauber-spell_armatrutz-details'), findsNothing);
     });
 
+    testWidgets('der Beschreibungsknopf öffnet die Zauberdetails', (
+      tester,
+    ) async {
+      final bestand = TestBestand();
+      await zeige(
+        tester,
+        held: _magier(ansicht: _sichtbar),
+        bestand: bestand,
+      );
+      await tester.tap(k('karto-zauber-spell_balsam-beschreibung'));
+      await tester.pumpAndSettle();
+      expect(bestand.aufrufe, contains('zauberdetails:liora:spell_balsam'));
+      // Der Knopf klappt die Kurzdetails nicht mit auf.
+      expect(k('karto-zauber-spell_balsam-details'), findsNothing);
+    });
+
     testWidgets('Sortierung nach ZfW* und Richtung umdrehen', (tester) async {
       await zeige(tester, held: _magier(ansicht: _sichtbar));
       double y(String id) => tester.getTopLeft(k('karto-zauber-$id')).dy;
@@ -318,6 +337,36 @@ void main() {
         expect(tester.takeException(), isNull);
       });
     }
+  });
+
+  group('Shortcut zur Magie-Seite', () {
+    testWidgets('mit aktivierter Magie führt er in den Abschnitt Magie', (
+      tester,
+    ) async {
+      KartoVerwaltungsAbschnitt? ziel;
+      await zeige(
+        tester,
+        held: _magier(ansicht: _sichtbar),
+        verwaltungOeffnen: (abschnitt) => ziel = abschnitt,
+      );
+      await tester.tap(k('karto-kachel-zauber-oeffnen'));
+      expect(ziel, KartoVerwaltungsAbschnitt.magie);
+    });
+
+    testWidgets('bei verborgener Magie-Seite gibt es keinen Knopf', (
+      tester,
+    ) async {
+      // Zauber mit ZfW, aber Magie ausdrücklich aus und kein Artefakt: der
+      // Magie-Tab fehlt, der Knopf würde ins Leere führen.
+      final held = _magier(ansicht: _sichtbar).copyWith(
+        resourceActivationConfig: const HeroResourceActivationConfig(
+          magicEnabledOverride: false,
+        ),
+      );
+      await zeige(tester, held: held, verwaltungOeffnen: (_) {});
+      expect(k('karto-kachel-zauber'), findsOneWidget);
+      expect(k('karto-kachel-zauber-oeffnen'), findsNothing);
+    });
   });
 
   group('Würfeln', () {

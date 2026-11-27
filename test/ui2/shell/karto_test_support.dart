@@ -271,6 +271,16 @@ class TestBestand implements KartoBestandsAdapter {
   }
 
   @override
+  Future<void> zauberDetailsOeffnen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String zauberId,
+  }) async {
+    aufrufe.add('zauberdetails:$heroId:$zauberId');
+  }
+
+  @override
   Future<void> standortSetzen({
     required BuildContext context,
     required WidgetRef ref,

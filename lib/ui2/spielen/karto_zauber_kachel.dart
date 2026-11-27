@@ -29,7 +29,9 @@ const int kZauberSucheAb = 6;
 /// Gefechtsbrücke, die selbst ins Würfelprotokoll schreibt. Suche, Sortierung
 /// und Merkmalsfilter leben nur im Widget. Gerechnet wird in
 /// `spiel_zauber_rules.dart` und `zauber_herleitung_rules.dart`; die
-/// geschützten Langtexte (Wirkung, Varianten) zeigt der Probendialog.
+/// geschützten Langtexte (Wirkung, Varianten) zeigen der Probendialog und der
+/// Beschreibungsknopf je Zauber, der die Zauberdetails der Magie-Seite
+/// schreibgeschützt öffnet (`zauberDetailsOeffnen`).
 class KartoZauberKachel extends ConsumerStatefulWidget {
   /// Kachel für den Helden [heroId] mit den gespeicherten [werte].
   const KartoZauberKachel({
@@ -107,6 +109,15 @@ class _KartoZauberKachelState extends ConsumerState<KartoZauberKachel> {
       );
     });
   }
+
+  Future<void> _beschreibung(SpielZauberEintrag eintrag) => widget.aktion(
+    () => widget.bestand.zauberDetailsOeffnen(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      zauberId: eintrag.zauber.id,
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -200,6 +211,7 @@ class _KartoZauberKachelState extends ConsumerState<KartoZauberKachel> {
                   onWuerfeln: _bruecke == null
                       ? null
                       : () => _wuerfeln(eintrag),
+                  onBeschreibung: () => _beschreibung(eintrag),
                 ),
               ],
           ],
@@ -381,6 +393,7 @@ class _ZauberZeile extends StatelessWidget {
     required this.offen,
     required this.onUmschalten,
     required this.onWuerfeln,
+    required this.onBeschreibung,
   });
 
   final SpielZauberEintrag eintrag;
@@ -388,6 +401,7 @@ class _ZauberZeile extends StatelessWidget {
   final bool offen;
   final VoidCallback onUmschalten;
   final VoidCallback? onWuerfeln;
+  final VoidCallback onBeschreibung;
 
   @override
   Widget build(BuildContext context) {
@@ -504,6 +518,13 @@ class _ZauberZeile extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ),
+                  IconButton(
+                    key: ValueKey<String>('karto-zauber-$id-beschreibung'),
+                    tooltip: '${zauber.name}: ganze Beschreibung',
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(Icons.menu_book_outlined),
+                    onPressed: onBeschreibung,
                   ),
                   if (onWuerfeln != null)
                     IconButton(

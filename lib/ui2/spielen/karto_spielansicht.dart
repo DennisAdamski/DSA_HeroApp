@@ -327,19 +327,25 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
             ? (wert) => _einklappen(art, wert)
             : null,
         onVergroessern: () => _vergroessern(art),
-        onOeffnen: _oeffnenFuer(art),
+        onOeffnen: _oeffnenFuer(art, werte),
         oeffnenZiel: art.verwaltungsAbschnitt?.titel ?? '',
         child: _inhalt(context, werte, art, ref),
       ),
     );
   }
 
-  // Der Shortcut fehlt ohne Workspace-Rückruf und bei Kacheln ohne Seite im
-  // Bestand.
-  VoidCallback? _oeffnenFuer(KartoSpielkachelArt art) {
+  // Der Shortcut fehlt ohne Workspace-Rückruf, bei Kacheln ohne Seite im
+  // Bestand und bei der Zauberkachel, solange die Magie-Seite verborgen ist.
+  VoidCallback? _oeffnenFuer(
+    KartoSpielkachelArt art,
+    HeroComputedSnapshot werte,
+  ) {
     final abschnitt = art.verwaltungsAbschnitt;
     final oeffnen = widget.onVerwaltungOeffnen;
     if (abschnitt == null || oeffnen == null) return null;
+    if (art == KartoSpielkachelArt.zauber && !magieSeiteErreichbar(werte)) {
+      return null;
+    }
     return () => oeffnen(abschnitt);
   }
 

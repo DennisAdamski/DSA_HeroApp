@@ -240,6 +240,18 @@ abstract interface class KartoBestandsAdapter {
     required ReittierProbeArt art,
   });
 
+  /// Öffnet die vollständige Beschreibung des Zaubers [zauberId] (Wirkung,
+  /// Varianten, Modifikationen, Quelle) schreibgeschützt.
+  ///
+  /// Geschützte Langtexte bleiben ohne Freischaltung gesperrt; geschrieben
+  /// wird nichts am Helden. Ein unbekannter Zauber öffnet nichts.
+  Future<void> zauberDetailsOeffnen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String zauberId,
+  });
+
   /// Speichert den Standort des Helden im Laufzeitzustand.
   ///
   /// Schreibt frisch über `aendereZustandMitMeldung` und ersetzt nur die

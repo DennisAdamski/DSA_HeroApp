@@ -101,6 +101,13 @@ bool fuehrtZauber(HeroComputedSnapshot snapshot) =>
     snapshot.resourceActivation.magic.isEnabled ||
     snapshot.hero.spells.values.any((e) => e.spellValue != null);
 
+/// Ob die Magie-Seite der Verwaltung erreichbar ist: Magie aktiviert oder ein
+/// Artefakt mit Matrix im Inventar. Nur dann bringt der Kachel-Shortcut dorthin;
+/// dieselbe Bedingung steuert den Magie-Tab (`workspace_tab_spec.dart`).
+bool magieSeiteErreichbar(HeroComputedSnapshot snapshot) =>
+    snapshot.resourceActivation.magic.isEnabled ||
+    snapshot.hero.inventoryEntries.any((e) => e.artefaktDaten != null);
+
 /// Gelernte Katalogzauber für die Zauberkachel.
 ///
 /// Nur Zauber mit ZfW erscheinen: ein eingetragener, nicht aktivierter Zauber
