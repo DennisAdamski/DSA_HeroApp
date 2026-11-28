@@ -125,18 +125,14 @@ class _AppStartupGateState extends State<AppStartupGate> {
     _settingsSubscription = widget.settingsRepository.watch().listen((
       settings,
     ) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
       // Nur der Heldenspeicherpfad beeinflusst diesen Gate. Ein `setState`
       // bei jeder anderen Einstellung (etwa einer gespeicherten
       // Spaltenbreite) baut den ProviderScope neu auf und stoesst darueber
       // einen sichtbaren Neuaufbau der gesamten App an.
       final pathChanged = settings.heroStoragePath != _settings.heroStoragePath;
       _settings = settings;
-      if (!pathChanged) {
-        return;
-      }
+      if (!pathChanged) return;
       setState(_ensureBootstrap);
     });
     _ensureBootstrap();
@@ -150,8 +146,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
     }
   }
 
-  // Ein Tab im Hintergrund verliert die Cloud-Verbindung, und die
-  // automatische Wiederholung kann dann ausgeschöpft sein (SYNC-12).
+  // Hintergrund-Tab verliert die Cloud-Verbindung, Wiederholung evtl. erschöpft (SYNC-12).
   void _beimSichtbarwerden() {
     if (!_imVordergrund.value) return;
     unawaited(_activeSyncingRepository?.wiederholeNachFehler());
@@ -434,9 +429,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
     HiveVorgangsjournal journal,
   ) async {
     try {
-      if ((await journal.offene()).isEmpty) {
-        return;
-      }
+      if ((await journal.offene()).isEmpty) return;
       // Dieselbe Ablage wie `avatarFileStorageProvider`: lokal und Cloud.
       final plattform = createAvatarFileStorage();
       final storage = plattform.isCloudBacked
