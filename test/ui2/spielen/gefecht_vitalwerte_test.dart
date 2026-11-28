@@ -71,8 +71,9 @@ void main() {
         expect(find.textContaining('LeP 30 /'), findsOneWidget);
         expect(find.textContaining('AsP 12 /'), findsOneWidget);
         expect(find.text('Brust: 2 Wunden'), findsOneWidget);
-        expect(find.text('Schaden erhalten'), findsNothing);
-        expect(find.text('Effekte verwalten'), findsNothing);
+        // Die Schnellzugriffe sitzen in der Überschrift und bleiben erreichbar.
+        expect(find.byTooltip('Schaden erhalten'), findsOneWidget);
+        expect(find.byTooltip('Effekte verwalten'), findsOneWidget);
         expect(find.text('Ausdauer'), findsNothing);
         expect(find.text('Karmapunkte'), findsNothing);
         expect(tester.takeException(), isNull);
@@ -83,12 +84,11 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.textContaining('LeP 5 /'), findsOneWidget);
         expect(find.textContaining('AsP 8 /'), findsOneWidget);
-        expect(find.text('Schaden erhalten'), findsNothing);
+        expect(find.text('Ausdauer'), findsNothing);
 
         await tester.ensureVisible(find.text('Vitalwerte'));
         await tester.tap(find.text('Vitalwerte'));
         await tester.pumpAndSettle();
-        expect(find.text('Schaden erhalten'), findsOneWidget);
         expect(find.text('Zustand rondra'), findsOneWidget);
         expect(find.text('Effekte rondra'), findsOneWidget);
         expect(find.text('Ausdauer'), findsOneWidget);
@@ -103,12 +103,11 @@ void main() {
         state = state.copyWith(currentLep: 30);
         container.invalidate(heroComputedProvider('rondra'));
         await tester.pumpAndSettle();
-        expect(find.text('Schaden erhalten'), findsOneWidget);
-        await tester.ensureVisible(find.text('Schaden erhalten'));
-        await tester.tap(find.text('Schaden erhalten'));
+        await tester.ensureVisible(find.byTooltip('Schaden erhalten'));
+        await tester.tap(find.byTooltip('Schaden erhalten'));
         await tester.pumpAndSettle();
-        await tester.ensureVisible(find.text('Effekte verwalten'));
-        await tester.tap(find.text('Effekte verwalten'));
+        await tester.ensureVisible(find.byTooltip('Effekte verwalten'));
+        await tester.tap(find.byTooltip('Effekte verwalten'));
         await tester.pumpAndSettle();
         expect(bestand.aufrufe, contains('schadenErhalten:rondra'));
         expect(bestand.aufrufe, contains('effekte:rondra'));
@@ -119,7 +118,7 @@ void main() {
         state = state.copyWith(currentLep: 4);
         container.invalidate(heroComputedProvider('rondra'));
         await tester.pumpAndSettle();
-        expect(find.text('Schaden erhalten'), findsNothing);
+        expect(find.text('Ausdauer'), findsNothing);
         expect(tester.takeException(), isNull);
       },
     );
@@ -163,11 +162,11 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(find.text('Vitalwerte'), findsOneWidget);
-        expect(find.text('Schaden erhalten'), findsOneWidget);
+        expect(find.text('Ausdauer'), findsOneWidget);
         state = gesund;
         container.invalidate(heroComputedProvider('rondra'));
         await tester.pumpAndSettle();
-        expect(find.text('Schaden erhalten'), findsOneWidget);
+        expect(find.text('Ausdauer'), findsOneWidget);
         expect(find.textContaining('AsP '), findsNothing);
         expect(find.textContaining('Wunden'), findsNothing);
       },

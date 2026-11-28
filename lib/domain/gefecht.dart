@@ -165,6 +165,7 @@ class Gefechtszustand {
     this.schildparadenVerbraucht = 0,
     this.freieVerbraucht = 0,
     this.zusatzVerbraucht = 0,
+    this.grossmeisterPoolVerbraucht = 0,
     this.regulaereAttacke = false,
     this.regulaereParade = false,
     this.umwandlung = Gefechtsumwandlung.normal,
@@ -213,6 +214,9 @@ class Gefechtszustand {
   });
   final int runde, iniWurf, iniVerlust;
   final int geschuetzterIniVerlust, ungeklaerterIniVerlust;
+
+  /// In dieser KR eingesetzte Punkte des Säbel-Großmeister-Pools.
+  final int grossmeisterPoolVerbraucht;
   final int schildparadenVerbraucht;
   final int angriffeVerbraucht,
       paradenVerbraucht,
@@ -321,6 +325,7 @@ class Gefechtszustand {
     int? schildparadenVerbraucht,
     int? freieVerbraucht,
     int? zusatzVerbraucht,
+    int? grossmeisterPoolVerbraucht,
     Gefechtsumwandlung? umwandlung,
     bool? ansageGebunden,
     bool? regulaereAttacke,
@@ -393,6 +398,8 @@ class Gefechtszustand {
         schildparadenVerbraucht ?? this.schildparadenVerbraucht,
     freieVerbraucht: freieVerbraucht ?? this.freieVerbraucht,
     zusatzVerbraucht: zusatzVerbraucht ?? this.zusatzVerbraucht,
+    grossmeisterPoolVerbraucht:
+        grossmeisterPoolVerbraucht ?? this.grossmeisterPoolVerbraucht,
     umwandlung: umwandlung ?? this.umwandlung,
     ansageGebunden: ansageGebunden ?? this.ansageGebunden,
     regulaereAttacke: regulaereAttacke ?? this.regulaereAttacke,
@@ -487,7 +494,11 @@ class Gefechtspruefung {
     this.ansageFehlmalus = 0,
     this.beendetAnsageFolgemalus = false,
     this.zielHerleitung,
+    this.grossmeisterPool = 0,
   });
+
+  /// Bei Buchung verbrauchte Punkte des Säbel-Großmeister-Pools.
+  final int grossmeisterPool;
   final Gefechtsaktion aktion;
   final Gefechtsfreigabe status;
   final List<String> gruende;
@@ -525,22 +536,27 @@ class Gefechtspruefung {
     List<String>? gruende,
     List<String>? entscheidungen,
     List<String>? hinweise,
+    List<String>? sperrgruende,
+    int? zielwert,
+    int? erschwernis,
+    List<Gefechtsmodifikator>? modifikatoren,
+    int? grossmeisterPool,
   }) => Gefechtspruefung(
     aktion: aktion,
     status: status ?? this.status,
     gruende: gruende ?? this.gruende,
-    zielwert: zielwert,
+    zielwert: zielwert ?? this.zielwert,
     angriffe: angriffe,
     paraden: paraden,
     freie: freie,
     zusatz: zusatz,
-    erschwernis: erschwernis,
-    modifikatoren: modifikatoren,
+    erschwernis: erschwernis ?? this.erschwernis,
+    modifikatoren: modifikatoren ?? this.modifikatoren,
     kampfmittel: kampfmittel,
     ausruestungspaar: ausruestungspaar,
     mitAnsage: mitAnsage,
     probenart: probenart,
-    sperrgruende: sperrgruende,
+    sperrgruende: sperrgruende ?? this.sperrgruende,
     fehlendeAngaben: fehlendeAngaben,
     entscheidungen: entscheidungen ?? this.entscheidungen,
     hinweise: hinweise ?? this.hinweise,
@@ -549,6 +565,7 @@ class Gefechtspruefung {
     ansageFehlmalus: ansageFehlmalus,
     beendetAnsageFolgemalus: beendetAnsageFolgemalus,
     zielHerleitung: zielHerleitung,
+    grossmeisterPool: grossmeisterPool ?? this.grossmeisterPool,
   );
 
   /// Nur konkrete Sperren, fehlende Angaben oder offene Entscheidungen blockieren.

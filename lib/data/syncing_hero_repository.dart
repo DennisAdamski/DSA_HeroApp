@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/sync/sync_basis_store.dart';
 import 'package:dsa_heldenverwaltung/data/sync/sync_konflikt_vorgang.dart';
 import 'package:dsa_heldenverwaltung/data/sync/sync_metadata_store.dart';
+import 'package:dsa_heldenverwaltung/data/sync/sync_wiederholung.dart';
 import 'package:dsa_heldenverwaltung/data/unlesbare_helden_quelle.dart';
 import 'package:dsa_heldenverwaltung/data/vorgangsjournal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -23,6 +24,7 @@ import 'package:dsa_heldenverwaltung/domain/sync_object_diff.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_zusammenfuehrung.dart';
 
 part 'syncing_hero_repository_vorgang.dart';
+part 'syncing_hero_repository_wiederholung.dart';
 part 'syncing_hero_repository_zusammenfuehrung.dart';
 
 /// Wie lange ein Tombstone online bleibt, bevor der Abgleich ihn entfernt
@@ -52,27 +54,31 @@ class SyncingHeroRepository
     SyncBasisStore? basisStore,
     Vorgangsjournal? journal,
     bool startRemoteListener = true,
+    this.wiederholung,
     DateTime Function()? uhr,
   }) : _uhr = uhr ?? DateTime.now,
+       _beobachten = startRemoteListener,
        offlineReviewStore =
            offlineReviewStore ?? InMemoryOfflineHeroReviewStore(),
        basisStore = basisStore ?? SpeicherSyncBasisStore(),
        journal = journal ?? SpeicherVorgangsjournal() {
     _journalBereit = _ladeJournal();
-    if (startRemoteListener) {
-      _heroSubscription = remote.watchHeroes().listen(
-        (records) => unawaited(_applyRemoteHeroRecords(records)),
-        onError: _handleRemoteStreamError,
-      );
-      final stateGateway = _stateRemote;
-      if (stateGateway != null) {
-        _stateSubscription = stateGateway.watchHeroStates().listen(
-          (records) => unawaited(_applyRemoteStateRecords(records)),
-          onError: _handleRemoteStreamError,
-        );
-      }
-    }
+    _starteBeobachtung();
   }
+
+  /// Wiederanlauf nach Fehlern (SYNC-12); `null` schaltet ihn ab.
+  ///
+  /// Die App setzt ihn im Startup-Gate. Tests lassen ihn meist weg, damit
+  /// kein Fehler einen Timer hinterlässt.
+  final SyncWiederholung? wiederholung;
+
+  // Ob die Online-Dokumente beobachtet werden (`startRemoteListener`).
+  final bool _beobachten;
+  bool _geschlossen = false;
+  Timer? _wiederholungsTimer;
+  int _wiederholungsVersuch = 0;
+  Timer? _beobachtungsTimer;
+  int _beobachtungsVersuch = 0;
 
   /// Lokales, offline-faehiges Repository.
   final HeroRepository local;
@@ -245,6 +251,8 @@ class SyncingHeroRepository
   /// Fuehrt einen vollstaendigen Pull-/Push-Abgleich aus.
   @override
   Future<void> syncNow() async {
+    // Ein nach einem Fehler beendeter Listener läuft mit jedem Abgleich an.
+    if (wiederholung != null) _starteBeobachtung();
     _emitStatus(_status.copyWith(isSyncing: true, lastFailure: null));
     try {
       // Zuerst zu Ende führen, was eine Konfliktentscheidung offen ließ.
@@ -261,6 +269,7 @@ class SyncingHeroRepository
             lastFailure: null,
           ),
         );
+        _wiederholungAbgeschlossen();
       } else {
         // Teilerfolg: lastFailure wurde bereits von den Apply-Methoden
         // gesetzt und bleibt sichtbar.
@@ -1759,6 +1768,21 @@ class SyncingHeroRepository
     if (!_statusController.isClosed) {
       _statusController.add(currentStatus);
     }
+    _planeWiederholung(_status);
+  }
+
+  /// Gleicht sofort ab, wenn der letzte Abgleich scheiterte oder ein Listener
+  /// unterbrochen ist; sonst geschieht nichts.
+  ///
+  /// Für den Moment, in dem die App wieder sichtbar wird: Ein Browser-Tab im
+  /// Hintergrund verliert die Verbindung, und die Wartefolge der
+  /// automatischen Wiederholung kann dann schon ausgeschöpft sein.
+  Future<void> wiederholeNachFehler() async {
+    if (_geschlossen || wiederholung == null || _status.isSyncing) return;
+    if (_status.lastFailure == null && !_beobachtungUnterbrochen) return;
+    _wiederholungAbgeschlossen();
+    _beobachtungsVersuch = 0;
+    await syncNow();
   }
 
   void _handleRemoteStreamError(Object error, StackTrace stackTrace) {
@@ -2071,6 +2095,7 @@ class SyncingHeroRepository
 
   /// Beendet Remote-Subscriptions und Status-Streams.
   Future<void> close() async {
+    _beendeWiederholung();
     await _heroSubscription?.cancel();
     await _stateSubscription?.cancel();
     await _statusController.close();

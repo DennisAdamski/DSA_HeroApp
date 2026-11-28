@@ -147,6 +147,21 @@ class KartoKampfwerte extends StatelessWidget {
           schluessel: 'karto-kampf-waffenmeister',
           text: 'Waffenmeister: ${c.waffenmeisterName}',
         ),
+      if (c.meisterschaft.grossmeisterName.isNotEmpty)
+        (
+          schluessel: 'karto-kampf-grossmeister',
+          text: c.meisterschaft.grossmeisterName,
+        ),
+      if (c.meisterschaft.poolPunkte case final pool?)
+        (
+          schluessel: 'karto-kampf-grossmeister-pool',
+          text: 'Säbel-Pool: $pool Punkte je KR',
+        ),
+      if (c.meisterschaft.geStattKkAktiv)
+        (
+          schluessel: 'karto-kampf-grossmeister-ge',
+          text: 'Bonusschaden aus GE statt KK',
+        ),
     ];
 
     return Column(

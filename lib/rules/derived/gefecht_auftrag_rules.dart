@@ -9,6 +9,7 @@ import 'gefecht_rules.dart';
 import 'gefecht_kampfmittel_rules.dart';
 import 'gefecht_zusatz_rules.dart';
 import 'gefecht_freigabe_rules.dart';
+import 'gefecht_grossmeister_rules.dart';
 import 'gefecht_ansage_rules.dart';
 import 'gefecht_meisterparade_rules.dart';
 import 'gefecht_zielen_rules.dart';
@@ -54,7 +55,12 @@ Gefechtspruefung pruefeGefechtAuftrag(
     auftrag,
   );
   final folge = ergaenzeGefechtsAnsagefolge(mp, s, snapshot, auftrag, katalog);
-  return ergaenzeGefechtsPatzerfreigabe(folge, s, folge.kampfmittel);
+  return ergaenzeGefechtsGrossmeisterPool(
+    ergaenzeGefechtsPatzerfreigabe(folge, s, folge.kampfmittel),
+    s,
+    snapshot,
+    auftrag,
+  );
 }
 
 // Fachprüfung bleibt von Formularpflichten getrennt und wird identisch wiederverwendet.
@@ -163,7 +169,12 @@ Gefechtspruefung _pruefeGefechtAuftrag(
       'tal_zweihandschwerter_saebel',
     ];
     final waffe = snapshot.hero.combatConfig.selectedWeapon;
-    if (!talente.contains(waffe.talentId) ||
+    // Waffenmeister oder Großmeister (wuchtartige Säbel) schalten ihn frei.
+    final freigeschaltet = snapshot
+        .combatPreviewStats
+        .waffenmeisterAdditionalManeuvers
+        .contains('man_hammerschlag');
+    if (!talente.contains(waffe.talentId) && !freigeschaltet ||
         waffe.name.toLowerCase().contains('nachtwind')) {
       sperren.add('Waffe für Hammerschlag ungeeignet.');
     }

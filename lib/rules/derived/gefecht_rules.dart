@@ -271,6 +271,7 @@ Gefechtszustand naechsteGefechtsrunde(Gefechtszustand s) {
     schildparadenVerbraucht: 0,
     freieVerbraucht: 0,
     zusatzVerbraucht: 0,
+    grossmeisterPoolVerbraucht: 0,
     regulaereAttacke: false,
     regulaereParade: false,
     umwandlung: Gefechtsumwandlung.normal,
@@ -728,6 +729,8 @@ Gefechtszustand verbraucheGefechtsaktion(
         (pruefung.aktion == Gefechtsaktion.schildparade ? 1 : 0),
     freieVerbraucht: s.freieVerbraucht + pruefung.freie,
     zusatzVerbraucht: s.zusatzVerbraucht + pruefung.zusatz,
+    grossmeisterPoolVerbraucht:
+        s.grossmeisterPoolVerbraucht + pruefung.grossmeisterPool,
     fixierterIniBonus:
         pruefung.angriffe +
                 pruefung.paraden +

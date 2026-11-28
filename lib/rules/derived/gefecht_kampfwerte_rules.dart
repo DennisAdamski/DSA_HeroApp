@@ -16,6 +16,7 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
 import 'gefecht_auftrag_rules.dart';
 import 'gefecht_held_rules.dart';
+import 'gefecht_grossmeister_rules.dart';
 import 'gefecht_herleitung_rules.dart';
 import 'gefecht_kampfmittel_rules.dart';
 import 'gefecht_rules.dart';
@@ -322,6 +323,8 @@ List<GefechtsKampfwert> gefechtsKampfwerte(
             ? h?.tpZuschlag
             : null,
       ),
+    if (c.meisterschaft.grossmeisterName.isNotEmpty)
+      _grossmeisterwert(s, snapshot),
     GefechtsKampfwert(
       id: 'rs',
       kuerzel: 'RS',
@@ -339,4 +342,31 @@ List<GefechtsKampfwert> gefechtsKampfwerte(
       herleitung: h?.beKampf,
     ),
   ];
+}
+
+// Großmeister der Hauptwaffe: freier Säbel-Pool dieser KR, eingerechnete
+// Wirkungen und Tischregeln im Detailblatt.
+GefechtsKampfwert _grossmeisterwert(
+  Gefechtszustand s,
+  HeroComputedSnapshot snapshot,
+) {
+  final m = snapshot.combatPreviewStats.meisterschaft;
+  final pool = m.poolPunkte;
+  final frei = gefechtsGrossmeisterPoolFrei(s, snapshot);
+  return GefechtsKampfwert(
+    id: 'grossmeister',
+    kuerzel: pool == null ? 'GM' : 'Pool',
+    titel: m.grossmeisterName,
+    anzeige: pool == null ? '★' : '$frei/$pool',
+    hinweise: [
+      if (pool != null)
+        'Säbel-Pool: $frei von $pool Punkten in dieser KR frei '
+            '(Betäubungsschlag, Entwaffnen, Klingensturm, Klingenwand).',
+      if (m.geStattKkAktiv)
+        'Bonusschaden aus GE statt KK (TP/KK +${m.tpKkMitGe} statt '
+            '+${m.tpKkMitKk}); mit Wuchtschlag gilt KK.',
+      ...m.grossmeisterWirkungen,
+      ...m.hinweise,
+    ],
+  );
 }

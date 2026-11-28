@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/fernkampf_ladezeit_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/grossmeister_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampf_herleitung_rules.dart';
@@ -117,6 +118,7 @@ class CombatPreviewStats {
     required this.waffenmeisterAdditionalManeuvers,
     required this.waffenmeisterReloadTimeHalved,
     required this.waffenmeisterManeuverReductions,
+    this.meisterschaft = MeisterschaftUebersicht.keine,
     this.schwertarmWundMalus = 0,
     this.schildarmWundMalus = 0,
     this.offhandPreview,
@@ -251,6 +253,10 @@ class CombatPreviewStats {
 
   /// Manoever-Erschwernis-Reduktionen durch Waffenmeisterschaft.
   final Map<String, int> waffenmeisterManeuverReductions;
+
+  /// Waffenmeister und Waffen-Großmeister der Hauptwaffe für die
+  /// Meisterschafts-Kachel der Kampfübersicht.
+  final MeisterschaftUebersicht meisterschaft;
 
   /// Eigenstaendige Nebenhand-Vorschau; `null` = keine Nebenhand belegt.
   final OffhandCombatPreview? offhandPreview;
@@ -488,6 +494,7 @@ CombatPreviewStats computeCombatPreviewStats(
         ? main.name
         : main.weaponType,
     activeTalentId: main.talentId,
+    aktiveKampfSfIds: config.specialRules.activeCombatSpecialAbilityIds,
   );
 
   // --- Waffe: Spezialisierung & TP (waffen_rules) ---
@@ -498,20 +505,29 @@ CombatPreviewStats computeCombatPreviewStats(
   );
   final atSpecBonus = specApplies ? (isRangedWeapon ? 2 : 1) : 0;
   final paSpecBonus = specApplies && !isRangedWeapon ? 1 : 0;
-  final wmKkBase = main.kkBase + wmEffects.tpKkBaseReduction;
-  final wmKkThreshold = main.kkThreshold + wmEffects.tpKkThresholdReduction;
-  final usesTpKkThreshold = _usesTpKkThreshold(
-    kkBase: main.kkBase,
-    kkThreshold: main.kkThreshold,
-  );
+  final gmFest = wmEffects.grossmeister;
+  final wmKkBase =
+      gmFest.tpKkFestBasis ?? main.kkBase + wmEffects.tpKkBaseReduction;
+  final wmKkThreshold =
+      gmFest.tpKkFestSchwelle ??
+      main.kkThreshold + wmEffects.tpKkThresholdReduction;
+  final usesTpKkThreshold =
+      gmFest.tpKkFestBasis != null ||
+      _usesTpKkThreshold(kkBase: main.kkBase, kkThreshold: main.kkThreshold);
   final kkThreshold = usesTpKkThreshold && wmKkThreshold < 1
       ? 1
       : wmKkThreshold;
+  // Säbel-Großmeister: Bonusschaden wahlweise aus GE (Epische Stufen S. 18).
+  final geStattKk =
+      usesTpKkThreshold && gmFest.geStattKk && special.grossmeisterGeStattKk;
+  final tpEigenschaft = geStattKk
+      ? effectiveSheet.attributes.ge
+      : effectiveSheet.attributes.kk;
   // Karnifilo: KK +5 verbessert die TP (LC S. 136), ohne AT/PA neu zu rechnen.
-  final zauberKk = derived.zauberEffekte.eigenschaftsMods.kk;
+  final zauberKk = geStattKk ? 0 : derived.zauberEffekte.eigenschaftsMods.kk;
   final tpKkOhneZauber = usesTpKkThreshold
       ? computeTpKk(
-          kk: effectiveSheet.attributes.kk,
+          kk: tpEigenschaft,
           kkBase: wmKkBase,
           kkThreshold: kkThreshold,
         )
@@ -541,6 +557,7 @@ CombatPreviewStats computeCombatPreviewStats(
     axxeleratusActive: axxeleratusActive,
     talentName: selectedTalent?.name,
     reloadDivisor: wmEffects.reloadTimeHalved ? 2 : 1,
+    reloadModifier: wmEffects.grossmeister.ladezeit,
     beKampf: beKampf,
   );
   final distanceTpMod = isRangedWeapon ? activeDistanceBand.tpMod : 0;
@@ -552,7 +569,8 @@ CombatPreviewStats computeCombatPreviewStats(
     waffenName: main.name,
     nutztTpKk: usesTpKkThreshold,
     tpKk: tpKkOhneZauber,
-    kk: effectiveSheet.attributes.kk,
+    kk: tpEigenschaft,
+    eigenschaft: geStattKk ? 'GE' : 'KK',
     kkBasis: wmKkBase,
     kkSchwelle: kkThreshold,
     waffenmeisterKkBasis: wmEffects.tpKkBaseReduction,
@@ -695,11 +713,59 @@ CombatPreviewStats computeCombatPreviewStats(
     effectiveGe: effectiveSheet.attributes.ge,
     catalogTalents: catalogTalents,
     waffenmeisterschaften: config.waffenmeisterschaften,
+    aktiveKampfSfIds: special.activeCombatSpecialAbilityIds,
   );
   final geBase = initiativeSnapshot.geBase;
   final geThreshold = initiativeSnapshot.geThreshold;
   final iniGe = initiativeSnapshot.iniGe;
   final kombinierteHeldenWaffenIni = initiativeSnapshot.kombinierteIni;
+  final grossmeister = wmEffects.grossmeister;
+  final meisterschaft = MeisterschaftUebersicht(
+    waffenmeisterName: wmEffects.waffenmeisterGefunden
+        ? 'Waffenmeister (${main.weaponType.trim().isEmpty ? main.name : main.weaponType})'
+        : '',
+    waffenmeisterWirkungen: wmEffects.waffenmeisterWirkungen,
+    grossmeisterName: grossmeister.name,
+    grossmeisterWirkungen: List<String>.unmodifiable(<String>[
+      if (usesTpKkThreshold &&
+          (grossmeister.tpKkBasis != 0 ||
+              grossmeister.tpKkSchwelle != 0 ||
+              grossmeister.tpKkFestBasis != null))
+        'TP/KK $wmKkBase/$kkThreshold statt '
+            '${main.kkBase}/${main.kkThreshold} der Waffe',
+      if (usesTpKkThreshold && grossmeister.geIniSchwelle != 0)
+        'GE/INI $geBase/$geThreshold statt '
+            '$geBase/${geThreshold - grossmeister.geIniSchwelle}: '
+            'INI +$iniGe',
+      if (grossmeister.at != 0 || grossmeister.pa != 0)
+        'AT +${grossmeister.at}, PA +${grossmeister.pa}',
+      if (isRangedWeapon && grossmeister.ladezeit != 0)
+        'Ladezeit ${grossmeister.ladezeit} Aktion: '
+            '${reloadTimeResult.displayLabel}',
+      if (grossmeister.zusatzaktionen > 0)
+        '+${grossmeister.zusatzaktionen} Aktion pro KR (höchstens 4 '
+            'Aktionen)',
+      ...wmEffects.grossmeisterManoeverWirkungen,
+    ]),
+    hinweise: grossmeister.hinweise,
+    poolPunkte: grossmeister.manoeverPool ? iniGe : null,
+    geStattKkMoeglich: usesTpKkThreshold && grossmeister.geStattKk,
+    geStattKkAktiv: geStattKk,
+    tpKkMitKk: usesTpKkThreshold
+        ? computeTpKk(
+            kk: effectiveSheet.attributes.kk,
+            kkBase: wmKkBase,
+            kkThreshold: kkThreshold,
+          )
+        : 0,
+    tpKkMitGe: usesTpKkThreshold
+        ? computeTpKk(
+            kk: effectiveSheet.attributes.ge,
+            kkBase: wmKkBase,
+            kkThreshold: kkThreshold,
+          )
+        : 0,
+  );
   final offhandWeaponInitiative = offhandWeapon == null
       ? null
       : _computeWeaponInitiativeSnapshot(
@@ -708,6 +774,7 @@ CombatPreviewStats computeCombatPreviewStats(
           effectiveGe: effectiveSheet.attributes.ge,
           catalogTalents: catalogTalents,
           waffenmeisterschaften: config.waffenmeisterschaften,
+          aktiveKampfSfIds: special.activeCombatSpecialAbilityIds,
         ).kombinierteIni;
   final kampfIniHerleitung = herleiteKampfIni(
     waffenIni: initiativeSnapshot.herleitung,
@@ -903,7 +970,7 @@ CombatPreviewStats computeCombatPreviewStats(
     schnellladenArmbrustTemporary:
         reloadTimeResult.schnellladenArmbrust.isTemporary,
     waffenmeisterActive: wmEffects.isActive,
-    waffenmeisterName: wmEffects.isActive
+    waffenmeisterName: wmEffects.waffenmeisterGefunden
         ? 'Waffenmeister (${main.weaponType.trim().isEmpty ? main.name : main.weaponType})'
         : '',
     waffenmeisterIniBonus: wmEffects.iniBonus,
@@ -914,6 +981,7 @@ CombatPreviewStats computeCombatPreviewStats(
     waffenmeisterAdditionalManeuvers: wmEffects.additionalManeuvers,
     waffenmeisterReloadTimeHalved: wmEffects.reloadTimeHalved,
     waffenmeisterManeuverReductions: wmEffects.maneuverReductions,
+    meisterschaft: meisterschaft,
     offhandPreview: offhandPreview,
     twoWeaponCombat: twoWeaponCombat,
     schwertarmWundMalus: schwertarmWundMalus,

@@ -160,6 +160,7 @@ final _kampf = <_Modell>[
       activeCombatSpecialAbilityIds: <String>['ksf_a'],
       gladiatorStyleTalent: 'raufen',
       activeManeuvers: <String>['man_finte'],
+      grossmeisterGeStattKk: true,
     ).toJson(),
     lade: (json) => CombatSpecialRules.fromJson(json).toJson(),
     bearbeite: (json) =>

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config/waffenmeister_config.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/grossmeister_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/waffenmeister_rules.dart';
 
 void main() {
@@ -494,6 +495,79 @@ void main() {
       );
 
       expect(effects.additionalManeuvers, contains('man_finte'));
+    });
+  });
+  group('Waffen-Großmeister (Epische Stufen S. 14–20)', () {
+    test('per Waffenmeister erlaubte Manöver werden stattdessen um 4 '
+        'erleichtert', () {
+      final effects = computeWaffenmeisterEffects(
+        waffenmeisterschaften: const [
+          WaffenmeisterConfig(
+            talentId: 'tal_saebel',
+            weaponType: 'Khunchomer',
+            bonuses: [
+              WaffenmeisterBonus(
+                type: WaffenmeisterBonusType.additionalManeuver,
+                targetManeuver: 'Hammerschlag',
+              ),
+            ],
+          ),
+        ],
+        activeWeaponType: 'Khunchomer',
+        activeTalentId: 'tal_saebel',
+        aktiveKampfSfIds: const ['esf_grossmeister_saebel'],
+      );
+      expect(effects.maneuverReductions['man_hammerschlag'], 4);
+      expect(effects.additionalManeuvers, contains('man_schildspalter'));
+      expect(effects.tpKkBaseReduction, 1);
+      expect(effects.tpKkThresholdReduction, -1);
+      expect(effects.waffenmeisterGefunden, isTrue);
+    });
+
+    test('Großmeister wirkt ohne passende Waffenmeisterschaft der Waffe', () {
+      final effects = computeWaffenmeisterEffects(
+        waffenmeisterschaften: const [],
+        activeWeaponType: 'Langbogen',
+        activeTalentId: 'tal_bogen',
+        aktiveKampfSfIds: const ['esf_grossmeister_bogen'],
+      );
+      expect(effects.isActive, isTrue);
+      expect(effects.waffenmeisterGefunden, isFalse);
+      expect(effects.grossmeister.ladezeit, -1);
+    });
+
+    test('Ringen-Großmeister mit Bornländisch: AT und PA +1', () {
+      final effects = computeWaffenmeisterEffects(
+        waffenmeisterschaften: const [],
+        activeWeaponType: 'Ringen',
+        activeTalentId: 'tal_ringen',
+        aktiveKampfSfIds: const [
+          'esf_grossmeister_ringen',
+          'ksf_bornlaendisch',
+        ],
+      );
+      expect(effects.atWmBonus, 1);
+      expect(effects.paWmBonus, 1);
+    });
+
+    test('Schleuder erhält festen TP/KK-Schlüssel, Lasso nicht', () {
+      GrossmeisterEffekte gm(String waffe) => computeGrossmeisterEffekte(
+        aktiveKampfSfIds: const ['esf_grossmeister_schleuder'],
+        talentId: 'tal_schleuder',
+        waffenTyp: waffe,
+      );
+      expect(gm('Schleuder').tpKkFestBasis, 12);
+      expect(gm('Schleuder').tpKkFestSchwelle, 3);
+      expect(gm('Lasso').tpKkFestBasis, isNull);
+    });
+
+    test('ohne erworbene SF kein Effekt', () {
+      final effects = computeWaffenmeisterEffects(
+        waffenmeisterschaften: const [],
+        activeWeaponType: 'Rapier',
+        activeTalentId: 'tal_fechtwaffen',
+      );
+      expect(effects.isActive, isFalse);
     });
   });
 }

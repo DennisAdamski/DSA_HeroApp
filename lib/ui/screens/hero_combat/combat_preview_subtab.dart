@@ -54,6 +54,21 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
         preview: preview,
         offhandWeapon: offhandWeapon,
       ),
+      if (preview.meisterschaft.sichtbar) ...[
+        const SizedBox(height: 12),
+        CombatMeisterschaftCard(
+          meisterschaft: preview.meisterschaft,
+          onGeStattKk: (an) => _aendereKampf(
+            was: 'Großmeister: GE statt KK',
+            aenderung: (config) => config.copyWith(
+              specialRules: config.specialRules.copyWith(
+                grossmeisterGeStattKk: an,
+              ),
+            ),
+            catalog: catalog,
+          ),
+        ),
+      ],
       if (_buildTwoWeaponActionCard(preview: preview)
           case final actionCard?) ...[
         const SizedBox(height: 12),
@@ -753,17 +768,17 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
     );
   }
 
-  /// Kennzeichnet im Preview nur, dass eine passende Waffenmeisterschaft aktiv ist.
+  /// Kennzeichnet passende Waffenmeisterschaft und Waffen-Großmeister; die
+  /// Wirkungen zeigt die Meisterschafts-Kachel.
   List<Widget> _buildWaffenmeisterPreviewChips({
     required CombatPreviewStats preview,
   }) {
-    if (!preview.waffenmeisterActive) {
-      return const <Widget>[];
-    }
-
-    return <Widget>[Chip(label: Text(preview.waffenmeisterName))]; /*
-      chips.add(Chip(label: Text('WM Manöver: $label')));
-    */
+    return <Widget>[
+      if (preview.waffenmeisterName.isNotEmpty)
+        Chip(label: Text(preview.waffenmeisterName)),
+      if (preview.meisterschaft.grossmeisterName.isNotEmpty)
+        Chip(label: Text(preview.meisterschaft.grossmeisterName)),
+    ];
   }
 
   // ---------------------------------------------------------------------------

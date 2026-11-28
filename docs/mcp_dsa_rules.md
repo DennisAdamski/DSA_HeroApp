@@ -95,6 +95,22 @@ dsa-rules-cli list
 | `list_sources`   | Alle indexierten Dokumente je Kategorie                         |
 | `refresh_index`  | Inkrementeller oder vollständiger Index-Rebuild                 |
 | `find_topic`     | Thematisch gebündelte Treffer für Anforderungs-Brainstorming   |
+| `compare_hausregeln` | Neue Hausregel-Fassungen mit den alten vergleichen, mit Katalog- und Code-Fundstellen |
+
+### Neue Hausregel-Fassungen abgleichen
+
+1. Neue PDFs des Spielleiters nach `…\DSA\hausregeln\Neu\` legen. Der Ordner wird
+   nicht indexiert; Kopien wie `Epische Stufen (1).pdf` werden der alten Fassung
+   `Epische Stufen.pdf` im Hausregel-Ordner zugeordnet.
+2. `compare_hausregeln` (oder `dsa-rules-cli compare [--document Teilname]`) liefert
+   je Dokument die geänderten Abschnitte satzweise mit alten und neuen Seiten.
+   Umbrüche, Silbentrennung und nur verschobene Sätze zählen nicht als Änderung.
+   Jeder Abschnitt nennt die Katalogeinträge, deren Name darin vorkommt (Datei,
+   Paket-ID), und die Dart-Dateien, die deren ID verwenden. Namenstreffer sind
+   Hinweise: kurze Namen wie „Nähe“ oder „Steigen“ treffen auch Fließtext.
+3. Claude bewertet die Abschnitte: Katalog- oder Code-Änderung nötig, nur Text, nichts.
+4. Nach der Umsetzung die neue Datei über die alte verschieben und
+   `refresh_index` für `hausregeln` ausführen; `Neu\` ist danach wieder leer.
 
 ## Konfiguration für Claude Code
 

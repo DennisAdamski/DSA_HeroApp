@@ -638,6 +638,7 @@ Herleitung herleiteTpZuschlag({
   required bool nutztTpKk,
   required int tpKk,
   required int kk,
+  String eigenschaft = 'KK',
   required int kkBasis,
   required int kkSchwelle,
   int waffenmeisterKkBasis = 0,
@@ -669,9 +670,11 @@ Herleitung herleiteTpZuschlag({
         betrag: tpKk,
         art: HerleitungsArt.modifikator,
         formel: nutztTpKk
-            ? '(KK $kk − $kkBasis) / $kkSchwelle, ganzzahlig'
+            ? '($eigenschaft $kk − $kkBasis) / $kkSchwelle, ganzzahlig'
             : 'deaktiviert (0/0)',
-        bedingung: wmHinweis,
+        bedingung: eigenschaft == 'KK'
+            ? wmHinweis
+            : [?wmHinweis, 'Großmeister: $eigenschaft statt KK'].join('; '),
       ),
       // Zauber, die nur die KK für die TP ändern (Karnifilo, LC S. 136): der
       // Unterschied des TP/KK-Zuschlags mit der veränderten KK.

@@ -144,6 +144,36 @@ extension _GefechtAnsichtTeile on _GefechtAnsichtState {
   Widget _vitalwerte(HeroComputedSnapshot snapshot) => GefechtVitalwerte(
     heroId: widget.heroId,
     werte: snapshot,
+    aktionen: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          tooltip: 'Schaden erhalten',
+          icon: const Icon(Icons.heart_broken_outlined),
+          onPressed: _busy
+              ? null
+              : () => _run(
+                  () => widget.bestand.schadenErhalten(
+                    context: context,
+                    ref: ref,
+                    heroId: widget.heroId,
+                  ),
+                ),
+        ),
+        IconButton(
+          tooltip: 'Effekte verwalten',
+          icon: const Icon(Icons.auto_fix_high),
+          onPressed: _busy
+              ? null
+              : () => _run(
+                  () => widget.bestand.effekte(
+                    context: context,
+                    heroId: widget.heroId,
+                  ),
+                ),
+        ),
+      ],
+    ),
     child: Column(
       children: [
         KartoRessourcenleiste(
@@ -156,30 +186,7 @@ extension _GefechtAnsichtTeile on _GefechtAnsichtState {
             ),
           ),
         ),
-        TextButton(
-          onPressed: _busy
-              ? null
-              : () => _run(
-                  () => widget.bestand.schadenErhalten(
-                    context: context,
-                    ref: ref,
-                    heroId: widget.heroId,
-                  ),
-                ),
-          child: const Text('Schaden erhalten'),
-        ),
         widget.bestand.spielZustand(heroId: widget.heroId, werte: snapshot),
-        TextButton(
-          onPressed: _busy
-              ? null
-              : () => _run(
-                  () => widget.bestand.effekte(
-                    context: context,
-                    heroId: widget.heroId,
-                  ),
-                ),
-          child: const Text('Effekte verwalten'),
-        ),
         widget.bestand.spielEffekte(heroId: widget.heroId, werte: snapshot),
       ],
     ),

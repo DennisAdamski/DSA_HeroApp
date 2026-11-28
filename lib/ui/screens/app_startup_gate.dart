@@ -30,6 +30,7 @@ import 'package:dsa_heldenverwaltung/data/rest_firestore_hero_sync_gateway.dart'
 import 'package:dsa_heldenverwaltung/data/rest_firestore_secrets_repository.dart';
 import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/sync/sync_transport.dart';
+import 'package:dsa_heldenverwaltung/data/sync/sync_wiederholung.dart';
 import 'package:dsa_heldenverwaltung/data/syncing_avatar_storage.dart';
 import 'package:dsa_heldenverwaltung/data/syncing_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
@@ -119,22 +120,19 @@ class _AppStartupGateState extends State<AppStartupGate> {
           zustand != AppLifecycleState.paused &&
           zustand != AppLifecycleState.detached,
     );
+    _imVordergrund.addListener(_beimSichtbarwerden);
     _settings = widget.settingsRepository.load();
     _settingsSubscription = widget.settingsRepository.watch().listen((
       settings,
     ) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
       // Nur der Heldenspeicherpfad beeinflusst diesen Gate. Ein `setState`
       // bei jeder anderen Einstellung (etwa einer gespeicherten
       // Spaltenbreite) baut den ProviderScope neu auf und stoesst darueber
       // einen sichtbaren Neuaufbau der gesamten App an.
       final pathChanged = settings.heroStoragePath != _settings.heroStoragePath;
       _settings = settings;
-      if (!pathChanged) {
-        return;
-      }
+      if (!pathChanged) return;
       setState(_ensureBootstrap);
     });
     _ensureBootstrap();
@@ -148,8 +146,15 @@ class _AppStartupGateState extends State<AppStartupGate> {
     }
   }
 
+  // Hintergrund-Tab verliert die Cloud-Verbindung, Wiederholung evtl. erschöpft (SYNC-12).
+  void _beimSichtbarwerden() {
+    if (!_imVordergrund.value) return;
+    unawaited(_activeSyncingRepository?.wiederholeNachFehler());
+  }
+
   @override
   void dispose() {
+    _imVordergrund.removeListener(_beimSichtbarwerden);
     _lebenszyklus?.dispose();
     unawaited(_settingsSubscription?.cancel());
     final syncingRepository = _activeSyncingRepository;
@@ -315,6 +320,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
           journal: vorgangsjournal,
           accountId: authUid,
           accountEmail: widget.authUser?.email,
+          wiederholung: const SyncWiederholung(),
         );
         await syncingRepository.syncNow();
         await syncingRepository.queueOfflineProfileConflicts(
@@ -423,9 +429,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
     HiveVorgangsjournal journal,
   ) async {
     try {
-      if ((await journal.offene()).isEmpty) {
-        return;
-      }
+      if ((await journal.offene()).isEmpty) return;
       // Dieselbe Ablage wie `avatarFileStorageProvider`: lokal und Cloud.
       final plattform = createAvatarFileStorage();
       final storage = plattform.isCloudBacked

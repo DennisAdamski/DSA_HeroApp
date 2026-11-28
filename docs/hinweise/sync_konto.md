@@ -66,6 +66,26 @@ harten Regeln und den Themenindex.
   (`RemoteTombstoneBereinigung`) löschen nur den unveränderten Tombstone.
   Ein Gerät, das länger offline war, lädt einen dort noch vorhandenen Helden
   danach wieder hoch.
+- **Wiederanlauf nach Fehlern (SYNC-12, 27.11.2026):** Vor allem im Web
+  scheiterte der Sync oft und blieb gescheitert, bis man von Hand abglich.
+  Ursachen: (1) Ein Firestore-Listener (`snapshots()`) ist nach seinem ersten
+  Fehler endgültig beendet; Änderungen anderer Geräte kamen danach nicht mehr
+  an. (2) Ein gescheiterter Upload (Updates laufen als Transaktion und
+  brauchen anders als ein `set()` den Server) wurde erst vom nächsten
+  `syncNow` nachgeholt, und `lastFailure` blieb so lange stehen. Ein Tab im
+  Hintergrund, Standby oder ein Netzwechsel genügten. Seitdem nimmt
+  `SyncingHeroRepository` eine `SyncWiederholung`
+  (`lib/data/sync/sync_wiederholung.dart`, Logik in
+  `syncing_hero_repository_wiederholung.dart`): Ein abgebrochener Listener
+  startet nach 5 s … 5 min neu, ein vorübergehender Fehler (Netz, Anmeldung,
+  unbekannt; nicht Konflikt oder unlesbarer Datensatz) löst nach 10 s … 5 min
+  erneut `syncNow` aus. Beide Folgen sind endlich; danach ruht es, bis die App
+  wieder sichtbar wird (`wiederholeNachFehler` aus dem Lebenszyklus des
+  Startup-Gates) oder jemand abgleicht. Jeder `syncNow` startet beendete
+  Listener mit. Nur das Startup-Gate setzt die Wiederholung; Tests lassen sie
+  weg, damit kein Fehler einen Timer hinterlässt
+  (`test/data/sync_wiederholung_test.dart`). `cancelled` und
+  `resource-exhausted` gelten im Gateway als Netzwerkfehler.
 - **Konflikte entstehen nur noch für echte Widersprüche** (ARCH-06): Nach
   jedem Abgleich legt `_saveMetadata` den Inhalt des Stands mit seiner
   Revision in `SyncBasisStore` ab (Box `sync_basis_v1`, je Konto; ohne

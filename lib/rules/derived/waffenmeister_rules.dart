@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config/waffenmeister_config.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/grossmeister_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/maneuver_rules.dart';
 
 /// Gesamt-Budget fuer Waffenmeister-Boni.
@@ -267,7 +268,24 @@ class WaffenmeisterCombatEffects {
     this.gezielterSchussReduction = 0,
     this.maneuverReductions = const <String, int>{},
     this.additionalManeuvers = const <String>[],
+    this.waffenmeisterGefunden = false,
+    this.waffenmeisterWirkungen = const <String>[],
+    this.grossmeister = GrossmeisterEffekte.none,
+    this.grossmeisterManoeverWirkungen = const <String>[],
   });
+
+  /// Lesbare Boni der passenden Waffenmeisterschaft (inkl. Freitext-Vorteile).
+  final List<String> waffenmeisterWirkungen;
+
+  /// Vom Großmeister freigeschaltete oder erleichterte Manöver.
+  final List<String> grossmeisterManoeverWirkungen;
+
+  /// Eine Waffenmeisterschaft passt zur geführten Waffe.
+  final bool waffenmeisterGefunden;
+
+  /// Aktiver Waffen-Großmeister; seine Zahlen sind in die übrigen Felder
+  /// eingerechnet, hier bleiben Name, fester TP/KK-Schlüssel und Hinweise.
+  final GrossmeisterEffekte grossmeister;
 
   /// INI-Bonus (0-2).
   final int iniBonus;
@@ -316,7 +334,8 @@ class WaffenmeisterCombatEffects {
       rangeIncreasePercent != 0 ||
       gezielterSchussReduction != 0 ||
       maneuverReductions.isNotEmpty ||
-      additionalManeuvers.isNotEmpty;
+      additionalManeuvers.isNotEmpty ||
+      grossmeister.isActive;
 }
 
 /// Extrahiert die Kampfeffekte einer passenden Waffenmeisterschaft.
@@ -324,7 +343,63 @@ class WaffenmeisterCombatEffects {
 /// Durchsucht [waffenmeisterschaften] nach einer Konfiguration, deren
 /// [weaponType] (oder [additionalWeaponTypes]) zur aktiven Waffe passt.
 /// Gibt [WaffenmeisterCombatEffects.none] zurueck wenn keine passt.
+///
+/// [aktiveKampfSfIds] bringt einen passenden Waffen-Großmeister hinzu
+/// (`grossmeister_rules.dart`); er gilt für alle Waffen des Talents.
 WaffenmeisterCombatEffects computeWaffenmeisterEffects({
+  required List<WaffenmeisterConfig> waffenmeisterschaften,
+  required String activeWeaponType,
+  required String activeTalentId,
+  Iterable<String> aktiveKampfSfIds = const <String>[],
+}) {
+  final wm = _computeWaffenmeisterOhneGrossmeister(
+    waffenmeisterschaften: waffenmeisterschaften,
+    activeWeaponType: activeWeaponType,
+    activeTalentId: activeTalentId,
+  );
+  final gm = computeGrossmeisterEffekte(
+    aktiveKampfSfIds: aktiveKampfSfIds,
+    talentId: activeTalentId,
+    waffenTyp: activeWeaponType,
+  );
+  if (!gm.isActive) return wm;
+  final reductions = Map<String, int>.of(wm.maneuverReductions);
+  final additional = List<String>.of(wm.additionalManeuvers);
+  final manoeverWirkungen = <String>[];
+  for (final id in gm.manoever) {
+    final name = grossmeisterManoeverName(id);
+    // Schon per Waffenmeister erlaubt: stattdessen um 4 erleichtert.
+    if (additional.contains(id)) {
+      reductions[id] = (reductions[id] ?? 0) + 4;
+      manoeverWirkungen.add(
+        '$name um 4 erleichtert (per Waffenmeister '
+        'schon erlaubt)',
+      );
+    } else {
+      additional.add(id);
+      manoeverWirkungen.add('$name freigeschaltet');
+    }
+  }
+  return WaffenmeisterCombatEffects(
+    iniBonus: wm.iniBonus,
+    atWmBonus: wm.atWmBonus + gm.at,
+    paWmBonus: wm.paWmBonus + gm.pa,
+    tpKkBaseReduction: wm.tpKkBaseReduction + gm.tpKkBasis,
+    tpKkThresholdReduction: wm.tpKkThresholdReduction + gm.tpKkSchwelle,
+    ausfallPenaltyRemoved: wm.ausfallPenaltyRemoved,
+    reloadTimeHalved: wm.reloadTimeHalved,
+    rangeIncreasePercent: wm.rangeIncreasePercent,
+    gezielterSchussReduction: wm.gezielterSchussReduction,
+    maneuverReductions: Map<String, int>.unmodifiable(reductions),
+    additionalManeuvers: List<String>.unmodifiable(additional),
+    waffenmeisterGefunden: wm.waffenmeisterGefunden,
+    waffenmeisterWirkungen: wm.waffenmeisterWirkungen,
+    grossmeister: gm,
+    grossmeisterManoeverWirkungen: List<String>.unmodifiable(manoeverWirkungen),
+  );
+}
+
+WaffenmeisterCombatEffects _computeWaffenmeisterOhneGrossmeister({
   required List<WaffenmeisterConfig> waffenmeisterschaften,
   required String activeWeaponType,
   required String activeTalentId,
@@ -417,5 +492,37 @@ WaffenmeisterCombatEffects computeWaffenmeisterEffects({
     gezielterSchussReduction: gezielterSchussReduction,
     maneuverReductions: Map<String, int>.unmodifiable(maneuverReductions),
     additionalManeuvers: List<String>.unmodifiable(additionalManeuvers),
+    waffenmeisterGefunden: true,
+    waffenmeisterWirkungen: List<String>.unmodifiable(
+      matched.bonuses
+          .map(beschreibeWaffenmeisterBonus)
+          .where((text) => text.isNotEmpty),
+    ),
   );
+}
+
+/// Lesbarer Text eines Waffenmeister-Bonus für die Kampfübersicht.
+String beschreibeWaffenmeisterBonus(WaffenmeisterBonus bonus) {
+  final manoever = bonus.targetManeuver.trim();
+  return switch (bonus.type) {
+    WaffenmeisterBonusType.maneuverReduction =>
+      '${manoever.isEmpty ? 'Manöver' : manoever} um ${bonus.value.abs()} '
+          'erleichtert',
+    WaffenmeisterBonusType.iniBonus => 'INI +${bonus.value}',
+    WaffenmeisterBonusType.tpKkReduction => 'TP/KK −1/−1',
+    WaffenmeisterBonusType.atWmBonus => 'AT-WM +${bonus.value}',
+    WaffenmeisterBonusType.paWmBonus => 'PA-WM +${bonus.value}',
+    WaffenmeisterBonusType.ausfallPenaltyRemoval =>
+      'Ausfall: erster Angriff ohne Erschwernis',
+    WaffenmeisterBonusType.additionalManeuver =>
+      '${manoever.isEmpty ? 'Zusätzliches Manöver' : manoever} erlaubt',
+    WaffenmeisterBonusType.rangeIncrease => 'Reichweite +${bonus.value * 10} %',
+    WaffenmeisterBonusType.gezielterSchussReduction =>
+      'Gezielter Schuss um 1 erleichtert',
+    WaffenmeisterBonusType.reloadTimeHalved => 'Ladezeit halbiert',
+    WaffenmeisterBonusType.customAdvantage =>
+      bonus.description.trim().isEmpty
+          ? 'Besonderer Vorteil'
+          : bonus.description.trim(),
+  };
 }

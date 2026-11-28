@@ -3860,7 +3860,7 @@ void main() {
       await openMeleeTab(tester);
 
       expect(find.text('Nutzbare Manöver'), findsOneWidget);
-      expect(find.text('Waffenmeister (Kurzschwert)'), findsOneWidget);
+      expect(find.text('Waffenmeister (Kurzschwert)'), findsWidgets);
       expect(find.text('Finte'), findsOneWidget);
       expect(find.textContaining('Typ: Angriffsmanöver'), findsOneWidget);
       expect(find.textContaining('Erschwernis: Attacke +1'), findsOneWidget);

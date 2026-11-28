@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_slot_instanz_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
+import 'gefecht_grossmeister_rules.dart';
 import 'gefecht_held_rules.dart';
 import 'gefecht_kampfmittel_rules.dart';
 import 'maneuver_rules.dart';
@@ -102,6 +103,7 @@ GefechtsFernkampfansage gefechtsFernkampfansage(
   if (a.manoever?.id == 'man_sturmangriff') {
     tp += 4 + excelRound(snap.derivedStats.gs / 2);
   }
+  tp += gefechtsGeStattKkKorrektur(snap, a, kampfmittel: wahl);
   return (abwehrmalus: finte, tpBonus: tp);
 }
 
@@ -214,6 +216,17 @@ Gefechtspruefung ergaenzeGefechtsansagen(
         mods.add(Gefechtsmodifikator('Waffenmeister ${eintrag.$1}', -wm));
       }
     }
+  }
+  final geKorrektur = gefechtsGeStattKkKorrektur(
+    snap,
+    a,
+    kampfmittel: p.kampfmittel,
+  );
+  if (angreifen && geKorrektur != 0) {
+    hinweise.add(
+      'Großmeister: Mit Wuchtschlag zählt der TP/KK-Zuschlag aus KK '
+      '(TP ${geKorrektur > 0 ? '+' : ''}$geKorrektur gegenüber GE).',
+    );
   }
   final kombination = gefechtsAnsagekombination(
     a.manoever?.id,

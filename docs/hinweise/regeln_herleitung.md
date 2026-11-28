@@ -197,6 +197,21 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   KR-Zähler, Offline-/Sync-Status ohne echten Providerzustand. Ein Test in
   `test/ui2/spielen/` hält das fest. Die häufigen Proben (Favoriten) sind seit
   22.10.2026 gebaut, siehe `ui_oberflaeche.md`.
+- Waffen-Großmeister (Epische Stufen S. 14–20) stehen in
+  `lib/rules/derived/grossmeister_rules.dart` und wirken nur über
+  `computeWaffenmeisterEffects(aktiveKampfSfIds: …)`: Sie gelten für alle Waffen
+  des Talents. TP/KK, GE/INI, AT/PA, Ladezeit und Manöver werden eingerechnet,
+  ein schon per Waffenmeister erlaubtes Manöver wird stattdessen um 4
+  erleichtert. Zusatzaktionen gehen ins Gefecht (höchstens 4 Aktionen).
+  Die Kampfübersicht zeigt alles in der Kachel `CombatMeisterschaftCard`
+  aus `CombatPreviewStats.meisterschaft` (`MeisterschaftUebersicht`):
+  Waffenmeister-Boni, eingerechnete Großmeister-Wirkungen, Säbel-Pool
+  (GE/INI-Bonus) und den Schalter `CombatSpecialRules.grossmeisterGeStattKk`
+  (TP/KK aus GE statt KK, nur Hauptwaffe, nur bei Belegung im JSON).
+  Im Gefecht (`gefecht_grossmeister_rules.dart`) bucht der Säbel-Pool je KR
+  über `GefechtAuftrag.grossmeisterPool` bzw. den Klingen-Dialog in
+  `Gefechtszustand.grossmeisterPoolVerbraucht`; mit Wuchtschlag fällt der
+  GE-Bonusschaden über `gefechtsAnsagewirkung` auf den KK-Zuschlag zurück.
 - Epische Helden waehlen je eine geistige und eine koerperliche
   Haupteigenschaft (`HeroSheet.epicMainAttributes`). Sie definieren die Boni
   aus Kap. 2.1 und sind vom 25-%-AP-Aufschlag ausgenommen

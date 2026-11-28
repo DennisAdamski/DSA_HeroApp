@@ -211,3 +211,18 @@ def test_office_documents_are_indexed_like_pdfs(tmp_path: Path, fake_extract):
         ]
     finally:
         connection.close()
+
+
+def test_inbox_folder_for_new_house_rules_is_not_indexed(tmp_path: Path, fake_extract):
+    regelbuecher_dir = tmp_path / "regelbuecher"
+    (regelbuecher_dir / "Neu").mkdir(parents=True)
+    _write_fake_pdf(regelbuecher_dir / "regelwerk_alpha.pdf", b"alpha")
+    _write_fake_pdf(regelbuecher_dir / "Neu" / "regelwerk_alpha (1).pdf", b"alpha-neu")
+
+    config = _make_config(tmp_path, regelbuecher_dir)
+    connection = open_database(config.db_path)
+    try:
+        stats = pipeline.refresh_index(connection, config, embedder=FakeEmbedder())
+        assert [Path(p).name for p in stats.processed] == ["regelwerk_alpha.pdf"]
+    finally:
+        connection.close()
