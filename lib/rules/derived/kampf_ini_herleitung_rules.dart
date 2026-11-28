@@ -105,6 +105,7 @@ Herleitung herleiteHeldenIni({
 Herleitung herleiteWaffenIni({
   required Herleitung heldenIni,
   required int waffenIniMod,
+  int waffenIniVerbesserung = 0,
   String? waffenName,
   required bool nutztIniGe,
   required int iniGe,
@@ -123,6 +124,13 @@ Herleitung herleiteWaffenIni({
       art: HerleitungsArt.modifikator,
       quelle: _text(waffenName),
     ),
+    if (waffenIniVerbesserung != 0)
+      HerleitungsSchritt(
+        bezeichnung: 'Verbesserung der Waffe INI',
+        betrag: waffenIniVerbesserung,
+        art: HerleitungsArt.modifikator,
+        quelle: _text(waffenName),
+      ),
     HerleitungsSchritt(
       bezeichnung: 'INI/GE',
       betrag: iniGe,

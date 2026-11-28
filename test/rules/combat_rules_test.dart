@@ -10,12 +10,15 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/two_weapon_combat_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/waffen_rules.dart';
 
 part 'combat_basis_cases.dart';
 part 'combat_waffen_cases.dart';
 part 'combat_nebenhand_cases.dart';
 part 'combat_episch_cases.dart';
+part 'combat_ini_ge_cases.dart';
 
 const state = HeroState(
   currentLep: 0,
@@ -114,4 +117,5 @@ void main() {
   _combatWaffen();
   _combatNebenhand();
   _combatEpisch();
+  _combatIniGe();
 }

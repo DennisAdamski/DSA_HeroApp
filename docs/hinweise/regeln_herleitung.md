@@ -200,7 +200,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
 - Waffen-Großmeister (Epische Stufen S. 14–20) stehen in
   `lib/rules/derived/grossmeister_rules.dart` und wirken nur über
   `computeWaffenmeisterEffects(aktiveKampfSfIds: …)`: Sie gelten für alle Waffen
-  des Talents. TP/KK, GE/INI, AT/PA, Ladezeit und Manöver werden eingerechnet,
+  des Talents. TP/KK, GE/INI, AT/PA, Ladezeit und Manöver werden eingerechnet;
+  TP/KK-Verschiebungen (Waffenmeister, wuchtartige Säbel, Zweihandschwerter)
+  und Verbesserungen der Waffe (`MainWeaponSlot.kkBaseMod`/`kkThresholdMod`)
+  ändern INI/GE nicht, das bleibt bei den Grundwerten der Waffe (weichen
+  die Grundwerte vom Katalog ab, meldet das `pruefeWaffenGegenKatalog`, auch
+  für TP, INI, AT, PA und BF mit ihren Verbesserungsfeldern `tpFlatMod`,
+  `iniModMod`, `wmAtMod`, `wmPaMod`, `breakFactorMod`, siehe
+  `technical_overview.md` Abschnitt 4.3);
   ein schon per Waffenmeister erlaubtes Manöver wird stattdessen um 4
   erleichtert. Zusatzaktionen gehen ins Gefecht (höchstens 4 Aktionen).
   Die Kampfübersicht zeigt alles in der Kachel `CombatMeisterschaftCard`

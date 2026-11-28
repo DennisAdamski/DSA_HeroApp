@@ -18,13 +18,21 @@ class MainWeaponSlot {
     this.distanceClass = '',
     this.kkBase = 0,
     this.kkThreshold = 1,
+    this.kkBaseMod = 0,
+    this.kkThresholdMod = 0,
+    this.katalogAbgleichAkzeptiert = '',
     this.breakFactor = 0,
+    this.breakFactorMod = 0,
     this.tpDiceCount = 1,
     this.tpDiceSides = 6,
     this.tpFlat = 0,
     this.wmAt = 0,
     this.wmPa = 0,
     this.iniMod = 0,
+    this.tpFlatMod = 0,
+    this.wmAtMod = 0,
+    this.wmPaMod = 0,
+    this.iniModMod = 0,
     this.beTalentMod = 0,
     this.isOneHanded = true,
     this.isArtifact = false,
@@ -65,14 +73,50 @@ class MainWeaponSlot {
   /// Entfernungsklasse der Waffe.
   final String distanceClass;
 
-  /// KK-Basiswert fuer TP-Bonus-Berechnung.
+  /// KK-Basis der unveraenderten Waffe (Grundwert aus der Waffentabelle).
+  ///
+  /// Grundlage fuer TP/KK und INI/GE. Verbesserungen der Waffe stehen in
+  /// [kkBaseMod], Waffenmeister-Boni kommen aus der Kampfmeisterschaft.
   final int kkBase;
 
-  /// KK-Schwellenwert fuer TP-Stufen.
+  /// KK-Schwelle der unveraenderten Waffe (Grundwert aus der Waffentabelle).
+  ///
+  /// Grundlage fuer TP/KK und INI/GE; Verbesserungen stehen in
+  /// [kkThresholdMod].
   final int kkThreshold;
 
-  /// Bruchfaktor der Waffe.
+  /// Veraenderung der KK-Basis durch die Waffe selbst, z. B. `-1` fuer eine
+  /// meisterlich geschmiedete Klinge.
+  ///
+  /// Wirkt nur auf TP/KK; INI/GE rechnet weiter mit [kkBase]. Wird nur
+  /// geschrieben, wenn belegt.
+  final int kkBaseMod;
+
+  /// Veraenderung der KK-Schwelle durch die Waffe selbst, z. B. `-1` fuer
+  /// eine meisterlich geschmiedete Klinge.
+  ///
+  /// Wirkt nur auf TP/KK; INI/GE rechnet weiter mit [kkThreshold]. Wird nur
+  /// geschrieben, wenn belegt.
+  final int kkThresholdMod;
+
+  /// Bestätigte Abweichung der Grundwerte (TP/KK, TP, INI, AT, PA, BF) vom
+  /// Katalog.
+  ///
+  /// Hält fest, welche Kombination aus Waffe und Katalogwaffe der Nutzer als
+  /// gewollt akzeptiert hat (Schlüssel aus `waffen_katalog_abgleich_rules`).
+  /// Ändern sich Waffe oder Katalog, passt der Schlüssel nicht mehr und die
+  /// Prüfung meldet die Abweichung erneut. Leer, solange nichts akzeptiert
+  /// ist; nur geschrieben, wenn belegt.
+  final String katalogAbgleichAkzeptiert;
+
+  /// Grund-Bruchfaktor der Waffe (Waffentabelle, samt Abnutzung im Spiel).
+  ///
+  /// Der wirksame BF ist [breakFactor] + [breakFactorMod].
   final int breakFactor;
+
+  /// Veraenderung des Bruchfaktors durch die Waffe selbst, z. B. `-1` fuer
+  /// eine meisterlich geschmiedete Klinge. Nur geschrieben, wenn belegt.
+  final int breakFactorMod;
 
   /// Anzahl der TP-Wuerfel.
   final int tpDiceCount;
@@ -80,17 +124,33 @@ class MainWeaponSlot {
   /// Wuerfelseiten (im Hausregel-Fluss immer 6).
   final int tpDiceSides;
 
-  /// Flacher TP-Bonus (ohne Wuerfel).
+  /// Flacher TP-Bonus (ohne Wuerfel) der unveraenderten Waffe.
   final int tpFlat;
 
-  /// Waffenmodifikator auf Attacke.
+  /// Waffenmodifikator auf Attacke der unveraenderten Waffe.
   final int wmAt;
 
-  /// Waffenmodifikator auf Parade.
+  /// Waffenmodifikator auf Parade der unveraenderten Waffe.
   final int wmPa;
 
-  /// Initiativmodifikator der Waffe.
+  /// Initiativmodifikator der unveraenderten Waffe.
   final int iniMod;
+
+  /// Verbesserung des TP-Zuschlags durch die Waffe selbst (z. B. `+1`).
+  /// Nur geschrieben, wenn belegt.
+  final int tpFlatMod;
+
+  /// Verbesserung des AT-Waffenmodifikators durch die Waffe selbst.
+  /// Nur geschrieben, wenn belegt.
+  final int wmAtMod;
+
+  /// Verbesserung des PA-Waffenmodifikators durch die Waffe selbst.
+  /// Nur geschrieben, wenn belegt.
+  final int wmPaMod;
+
+  /// Verbesserung des Initiativmodifikators durch die Waffe selbst.
+  /// Nur geschrieben, wenn belegt.
+  final int iniModMod;
 
   /// BE-Modifikator fuer Talentproben mit dieser Waffe.
   final int beTalentMod;
@@ -136,7 +196,11 @@ class MainWeaponSlot {
     'distanceClass',
     'kkBase',
     'kkThreshold',
+    'kkBaseMod',
+    'kkThresholdMod',
+    'katalogAbgleichAkzeptiert',
     'breakFactor',
+    'breakFactorMod',
     'tpDiceCount',
     'tpDiceSides',
     'tpFlat',
@@ -144,6 +208,10 @@ class MainWeaponSlot {
     'wmFk',
     'wmPa',
     'iniMod',
+    'tpFlatMod',
+    'wmAtMod',
+    'wmPaMod',
+    'iniModMod',
     'beTalentMod',
     'isOneHanded',
     'isArtifact',
@@ -178,13 +246,21 @@ class MainWeaponSlot {
     String? distanceClass,
     int? kkBase,
     int? kkThreshold,
+    int? kkBaseMod,
+    int? kkThresholdMod,
+    String? katalogAbgleichAkzeptiert,
     int? breakFactor,
+    int? breakFactorMod,
     int? tpDiceCount,
     int? tpDiceSides,
     int? tpFlat,
     int? wmAt,
     int? wmPa,
     int? iniMod,
+    int? tpFlatMod,
+    int? wmAtMod,
+    int? wmPaMod,
+    int? iniModMod,
     int? beTalentMod,
     bool? isOneHanded,
     bool? isArtifact,
@@ -205,7 +281,12 @@ class MainWeaponSlot {
       distanceClass: distanceClass ?? this.distanceClass,
       kkBase: kkBase ?? this.kkBase,
       kkThreshold: kkThreshold ?? this.kkThreshold,
+      kkBaseMod: kkBaseMod ?? this.kkBaseMod,
+      kkThresholdMod: kkThresholdMod ?? this.kkThresholdMod,
+      katalogAbgleichAkzeptiert:
+          katalogAbgleichAkzeptiert ?? this.katalogAbgleichAkzeptiert,
       breakFactor: breakFactor ?? this.breakFactor,
+      breakFactorMod: breakFactorMod ?? this.breakFactorMod,
       tpDiceCount: tpDiceCount ?? this.tpDiceCount,
       // W6 ist im aktuellen Hausregel-Waffenfluss fest.
       tpDiceSides: 6,
@@ -213,6 +294,10 @@ class MainWeaponSlot {
       wmAt: wmAt ?? this.wmAt,
       wmPa: wmPa ?? this.wmPa,
       iniMod: iniMod ?? this.iniMod,
+      tpFlatMod: tpFlatMod ?? this.tpFlatMod,
+      wmAtMod: wmAtMod ?? this.wmAtMod,
+      wmPaMod: wmPaMod ?? this.wmPaMod,
+      iniModMod: iniModMod ?? this.iniModMod,
       beTalentMod: beTalentMod ?? this.beTalentMod,
       isOneHanded: isOneHanded ?? this.isOneHanded,
       isArtifact: isArtifact ?? this.isArtifact,
@@ -243,7 +328,13 @@ class MainWeaponSlot {
         'distanceClass': distanceClass,
         'kkBase': kkBase,
         'kkThreshold': kkThreshold,
+        // Nur bei Belegung, damit Bestandshelden ihren Inhalts-Hash behalten.
+        if (kkBaseMod != 0) 'kkBaseMod': kkBaseMod,
+        if (kkThresholdMod != 0) 'kkThresholdMod': kkThresholdMod,
+        if (katalogAbgleichAkzeptiert.isNotEmpty)
+          'katalogAbgleichAkzeptiert': katalogAbgleichAkzeptiert,
         'breakFactor': breakFactor,
+        if (breakFactorMod != 0) 'breakFactorMod': breakFactorMod,
         'tpDiceCount': tpDiceCount,
         // Als W6 persistiert fuer Schema-Kompatibilitaet.
         'tpDiceSides': 6,
@@ -251,6 +342,10 @@ class MainWeaponSlot {
         'wmAt': wmAt,
         'wmPa': wmPa,
         'iniMod': iniMod,
+        if (tpFlatMod != 0) 'tpFlatMod': tpFlatMod,
+        if (wmAtMod != 0) 'wmAtMod': wmAtMod,
+        if (wmPaMod != 0) 'wmPaMod': wmPaMod,
+        if (iniModMod != 0) 'iniModMod': iniModMod,
         'beTalentMod': beTalentMod,
         'isOneHanded': isOneHanded,
         'isArtifact': isArtifact,
@@ -300,7 +395,11 @@ class MainWeaponSlot {
       distanceClass: getString('distanceClass'),
       kkBase: getInt('kkBase', 0),
       kkThreshold: getInt('kkThreshold', 1),
+      kkBaseMod: getInt('kkBaseMod', 0),
+      kkThresholdMod: getInt('kkThresholdMod', 0),
+      katalogAbgleichAkzeptiert: getString('katalogAbgleichAkzeptiert'),
       breakFactor: getInt('breakFactor', 0),
+      breakFactorMod: getInt('breakFactorMod', 0),
       tpDiceCount: getInt('tpDiceCount', 1),
       tpDiceSides: 6,
       tpFlat: getInt('tpFlat', 0),
@@ -312,6 +411,10 @@ class MainWeaponSlot {
             ),
       wmPa: getInt('wmPa', 0),
       iniMod: getInt('iniMod', 0),
+      tpFlatMod: getInt('tpFlatMod', 0),
+      wmAtMod: getInt('wmAtMod', 0),
+      wmPaMod: getInt('wmPaMod', 0),
+      iniModMod: getInt('iniModMod', 0),
       beTalentMod: getInt('beTalentMod', 0),
       isOneHanded: (json['isOneHanded'] as bool?) ?? true,
       isArtifact: (json['isArtifact'] as bool?) ?? false,

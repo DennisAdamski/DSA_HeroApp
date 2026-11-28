@@ -3845,6 +3845,13 @@
         "note": "Epische Stufen S. 4 (Chunk 25739) erneut gelesen: Haupteigenschaft IN erschwert Finten gegen den Helden um 2."
       }
     },
+    "test/rules/combat_ini_ge_cases.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Sichert die Festlegung der Spielrunde (Vorgabe von Dennis, 28.11.2026) ab, dass INI/GE aus den Grundwerten der unveränderten Waffe gerechnet wird: Ein Schwert 12/3 behält GE/INI 14/4, wenn es meisterlich geschmiedet (−1/−1), per Waffenmeister (TP/KK −1/−1) oder per Großmeister (Khunchomer TP/KK +1/−1) verbessert ist; diese Verbesserungen wirken nur auf TP/KK. Außerdem: Die Verbesserung der Waffe wird nur bei Belegung gespeichert und übersteht den JSON-Umlauf.",
+      "rationale": "Die Datei wurde vollständig gelesen. Die zugrunde liegende Formel INI/GE = 26/7 − TP/KK ist bereits in combat_basis_cases gegen die Hausregel „Erweiterung und Überarbeitung des Regelwerks“ belegt und wird hier nur mit frei gewählten Testwerten angewandt. Neu geprüft wird allein, welche TP/KK-Werte in die Formel eingehen; diese Festlegung stammt aus der Nutzervorgabe und wurde in dieser Sitzung nicht gegen den Hausregeltext im DSA-MCP gegengelesen. Bei einer späteren Prüfung des Hausregeltexts ist der Eintrag auf house_rule mit Quelle umzustellen.",
+      "sources": []
+    },
     "test/rules/combat_nebenhand_cases.dart": {
       "kind": "official",
       "status": "conflict",
@@ -3932,8 +3939,8 @@
     "test/rules/combat_rules_test.dart": {
       "kind": "product_contract",
       "status": "verified",
-      "summary": "Die Datei definiert nur Testfixtures (Beispielheld, Zustand, Hilfsfunktionen hero/heroWithAttributes/preview) und ruft in main() die vier ausgelagerten Testgruppen (_combatBasis, _combatWaffen, _combatNebenhand, _combatEpisch) auf. Eigene test(...)-Aufrufe enthält sie nicht.",
-      "rationale": "Gelesen wurden die Host-Datei vollständig und die vier part-Dateien (combat_basis_cases, combat_waffen_cases, combat_nebenhand_cases, combat_episch_cases). Die Host-Datei selbst behauptet keine DSA-Regel; alle fachlichen Erwartungen stehen in den part-Dateien und sind dort einzeln geprüft (Ergebnis siehe deren Einträge). Der Hostdatei-Status trifft keine Aussage über die Fachlichkeit der part-Tests.",
+      "summary": "Die Datei definiert nur Testfixtures (Beispielheld, Zustand, Hilfsfunktionen hero/heroWithAttributes/preview) und ruft in main() die fünf ausgelagerten Testgruppen (_combatBasis, _combatWaffen, _combatNebenhand, _combatEpisch, _combatIniGe) auf. Eigene test(...)-Aufrufe enthält sie nicht.",
+      "rationale": "Gelesen wurden die Host-Datei vollständig und die fünf part-Dateien (combat_basis_cases, combat_waffen_cases, combat_nebenhand_cases, combat_episch_cases, combat_ini_ge_cases). Die Host-Datei selbst behauptet keine DSA-Regel; alle fachlichen Erwartungen stehen in den part-Dateien und sind dort einzeln geprüft (Ergebnis siehe deren Einträge). Der Hostdatei-Status trifft keine Aussage über die Fachlichkeit der part-Tests.",
       "sources": []
     },
     "test/rules/combat_talent_validation_test.dart": {
@@ -12775,6 +12782,13 @@
         "result": "confirmed",
         "note": "Wege der Zauberei S. 123-124 (Chunk 5263, 5267) erneut gelesen: Bindung braucht die SF Vertrautenbindung, Aurapanzer des Vertrauten 125 AP mit AE 20, Vertraute zahlen aus eigenem AP-Vorrat. Der Nachteil Kein Vertrauter (Wege der Helden S. 265) ist nicht erneut gelesen."
       }
+    },
+    "test/rules/waffen_katalog_abgleich_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft den Laufzeitabgleich der Grundwerte einer Waffe (TP/KK, TP-Zuschlag, WM INI, WM AT, WM PA, BF) mit der gleichnamigen Katalogwaffe desselben Kampftyps: Befund bei abweichendem Grundwert (11/2 statt 12/3, 1W6+5 statt 1W6+4, BF 0 statt 1) samt Meldung und Vorschlag in fester Reihenfolge, kein Befund bei passenden Grundwerten mit eingetragener Verbesserung, ohne Katalogtreffer, bei deaktivierter TP/KK (0/0), unlesbaren Katalogwerten, abweichender Würfelzahl, PA im Fernkampf, BF über dem Katalogwert (Abnutzung) oder fehlendem Katalog; unter gleichnamigen Katalogeinträgen zählt der mit den wenigsten Abweichungen. Außerdem: Übernehmen als Modifikation setzt die Katalogwerte als Grundwerte und verschiebt die Unterschiede in die Verbesserungen, ohne die wirksamen Werte zu ändern, auch auf einem frisch geladenen, inzwischen geänderten Stand; eine akzeptierte Abweichung schweigt, bis sich Waffe oder Katalog ändern, und wird nur bei Belegung gespeichert; die Leser für Katalog-TP/KK, -TP und -BF.",
+      "rationale": "Die Datei wurde vollständig gelesen. Sie prüft App-Verhalten (Abgleich, Schreibumformungen, Speicherung) mit frei gewählten Testwaffen; die Katalogwerte sind Eingaben, keine Behauptung über das Arsenal. Welche TP/KK in INI/GE eingeht, deckt combat_ini_ge_cases ab; DSA-Regeln werden hier nicht behauptet, eine MCP-Quelle ist daher nicht nötig.",
+      "sources": []
     },
     "test/rules/waffenlos_rules_test.dart": {
       "kind": "official",

@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/gefecht_patzer.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_slot_instanz_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/waffen_rules.dart';
 
 import 'gefecht_rules.dart';
 
@@ -110,10 +111,11 @@ GefechtsBruchprofil? gefechtsBruchprofil(
     final liste = c.weaponSlots.where((e) => e.id == w.id).toList();
     if (liste.length != 1) return null;
     final e = liste.single;
+    // Wirksamer BF samt Verbesserung der Waffe (meisterlich geschmiedet).
     return GefechtsBruchprofil(
       w,
       e.name,
-      e.breakFactor,
+      computeWirksamerBruchfaktor(e),
       stableContentHash(ohneInstanzverweise(e.toJson())),
     );
   }
@@ -145,7 +147,10 @@ CombatConfig schreibeGefechtsBruchfaktor(
     return c.copyWith(
       weapons: [
         for (final e in c.weaponSlots)
-          if (e.id == p.wahl.id) e.copyWith(breakFactor: bf) else e,
+          if (e.id == p.wahl.id)
+            e.copyWith(breakFactor: bruchfaktorGrundwertFuer(e, bf))
+          else
+            e,
       ],
     );
   }

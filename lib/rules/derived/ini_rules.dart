@@ -27,25 +27,49 @@ int computeIniBase(HeroSheet sheet, StatModifiers mods) {
 //   geBase = 26 - kkBase  →  die GE-Skala beginnt am entgegengesetzten Ende.
 // Die Konstante 7 ist die Spiegelkonstante zum KK-Schwellenwert:
 //   geThreshold = 7 - kkThreshold  →  GE-Aequivalent des KK-Stufensprungs.
-// Ist geThreshold == 0 (kkThreshold == 7), ist kein GE-Beitrag moeglich.
+// Ist geThreshold <= 0 (kkThreshold >= 7), ist kein GE-Beitrag moeglich.
 //
 // Hausregel „Erweiterung und Ueberarbeitung des Regelwerks" (GE-Aufwertung fuer
 // INI): INI/GE = 26/7 - TP/KK; „Es entstehen keine Mali durch den INI/GE." Ein
 // Wert unter 0 faellt deshalb auf 0.
+//
+// [kkBase] und [kkThreshold] sind die Grundwerte der unveraenderten Waffe:
+// Verbesserungen der Waffe (meisterlich geschmiedet) und TP/KK-Verschiebungen
+// durch Waffen- oder Grossmeister veraendern INI/GE nicht. Eine ausdrueckliche
+// Verschiebung der GE/INI-Schwelle (Saebel-Grossmeister) kommt ueber
+// [geSchwelleMod] hinzu.
 int computeIniGe({
   required int ge,
   required int kkBase,
   required int kkThreshold,
+  int geSchwelleMod = 0,
 }) {
-  final normalizedThreshold = kkThreshold < 1 ? 1 : kkThreshold;
-  final geBase = 26 - kkBase; // Spiegelkonstante zur KK-Basis
-  final geThreshold =
-      7 - normalizedThreshold; // Spiegelkonstante zum KK-Schwellenwert
-  if (geThreshold == 0) {
+  final geBase = computeGeBasis(kkBase);
+  final geThreshold = computeGeSchwelle(
+    kkThreshold: kkThreshold,
+    geSchwelleMod: geSchwelleMod,
+  );
+  if (geThreshold <= 0) {
     return 0;
   }
   final iniGe = roundDownTowardsZero((ge - geBase) / geThreshold);
   return iniGe < 0 ? 0 : iniGe;
+}
+
+/// GE-Basis des INI/GE aus der KK-Basis der unveraenderten Waffe
+/// (26 − KK-Basis).
+int computeGeBasis(int kkBase) => 26 - kkBase;
+
+/// GE-Schwelle des INI/GE aus der KK-Schwelle der unveraenderten Waffe.
+///
+/// Grundwert ist 7 − KK-Schwelle (Schwelle mindestens 1). [geSchwelleMod]
+/// verschiebt die GE-Schwelle ausdruecklich (Saebel-Grossmeister −1) und gilt
+/// nur, solange die Schwelle dabei mindestens 1 bleibt.
+int computeGeSchwelle({required int kkThreshold, int geSchwelleMod = 0}) {
+  final normalizedThreshold = kkThreshold < 1 ? 1 : kkThreshold;
+  final grundwert = 7 - normalizedThreshold;
+  final verschoben = grundwert + geSchwelleMod;
+  return verschoben >= 1 ? verschoben : grundwert;
 }
 
 // Anzahl Ini-Wuerfel: 1 normal, 2 bei Klingentaenzer.

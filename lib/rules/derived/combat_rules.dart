@@ -506,11 +506,17 @@ CombatPreviewStats computeCombatPreviewStats(
   final atSpecBonus = specApplies ? (isRangedWeapon ? 2 : 1) : 0;
   final paSpecBonus = specApplies && !isRangedWeapon ? 1 : 0;
   final gmFest = wmEffects.grossmeister;
-  final wmKkBase =
-      gmFest.tpKkFestBasis ?? main.kkBase + wmEffects.tpKkBaseReduction;
-  final wmKkThreshold =
-      gmFest.tpKkFestSchwelle ??
-      main.kkThreshold + wmEffects.tpKkThresholdReduction;
+  // TP/KK aus Grundwert, Verbesserung der Waffe und Meisterschaft; INI/GE
+  // nutzt dagegen nur die Grundwerte (_computeWeaponInitiativeSnapshot).
+  final wirksameTpKk = computeWirksameTpKk(
+    slot: main,
+    meisterschaftBasis: wmEffects.tpKkBaseReduction,
+    meisterschaftSchwelle: wmEffects.tpKkThresholdReduction,
+    festBasis: gmFest.tpKkFestBasis,
+    festSchwelle: gmFest.tpKkFestSchwelle,
+  );
+  final wmKkBase = wirksameTpKk.basis;
+  final wmKkThreshold = wirksameTpKk.schwelle;
   final usesTpKkThreshold =
       gmFest.tpKkFestBasis != null ||
       _usesTpKkThreshold(kkBase: main.kkBase, kkThreshold: main.kkThreshold);
@@ -566,6 +572,7 @@ CombatPreviewStats computeCombatPreviewStats(
   final projectileAtMod = isRangedWeapon ? (activeProjectile?.atMod ?? 0) : 0;
   final tpHerleitung = herleiteTpZuschlag(
     tpGrundwert: main.tpFlat,
+    tpVerbesserung: main.tpFlatMod,
     waffenName: main.name,
     nutztTpKk: usesTpKkThreshold,
     tpKk: tpKkOhneZauber,
@@ -575,6 +582,8 @@ CombatPreviewStats computeCombatPreviewStats(
     kkSchwelle: kkThreshold,
     waffenmeisterKkBasis: wmEffects.tpKkBaseReduction,
     waffenmeisterKkSchwelle: wmEffects.tpKkThresholdReduction,
+    verbesserungKkBasis: main.kkBaseMod,
+    verbesserungKkSchwelle: main.kkThresholdMod,
     zauberTpKk: tpKk - tpKkOhneZauber,
     zauberKk: zauberKk,
     zauberName: zauberEigenschaftsName(derived.zauberEffekte),
@@ -631,6 +640,7 @@ CombatPreviewStats computeCombatPreviewStats(
           talentAt: talentAt,
           talentName: selectedTalent?.name,
           waffenWm: main.wmAt,
+          waffenVerbesserung: main.wmAtMod,
           waffenName: waffenName,
           waffenmeister: wmEffects.atWmBonus,
           ebe: rangedAtEbePart,
@@ -646,6 +656,7 @@ CombatPreviewStats computeCombatPreviewStats(
           talentAt: talentAt,
           talentName: selectedTalent?.name,
           waffenWm: main.wmAt,
+          waffenVerbesserung: main.wmAtMod,
           waffenName: waffenName,
           waffenmeister: wmEffects.atWmBonus,
           ebe: ebe,
@@ -666,6 +677,7 @@ CombatPreviewStats computeCombatPreviewStats(
           talentPa: talentPa,
           talentName: selectedTalent?.name,
           waffenWm: main.wmPa,
+          waffenVerbesserung: main.wmPaMod,
           waffenName: waffenName,
           waffenmeister: wmEffects.paWmBonus,
           ebe: ebe,
@@ -732,7 +744,8 @@ CombatPreviewStats computeCombatPreviewStats(
               grossmeister.tpKkSchwelle != 0 ||
               grossmeister.tpKkFestBasis != null))
         'TP/KK $wmKkBase/$kkThreshold statt '
-            '${main.kkBase}/${main.kkThreshold} der Waffe',
+            '${main.kkBase + main.kkBaseMod}/'
+            '${main.kkThreshold + main.kkThresholdMod} der Waffe',
       if (usesTpKkThreshold && grossmeister.geIniSchwelle != 0)
         'GE/INI $geBase/$geThreshold statt '
             '$geBase/${geThreshold - grossmeister.geIniSchwelle}: '

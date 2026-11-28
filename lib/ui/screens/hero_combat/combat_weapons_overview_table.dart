@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/waffen_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_helpers.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
@@ -517,16 +518,24 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
               ),
               FlexibleTableCommitField(
                 key: ValueKey<String>('combat-weapon-cell-bf-${entry.index}'),
-                value: slot.breakFactor.toString(),
+                // Wirksamer BF; die Verbesserung der Waffe bleibt beim
+                // Schreiben erhalten.
+                value: computeWirksamerBruchfaktor(slot).toString(),
                 keyboardType: TextInputType.number,
                 onCommit: (raw) {
-                  final parsed = int.tryParse(raw.trim()) ?? slot.breakFactor;
-                  onWeaponSlotUpdate(
-                    entry.index,
-                    slot,
-                    (current) =>
-                        current.copyWith(breakFactor: parsed < 0 ? 0 : parsed),
-                  );
+                  final parsed =
+                      int.tryParse(raw.trim()) ??
+                      computeWirksamerBruchfaktor(slot);
+                  final wirksam = parsed < 0 ? 0 : parsed;
+                  onWeaponSlotUpdate(entry.index, slot, (current) {
+                    final grundwert = bruchfaktorGrundwertFuer(
+                      current,
+                      wirksam,
+                    );
+                    return current.copyWith(
+                      breakFactor: grundwert < 0 ? 0 : grundwert,
+                    );
+                  });
                 },
               ),
               Text(preview.ebe.toString()),

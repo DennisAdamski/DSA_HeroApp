@@ -13,6 +13,50 @@ int computeTpKk({
   return (kk - kkBase) ~/ threshold;
 }
 
+/// Wirksame TP/KK einer Waffe für den Schadensbonus.
+///
+/// Zum Grundwert der Waffe ([MainWeaponSlot.kkBase]/
+/// [MainWeaponSlot.kkThreshold]) kommen ihre eigene Verbesserung
+/// ([MainWeaponSlot.kkBaseMod]/[MainWeaponSlot.kkThresholdMod], z. B.
+/// meisterlich geschmiedet) und die Verschiebung aus Waffen- und Großmeister
+/// ([meisterschaftBasis]/[meisterschaftSchwelle]). Ein fester
+/// Großmeister-Wert ([festBasis]/[festSchwelle]) ersetzt die jeweilige Summe.
+/// Die Schwelle bleibt ungekappt; die Aufrufer begrenzen sie wie bisher auf
+/// mindestens 1.
+///
+/// INI/GE rechnet bewusst nicht hiermit, sondern mit den Grundwerten der
+/// unveränderten Waffe (siehe `computeIniGe`).
+({int basis, int schwelle}) computeWirksameTpKk({
+  required MainWeaponSlot slot,
+  int meisterschaftBasis = 0,
+  int meisterschaftSchwelle = 0,
+  int? festBasis,
+  int? festSchwelle,
+}) {
+  final waffenBasis = slot.kkBase + slot.kkBaseMod;
+  final waffenSchwelle = slot.kkThreshold + slot.kkThresholdMod;
+  return (
+    basis: festBasis ?? waffenBasis + meisterschaftBasis,
+    schwelle: festSchwelle ?? waffenSchwelle + meisterschaftSchwelle,
+  );
+}
+
+/// Wirksamer Bruchfaktor einer Waffe: Grund-BF ([MainWeaponSlot.breakFactor],
+/// samt Abnutzung) plus Verbesserung der Waffe
+/// ([MainWeaponSlot.breakFactorMod], z. B. meisterlich geschmiedet `-1`).
+int computeWirksamerBruchfaktor(MainWeaponSlot slot) {
+  return slot.breakFactor + slot.breakFactorMod;
+}
+
+/// Grund-BF, mit dem [slot] den wirksamen Bruchfaktor [wirksam] erreicht.
+///
+/// Gegenstück zu [computeWirksamerBruchfaktor] für Schreibwege, die den
+/// wirksamen BF setzen (Bruchtest, Waffenübersicht); die Verbesserung der
+/// Waffe bleibt dabei erhalten.
+int bruchfaktorGrundwertFuer(MainWeaponSlot slot, int wirksam) {
+  return wirksam - slot.breakFactorMod;
+}
+
 // TP-Ausdruck als Wuerfelformel (z. B. "2W6+3").
 String buildTpExpression(MainWeaponSlot main, int tpCalc) {
   final count = main.tpDiceCount < 1 ? 1 : main.tpDiceCount;
