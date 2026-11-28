@@ -249,6 +249,7 @@ List<HerleitungsSchritt> _waffenSchritte({
   required int talent,
   required String? talentName,
   required int waffenWm,
+  required int waffenVerbesserung,
   required String? waffenName,
   required int waffenmeister,
   required int ebeAnteil,
@@ -268,6 +269,13 @@ List<HerleitungsSchritt> _waffenSchritte({
       art: HerleitungsArt.modifikator,
       quelle: _text(waffenName),
     ),
+    if (waffenVerbesserung != 0)
+      HerleitungsSchritt(
+        bezeichnung: 'Verbesserung der Waffe $wert',
+        betrag: waffenVerbesserung,
+        art: HerleitungsArt.modifikator,
+        quelle: _text(waffenName),
+      ),
     HerleitungsSchritt(
       bezeichnung: 'Waffenmeister $wert',
       betrag: waffenmeister,
@@ -297,6 +305,7 @@ Herleitung herleiteNahkampfAt({
   required int talentAt,
   String? talentName,
   required int waffenWm,
+  int waffenVerbesserung = 0,
   String? waffenName,
   required int waffenmeister,
   required int ebe,
@@ -325,6 +334,7 @@ Herleitung herleiteNahkampfAt({
         talent: talentAt,
         talentName: talentName,
         waffenWm: waffenWm,
+        waffenVerbesserung: waffenVerbesserung,
         waffenName: waffenName,
         waffenmeister: waffenmeister,
         ebeAnteil: ebeAnteil,
@@ -356,6 +366,7 @@ Herleitung herleiteNahkampfPa({
   required int talentPa,
   String? talentName,
   required int waffenWm,
+  int waffenVerbesserung = 0,
   String? waffenName,
   required int waffenmeister,
   required int ebe,
@@ -392,6 +403,7 @@ Herleitung herleiteNahkampfPa({
         talent: talentPa,
         talentName: talentName,
         waffenWm: waffenWm,
+        waffenVerbesserung: waffenVerbesserung,
         waffenName: waffenName,
         waffenmeister: waffenmeister,
         ebeAnteil: ebeAnteil,
@@ -529,6 +541,7 @@ Herleitung herleiteFernkampfAt({
   required int talentAt,
   String? talentName,
   required int waffenWm,
+  int waffenVerbesserung = 0,
   String? waffenName,
   int waffenmeister = 0,
   required int ebe,
@@ -560,6 +573,13 @@ Herleitung herleiteFernkampfAt({
         art: HerleitungsArt.modifikator,
         quelle: _text(waffenName),
       ),
+      if (waffenVerbesserung != 0)
+        HerleitungsSchritt(
+          bezeichnung: 'Verbesserung der Waffe AT',
+          betrag: waffenVerbesserung,
+          art: HerleitungsArt.modifikator,
+          quelle: _text(waffenName),
+        ),
       HerleitungsSchritt(
         bezeichnung: 'Waffenmeister AT',
         betrag: waffenmeister,
@@ -630,11 +650,14 @@ Herleitung herleitePaMitIniParade({
 
 /// Fester TP-Zuschlag zu den Würfeln der Waffe.
 ///
+/// [tpVerbesserung] ist die Verbesserung des TP-Zuschlags durch die Waffe
+/// selbst ([MainWeaponSlot.tpFlatMod]).
 /// [kkBasis] und [kkSchwelle] sind die wirksamen Werte nach Verbesserung der
 /// Waffe ([verbesserungKkBasis]/[verbesserungKkSchwelle]) und Waffenmeister;
 /// [nutztTpKk] `false` steht für eine bewusst deaktivierte TP/KK-Regel (0/0).
 Herleitung herleiteTpZuschlag({
   required int tpGrundwert,
+  int tpVerbesserung = 0,
   String? waffenName,
   required bool nutztTpKk,
   required int tpKk,
@@ -682,6 +705,13 @@ Herleitung herleiteTpZuschlag({
         art: HerleitungsArt.grundwert,
         quelle: _text(waffenName),
       ),
+      if (tpVerbesserung != 0)
+        HerleitungsSchritt(
+          bezeichnung: 'Verbesserung der Waffe TP',
+          betrag: tpVerbesserung,
+          art: HerleitungsArt.modifikator,
+          quelle: _text(waffenName),
+        ),
       HerleitungsSchritt(
         bezeichnung: 'TP/KK',
         betrag: tpKk,

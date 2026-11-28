@@ -68,6 +68,11 @@ class WeaponEditorScreenState extends ConsumerState<WeaponEditorScreen> {
   late final TextEditingController _beTalentModController;
   late final TextEditingController _tpDiceCountController;
   late final TextEditingController _tpFlatController;
+  late final TextEditingController _tpFlatModController;
+  late final TextEditingController _breakFactorModController;
+  late final TextEditingController _iniModModController;
+  late final TextEditingController _wmAtModController;
+  late final TextEditingController _wmPaModController;
   late final TextEditingController _artifactDescriptionController;
   late final TextEditingController _geweihtDescriptionController;
   late final TextEditingController _reloadTimeController;
@@ -94,6 +99,11 @@ class WeaponEditorScreenState extends ConsumerState<WeaponEditorScreen> {
     _beTalentModController = TextEditingController();
     _tpDiceCountController = TextEditingController();
     _tpFlatController = TextEditingController();
+    _tpFlatModController = TextEditingController();
+    _breakFactorModController = TextEditingController();
+    _iniModModController = TextEditingController();
+    _wmAtModController = TextEditingController();
+    _wmPaModController = TextEditingController();
     _artifactDescriptionController = TextEditingController();
     _geweihtDescriptionController = TextEditingController();
     _reloadTimeController = TextEditingController();
@@ -145,6 +155,11 @@ class WeaponEditorScreenState extends ConsumerState<WeaponEditorScreen> {
     _beTalentModController.dispose();
     _tpDiceCountController.dispose();
     _tpFlatController.dispose();
+    _tpFlatModController.dispose();
+    _breakFactorModController.dispose();
+    _iniModModController.dispose();
+    _wmAtModController.dispose();
+    _wmPaModController.dispose();
     _artifactDescriptionController.dispose();
     _geweihtDescriptionController.dispose();
     _reloadTimeController.dispose();
@@ -193,6 +208,11 @@ class WeaponEditorScreenState extends ConsumerState<WeaponEditorScreen> {
     _beTalentModController.text = _draftWeapon.beTalentMod.toString();
     _tpDiceCountController.text = _draftWeapon.tpDiceCount.toString();
     _tpFlatController.text = _draftWeapon.tpFlat.toString();
+    _tpFlatModController.text = _draftWeapon.tpFlatMod.toString();
+    _breakFactorModController.text = _draftWeapon.breakFactorMod.toString();
+    _iniModModController.text = _draftWeapon.iniModMod.toString();
+    _wmAtModController.text = _draftWeapon.wmAtMod.toString();
+    _wmPaModController.text = _draftWeapon.wmPaMod.toString();
     _artifactDescriptionController.text = _draftWeapon.artifactDescription;
     _geweihtDescriptionController.text = _draftWeapon.geweihtDescription;
     _reloadTimeController.text = _draftWeapon.rangedProfile.reloadTime

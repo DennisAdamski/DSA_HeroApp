@@ -154,6 +154,23 @@ void main() {
       throwsStateError,
     );
   });
+  test('Bruchtest nutzt den wirksamen BF und erhält die Verbesserung', () {
+    const w = MainWeaponSlot(
+      id: 'w',
+      name: 'Meisterschwert',
+      breakFactor: 2,
+      breakFactorMod: -1,
+    );
+    const c = CombatConfig(weapons: [w]);
+    final profil = gefechtsBruchprofil(
+      c,
+      const GefechtsKampfmittelwahl(GefechtsKampfmittelArt.hauptwaffe, 'w'),
+    )!;
+    expect(profil.bf, 1);
+    final neu = schreibeGefechtsBruchfaktor(c, profil, 2);
+    expect(neu.weaponSlots.single.breakFactor, 3);
+    expect(neu.weaponSlots.single.breakFactorMod, -1);
+  });
   test('Schildbruchprofil trifft konkreten Eintrag', () {
     const c = CombatConfig(
       offhandEquipment: [

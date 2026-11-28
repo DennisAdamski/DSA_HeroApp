@@ -144,6 +144,7 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
 
   final tpHerleitung = herleiteTpZuschlag(
     tpGrundwert: slot.tpFlat,
+    tpVerbesserung: slot.tpFlatMod,
     waffenName: slot.name,
     nutztTpKk: usesTpKk,
     tpKk: tpKkOhneZauber,
@@ -182,6 +183,7 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
           talentAt: talentAt,
           talentName: selectedTalent?.name,
           waffenWm: slot.wmAt,
+          waffenVerbesserung: slot.wmAtMod,
           waffenName: slot.name,
           waffenmeister: wmEffects.atWmBonus,
           ebe: rangedAtEbePart,
@@ -196,6 +198,7 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
           talentAt: talentAt,
           talentName: selectedTalent?.name,
           waffenWm: slot.wmAt,
+          waffenVerbesserung: slot.wmAtMod,
           waffenName: slot.name,
           waffenmeister: wmEffects.atWmBonus,
           ebe: ebe,
@@ -215,6 +218,7 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
           talentPa: talentPa,
           talentName: selectedTalent?.name,
           waffenWm: slot.wmPa,
+          waffenVerbesserung: slot.wmPaMod,
           waffenName: slot.name,
           waffenmeister: wmEffects.paWmBonus,
           ebe: ebe,
@@ -404,6 +408,7 @@ _WeaponInitiativeSnapshot _computeWeaponInitiativeSnapshot({
   final herleitung = herleiteWaffenIni(
     heldenIni: heldenIni,
     waffenIniMod: slot.iniMod,
+    waffenIniVerbesserung: slot.iniModMod,
     waffenName: slot.name,
     nutztIniGe: usesTpKkThreshold,
     iniGe: iniGe,

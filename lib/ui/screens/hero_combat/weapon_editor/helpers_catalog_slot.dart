@@ -9,9 +9,9 @@ MainWeaponSlot weaponSlotFromCatalog(
   List<TalentDef> combatTalents,
 ) {
   final combatType = weaponCombatTypeFromJson(weapon.type);
-  final tpMatch = RegExp(r'(\d+)W6([+-]\d+)?').firstMatch(weapon.tp);
-  final tpDiceCount = int.tryParse(tpMatch?.group(1) ?? '') ?? 1;
-  final tpFlat = int.tryParse(tpMatch?.group(2) ?? '') ?? 0;
+  final tp = leseKatalogTp(weapon.tp);
+  final tpDiceCount = tp?.wuerfel ?? 1;
+  final tpFlat = tp?.zuschlag ?? 0;
   final tpkk = leseKatalogTpKk(weapon.tpkk);
   final kkBase = tpkk?.basis ?? 0;
   final kkThreshold = tpkk?.schwelle ?? 1;

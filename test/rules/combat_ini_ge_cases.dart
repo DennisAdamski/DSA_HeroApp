@@ -115,12 +115,114 @@ void _combatIniGe() {
     });
   });
 
+  group('Verbesserung der Waffe: TP, INI, AT, PA', () {
+    const schwert = MainWeaponSlot(
+      name: 'Schwert',
+      talentId: 'tal_schwerter',
+      weaponType: 'Schwert',
+      kkBase: 12,
+      kkThreshold: 3,
+      tpFlat: 4,
+    );
+
+    CombatPreviewStats mit(MainWeaponSlot waffe) {
+      return preview(
+        heroWithAttributes(
+          ge: 22,
+          kk: 16,
+          combatConfig: CombatConfig(mainWeapon: waffe),
+        ),
+      );
+    }
+
+    test('wirkt wie derselbe Wert im Grundwert', () {
+      final verbessert = mit(
+        schwert.copyWith(tpFlatMod: 1, wmAtMod: 1, wmPaMod: 2, iniModMod: 1),
+      );
+      final imGrundwert = mit(
+        schwert.copyWith(tpFlat: 5, wmAt: 1, wmPa: 2, iniMod: 1),
+      );
+      expect(verbessert.tpCalc, imGrundwert.tpCalc);
+      expect(verbessert.tpExpression, '1W6+6'); // 4 + 1 + TP/KK 1
+      expect(verbessert.at, imGrundwert.at);
+      expect(verbessert.pa, imGrundwert.pa);
+      expect(
+        verbessert.kombinierteHeldenWaffenIni,
+        imGrundwert.kombinierteHeldenWaffenIni,
+      );
+    });
+
+    test('erscheint als eigener Schritt der Herleitung', () {
+      final herleitungen = mit(
+        schwert.copyWith(tpFlatMod: 1, wmAtMod: 1, wmPaMod: 2, iniModMod: 1),
+      ).herleitungen!;
+      HerleitungsSchritt schritt(Herleitung h, String bezeichnung) =>
+          h.schritte.firstWhere((s) => s.bezeichnung == bezeichnung);
+      expect(
+        schritt(herleitungen.tpZuschlag, 'Verbesserung der Waffe TP').betrag,
+        1,
+      );
+      expect(schritt(herleitungen.at, 'Verbesserung der Waffe AT').betrag, 1);
+      expect(schritt(herleitungen.pa!, 'Verbesserung der Waffe PA').betrag, 2);
+      expect(
+        schritt(herleitungen.kampfIni, 'Verbesserung der Waffe INI').betrag,
+        1,
+      );
+    });
+
+    test('ohne Verbesserung bleibt die Herleitung unverändert', () {
+      final herleitungen = mit(schwert).herleitungen!;
+      expect(
+        herleitungen.tpZuschlag.schritte.where(
+          (s) => s.bezeichnung.startsWith('Verbesserung der Waffe'),
+        ),
+        isEmpty,
+      );
+      expect(
+        herleitungen.at.schritte.where(
+          (s) => s.bezeichnung.startsWith('Verbesserung der Waffe'),
+        ),
+        isEmpty,
+      );
+    });
+  });
+
   group('MainWeaponSlot: Verbesserung der Waffe', () {
     test('wird nur bei Belegung geschrieben', () {
       const slot = MainWeaponSlot(name: 'Schwert', kkBase: 12, kkThreshold: 3);
       final json = slot.toJson();
-      expect(json.containsKey('kkBaseMod'), isFalse);
-      expect(json.containsKey('kkThresholdMod'), isFalse);
+      for (final schluessel in <String>[
+        'kkBaseMod',
+        'kkThresholdMod',
+        'tpFlatMod',
+        'wmAtMod',
+        'wmPaMod',
+        'iniModMod',
+        'breakFactorMod',
+        'katalogAbgleichAkzeptiert',
+      ]) {
+        expect(json.containsKey(schluessel), isFalse, reason: schluessel);
+      }
+    });
+
+    test('alle Verbesserungen überstehen den JSON-Umlauf', () {
+      const slot = MainWeaponSlot(
+        name: 'Schwert',
+        tpFlatMod: 1,
+        wmAtMod: 1,
+        wmPaMod: -1,
+        iniModMod: 2,
+        breakFactor: 2,
+        breakFactorMod: -1,
+      );
+      final geladen = MainWeaponSlot.fromJson(slot.toJson());
+      expect(geladen.tpFlatMod, 1);
+      expect(geladen.wmAtMod, 1);
+      expect(geladen.wmPaMod, -1);
+      expect(geladen.iniModMod, 2);
+      expect(geladen.breakFactorMod, -1);
+      expect(computeWirksamerBruchfaktor(geladen), 1);
+      expect(geladen.unbekannteFelder, isEmpty);
     });
 
     test('übersteht den JSON-Umlauf ohne unbekannte Felder', () {

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/waffen_katalog_abgleich_rules.dart';
 
-/// Meldet Waffen, deren TP/KK-Grundwerte vom Katalog abweichen.
+/// Meldet Waffen, deren Grundwerte (TP/KK, TP, INI, AT, PA, BF) vom Katalog
+/// abweichen.
 ///
 /// Reine Anzeige: Die Befunde liefert `pruefeWaffenGegenKatalog`, die
 /// Aktionen schreiben über den Aufrufer. Je Waffe stehen drei Wege offen:
@@ -52,7 +53,7 @@ class WaffenKatalogAbgleichKarte extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'TP/KK weicht vom Waffenkatalog ab',
+                    'Waffenwerte weichen vom Waffenkatalog ab',
                     style: theme.textTheme.titleSmall?.copyWith(
                       color: farben.onTertiaryContainer,
                     ),

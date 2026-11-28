@@ -117,6 +117,7 @@ extension _WeaponEditorContent on WeaponEditorScreenState {
                   WeaponDamageSection(
                     tpDiceCountController: _tpDiceCountController,
                     tpFlatController: _tpFlatController,
+                    tpFlatModController: _tpFlatModController,
                     kkBaseController: _kkBaseController,
                     kkThresholdController: _kkThresholdController,
                     kkBaseModController: _kkBaseModController,
@@ -126,6 +127,9 @@ extension _WeaponEditorContent on WeaponEditorScreenState {
                     ),
                     onTpFlatChanged: (value) =>
                         _setDraftWeapon(_draftWeapon.copyWith(tpFlat: value)),
+                    onTpFlatModChanged: (value) => _setDraftWeapon(
+                      _draftWeapon.copyWith(tpFlatMod: value),
+                    ),
                     onKkBaseChanged: (value) =>
                         _setDraftWeapon(_draftWeapon.copyWith(kkBase: value)),
                     onKkThresholdChanged: (value) => _setDraftWeapon(
@@ -142,19 +146,33 @@ extension _WeaponEditorContent on WeaponEditorScreenState {
                   WeaponModifiersSection(
                     combatType: _draftWeapon.combatType,
                     breakFactorController: _breakFactorController,
+                    breakFactorModController: _breakFactorModController,
                     iniModController: _iniModController,
+                    iniModModController: _iniModModController,
                     wmAtController: _wmAtController,
+                    wmAtModController: _wmAtModController,
                     wmPaController: _wmPaController,
+                    wmPaModController: _wmPaModController,
                     beTalentModController: _beTalentModController,
                     onBreakFactorChanged: (value) => _setDraftWeapon(
                       _draftWeapon.copyWith(breakFactor: value),
                     ),
+                    onBreakFactorModChanged: (value) => _setDraftWeapon(
+                      _draftWeapon.copyWith(breakFactorMod: value),
+                    ),
                     onIniModChanged: (value) =>
                         _setDraftWeapon(_draftWeapon.copyWith(iniMod: value)),
+                    onIniModModChanged: (value) => _setDraftWeapon(
+                      _draftWeapon.copyWith(iniModMod: value),
+                    ),
                     onWmAtChanged: (value) =>
                         _setDraftWeapon(_draftWeapon.copyWith(wmAt: value)),
+                    onWmAtModChanged: (value) =>
+                        _setDraftWeapon(_draftWeapon.copyWith(wmAtMod: value)),
                     onWmPaChanged: (value) =>
                         _setDraftWeapon(_draftWeapon.copyWith(wmPa: value)),
+                    onWmPaModChanged: (value) =>
+                        _setDraftWeapon(_draftWeapon.copyWith(wmPaMod: value)),
                     onBeTalentModChanged: (value) => _setDraftWeapon(
                       _draftWeapon.copyWith(beTalentMod: value),
                     ),

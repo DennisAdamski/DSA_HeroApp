@@ -204,7 +204,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   TP/KK-Verschiebungen (Waffenmeister, wuchtartige Säbel, Zweihandschwerter)
   und Verbesserungen der Waffe (`MainWeaponSlot.kkBaseMod`/`kkThresholdMod`)
   ändern INI/GE nicht, das bleibt bei den Grundwerten der Waffe (weichen
-  die Grundwerte vom Katalog ab, meldet das `pruefeWaffenGegenKatalog`, siehe
+  die Grundwerte vom Katalog ab, meldet das `pruefeWaffenGegenKatalog`, auch
+  für TP, INI, AT, PA und BF mit ihren Verbesserungsfeldern `tpFlatMod`,
+  `iniModMod`, `wmAtMod`, `wmPaMod`, `breakFactorMod`, siehe
   `technical_overview.md` Abschnitt 4.3);
   ein schon per Waffenmeister erlaubtes Manöver wird stattdessen um 4
   erleichtert. Zusatzaktionen gehen ins Gefecht (höchstens 4 Aktionen).

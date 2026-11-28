@@ -572,6 +572,7 @@ CombatPreviewStats computeCombatPreviewStats(
   final projectileAtMod = isRangedWeapon ? (activeProjectile?.atMod ?? 0) : 0;
   final tpHerleitung = herleiteTpZuschlag(
     tpGrundwert: main.tpFlat,
+    tpVerbesserung: main.tpFlatMod,
     waffenName: main.name,
     nutztTpKk: usesTpKkThreshold,
     tpKk: tpKkOhneZauber,
@@ -639,6 +640,7 @@ CombatPreviewStats computeCombatPreviewStats(
           talentAt: talentAt,
           talentName: selectedTalent?.name,
           waffenWm: main.wmAt,
+          waffenVerbesserung: main.wmAtMod,
           waffenName: waffenName,
           waffenmeister: wmEffects.atWmBonus,
           ebe: rangedAtEbePart,
@@ -654,6 +656,7 @@ CombatPreviewStats computeCombatPreviewStats(
           talentAt: talentAt,
           talentName: selectedTalent?.name,
           waffenWm: main.wmAt,
+          waffenVerbesserung: main.wmAtMod,
           waffenName: waffenName,
           waffenmeister: wmEffects.atWmBonus,
           ebe: ebe,
@@ -674,6 +677,7 @@ CombatPreviewStats computeCombatPreviewStats(
           talentPa: talentPa,
           talentName: selectedTalent?.name,
           waffenWm: main.wmPa,
+          waffenVerbesserung: main.wmPaMod,
           waffenName: waffenName,
           waffenmeister: wmEffects.paWmBonus,
           ebe: ebe,

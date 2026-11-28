@@ -41,6 +41,22 @@ int computeTpKk({
   );
 }
 
+/// Wirksamer Bruchfaktor einer Waffe: Grund-BF ([MainWeaponSlot.breakFactor],
+/// samt Abnutzung) plus Verbesserung der Waffe
+/// ([MainWeaponSlot.breakFactorMod], z. B. meisterlich geschmiedet `-1`).
+int computeWirksamerBruchfaktor(MainWeaponSlot slot) {
+  return slot.breakFactor + slot.breakFactorMod;
+}
+
+/// Grund-BF, mit dem [slot] den wirksamen Bruchfaktor [wirksam] erreicht.
+///
+/// Gegenstück zu [computeWirksamerBruchfaktor] für Schreibwege, die den
+/// wirksamen BF setzen (Bruchtest, Waffenübersicht); die Verbesserung der
+/// Waffe bleibt dabei erhalten.
+int bruchfaktorGrundwertFuer(MainWeaponSlot slot, int wirksam) {
+  return wirksam - slot.breakFactorMod;
+}
+
 // TP-Ausdruck als Wuerfelformel (z. B. "2W6+3").
 String buildTpExpression(MainWeaponSlot main, int tpCalc) {
   final count = main.tpDiceCount < 1 ? 1 : main.tpDiceCount;

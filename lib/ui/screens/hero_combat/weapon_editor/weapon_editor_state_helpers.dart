@@ -132,6 +132,14 @@ extension _WeaponEditorStateHelpers on WeaponEditorScreenState {
           ? 1
           : _readInt(_tpDiceCountController, _draftWeapon.tpDiceCount),
       tpFlat: _readInt(_tpFlatController, _draftWeapon.tpFlat),
+      tpFlatMod: _readInt(_tpFlatModController, _draftWeapon.tpFlatMod),
+      breakFactorMod: _readInt(
+        _breakFactorModController,
+        _draftWeapon.breakFactorMod,
+      ),
+      iniModMod: _readInt(_iniModModController, _draftWeapon.iniModMod),
+      wmAtMod: _readInt(_wmAtModController, _draftWeapon.wmAtMod),
+      wmPaMod: _readInt(_wmPaModController, _draftWeapon.wmPaMod),
       artifactDescription: _artifactDescriptionController.text.trim(),
       geweihtDescription: _geweihtDescriptionController.text.trim(),
       rangedProfile: _rangedProfileFromControllers(),

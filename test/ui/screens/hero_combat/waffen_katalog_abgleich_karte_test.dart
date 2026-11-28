@@ -5,16 +5,23 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/waffen_katalog_abgleich_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/waffen_katalog_abgleich_karte.dart';
 
-const _abweichung = WaffenKatalogAbweichung(
+const _waffe = MainWeaponSlot(
+  name: 'Meisterschwert',
+  weaponType: 'Schwert',
+  kkBase: 11,
+  kkThreshold: 2,
+  tpFlat: 5,
+);
+const _katalog = WaffenKatalogWerte(
+  tpKk: (basis: 12, schwelle: 3),
+  tp: (wuerfel: 1, zuschlag: 4),
+);
+final _abweichung = WaffenKatalogAbweichung(
   slotIndex: 2,
-  waffe: MainWeaponSlot(
-    name: 'Meisterschwert',
-    weaponType: 'Schwert',
-    kkBase: 11,
-    kkThreshold: 2,
-  ),
+  waffe: _waffe,
   katalogName: 'Schwert',
-  katalog: (basis: 12, schwelle: 3),
+  katalog: _katalog,
+  abweichungen: vergleicheWaffeMitKatalog(_waffe, _katalog),
 );
 
 void main() {
@@ -25,7 +32,7 @@ void main() {
         home: Scaffold(
           body: SingleChildScrollView(
             child: WaffenKatalogAbgleichKarte(
-              abweichungen: const <WaffenKatalogAbweichung>[_abweichung],
+              abweichungen: <WaffenKatalogAbweichung>[_abweichung],
               onUebernehmen: (a) => gemeldet.add('mod ${a.slotIndex}'),
               onBearbeiten: (a) => gemeldet.add('edit ${a.slotIndex}'),
               onAkzeptieren: (a) => gemeldet.add('ok ${a.slotIndex}'),
@@ -35,10 +42,13 @@ void main() {
       ),
     );
 
-    expect(find.text('TP/KK weicht vom Waffenkatalog ab'), findsOneWidget);
+    expect(
+      find.text('Waffenwerte weichen vom Waffenkatalog ab'),
+      findsOneWidget,
+    );
     expect(find.text(_abweichung.meldung), findsOneWidget);
     expect(
-      find.text('Als Modifikation: Grundwert 12/3, Verbesserung −1/−1'),
+      find.text('Als Modifikation: Verbesserung TP/KK −1/−1, TP +1'),
       findsOneWidget,
     );
 
