@@ -46,6 +46,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_con
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_armor_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_helpers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_meisterschaft_card.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_offhand_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/kampf_herleitung_details.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents/combat_specialization_dialog.dart';

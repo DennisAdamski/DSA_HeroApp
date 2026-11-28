@@ -33,6 +33,7 @@ class GefechtAuftrag {
     this.meisterparadeAnsage = 0,
     this.schildAnsagegrenze,
     this.manuelleKampfaktion,
+    this.grossmeisterPool = 0,
   });
   final Gefechtsaktion aktion;
   final String titel;
@@ -66,4 +67,7 @@ class GefechtAuftrag {
 
   /// Ausdrückliche Einordnung manueller Abschlüsse als Angriff oder Abwehr.
   final Gefechtsaktion? manuelleKampfaktion;
+
+  /// Eingesetzte Punkte des Säbel-Großmeister-Pools (Epische Stufen S. 18).
+  final int grossmeisterPool;
 }

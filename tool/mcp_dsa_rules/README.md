@@ -64,6 +64,7 @@ ist ein No-Op.
 dsa-rules-cli search "Zauberdauer modifizieren"
 dsa-rules-cli search "Parade" --sources regelbuecher hausregeln --limit 5
 dsa-rules-cli list
+dsa-rules-cli compare --document Epische   # neue Hausregel-Fassung vs. alte
 ```
 
 ## Einbindung in Claude Code
@@ -81,6 +82,7 @@ Der Server stellt dann folgende MCP-Tools bereit:
 | `list_sources`   | Listet alle indexierten Quelldokumente je Kategorie.                          |
 | `refresh_index`  | Inkrementeller oder vollstaendiger Neu-Index.                                 |
 | `find_topic`     | Thematisch gebuendelte Treffer fuer Anforderungs-Brainstorming.               |
+| `compare_hausregeln` | Neue Fassungen aus `hausregeln/Neu/` gegen die alten diffen, mit Fundstellen (Ablauf in `docs/mcp_dsa_rules.md`). |
 
 ## Tests
 

@@ -11,7 +11,11 @@ class GefechtVitalwerte extends StatelessWidget {
     required this.heroId,
     required this.werte,
     required this.child,
+    this.aktionen,
   });
+
+  /// Schnellzugriffe in der Überschrift, auch bei eingeklappter Kachel.
+  final Widget? aktionen;
 
   /// Stabile Identität für den lokalen Aufklappzustand der Karte.
   final String heroId;
@@ -32,7 +36,12 @@ class GefechtVitalwerte extends StatelessWidget {
       child: ExpansionTile(
         // Eine manuelle Entscheidung bleibt auch nach Heilung oder Schaden gültig.
         key: PageStorageKey<String>('gefecht-vitalwerte-$heroId'),
-        title: const Text('Vitalwerte'),
+        title: Row(
+          children: [
+            const Expanded(child: Text('Vitalwerte')),
+            ?aktionen,
+          ],
+        ),
         subtitle: Wrap(
           spacing: 12,
           runSpacing: 4,
@@ -54,7 +63,9 @@ class GefechtVitalwerte extends StatelessWidget {
           maxLep: maxima.maxLep,
         ),
         childrenPadding: const EdgeInsets.all(12),
-        children: [child],
+        // Eigener Speicher: Scrollables im Inhalt erben sonst den Schlüssel der
+        // Kachel und lesen deren bool als Scroll-Offset (TypeError).
+        children: [PageStorage(bucket: PageStorageBucket(), child: child)],
       ),
     );
   }

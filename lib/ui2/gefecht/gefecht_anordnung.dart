@@ -27,7 +27,12 @@ class GefechtAnordnung extends StatelessWidget {
     required this.weitere,
     required this.begegnung,
     required this.ausruestung,
+    this.meisterschaft,
   });
+
+  /// Waffenmeister/Großmeister der geführten Waffe; steht bei den
+  /// Vitalwerten, weil Pool und Schalter jede KR gebraucht werden.
+  final Widget? meisterschaft;
 
   /// Verfügbare Breite aus dem umgebenden `LayoutBuilder`.
   final double breite;
@@ -54,6 +59,7 @@ class GefechtAnordnung extends StatelessWidget {
     if (breite < kGefechtZweispaltig) {
       return _spalte([
         vitalwerte,
+        ?meisterschaft,
         angriff,
         verteidigung,
         manoever,
@@ -72,6 +78,7 @@ class GefechtAnordnung extends StatelessWidget {
           Expanded(
             child: _spalte([
               vitalwerte,
+              ?meisterschaft,
               verteidigung,
               ...weitere,
               ...begegnung,
@@ -86,7 +93,12 @@ class GefechtAnordnung extends StatelessWidget {
       children: [
         Expanded(
           flex: 3,
-          child: _spalte([vitalwerte, ausruestung, ...begegnung]),
+          child: _spalte([
+            vitalwerte,
+            ?meisterschaft,
+            ausruestung,
+            ...begegnung,
+          ]),
         ),
         const SizedBox(width: 16),
         Expanded(flex: 4, child: _spalte([angriff, manoever, magie])),

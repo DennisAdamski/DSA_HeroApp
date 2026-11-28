@@ -35,6 +35,9 @@ SOURCE_TITLES: dict[str, str] = {
     "regionalbuecher": "Regionalbuecher",
 }
 
+# Unterordner der Hausregeln fuer neue Fassungen; wird nicht indexiert.
+INBOX_DIRNAME = "Neu"
+
 DEFAULT_SEARCH_SOURCES: tuple[str, ...] = ("regelbuecher", "hausregeln")
 
 EMBEDDING_MODEL_NAME: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"

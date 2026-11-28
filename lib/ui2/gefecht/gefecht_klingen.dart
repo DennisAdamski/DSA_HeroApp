@@ -24,6 +24,8 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 
 import 'gefecht_fehlertext.dart';
 
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_grossmeister_rules.dart';
+
 /// Erfasst vollständige Ziele und Poolverteilung vor der ersten Teilprobe.
 Future<void> zeigeGefechtsKlingenbeginn({
   required BuildContext context,
@@ -71,6 +73,14 @@ Future<void> zeigeGefechtsKlingenbeginn({
   final finte = List.generate(3, (_) => TextEditingController(text: '0'));
   final pool = TextEditingController();
   final erschwernis = TextEditingController(text: '0');
+  final saebelPool = TextEditingController(text: '0');
+  final poolMoeglich = gefechtsPoolMoeglich(
+    snapshot,
+    manoever,
+    kampfmittel: wahl,
+  );
+  final poolFrei = gefechtsGrossmeisterPoolFrei(s, snapshot, kampfmittel: wahl);
+  var poolPunkte = 0;
   var anzahl = 2;
   String? fehler;
   try {
@@ -151,6 +161,18 @@ Future<void> zeigeGefechtsKlingenbeginn({
                             setState(() => normaleAbwehr[i] = v ?? false),
                       ),
                   ],
+                  if (poolMoeglich)
+                    GefechtZahlfeld(
+                      controller: saebelPool,
+                      feldKey: const ValueKey('gefecht-klingen-saebel-pool'),
+                      label: 'Säbel-Pool (frei: $poolFrei)',
+                      minimum: 0,
+                      hilfe: parade
+                          ? 'Erhöht den Klingenwand-Pool; für die KR verbraucht.'
+                          : 'Erhöht den Klingensturm-AT-Wert; für die KR '
+                                'verbraucht.',
+                      onChanged: () => setState(() {}),
+                    ),
                   GefechtZahlfeld(
                     controller: erschwernis,
                     feldKey: const ValueKey('gefecht-klingen-erschwernis'),
@@ -178,8 +200,15 @@ Future<void> zeigeGefechtsKlingenbeginn({
                             .split(',')
                             .map((v) => int.parse(v.trim()))
                             .toList();
+                  poolPunkte = poolMoeglich
+                      ? int.parse(saebelPool.text.trim())
+                      : 0;
                   final werte = gefechtsKlingenwerte(
-                    p.zielwert!,
+                    gefechtsKlingenbasisMitPool(
+                      p.zielwert!,
+                      poolPunkte,
+                      frei: poolFrei,
+                    ),
                     kampfgespuer: w.kampfgespuer,
                     klingentaenzer: w.klingentaenzerAktiv,
                     verteilung: verteilung,
@@ -239,6 +268,8 @@ Future<void> zeigeGefechtsKlingenbeginn({
         .read(gefechtProvider(heroId).notifier)
         .setzen(
           aktuell.copyWith(
+            grossmeisterPoolVerbraucht:
+                aktuell.grossmeisterPoolVerbraucht + poolPunkte,
             klingen: GefechtsKlingenstand(
               id: UniqueKey().toString(),
               parade: parade,
@@ -255,6 +286,7 @@ Future<void> zeigeGefechtsKlingenbeginn({
     await Future<void>.delayed(const Duration(milliseconds: 300));
     pool.dispose();
     erschwernis.dispose();
+    saebelPool.dispose();
     for (final c in finte) {
       c.dispose();
     }

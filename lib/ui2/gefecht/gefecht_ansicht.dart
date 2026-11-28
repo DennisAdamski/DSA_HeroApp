@@ -20,6 +20,7 @@ import 'gefecht_reserve.dart';
 import 'gefecht_zauberwirkungen.dart';
 import 'gefecht_patzer.dart';
 import 'gefecht_klingen.dart';
+import 'gefecht_grossmeister.dart';
 
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_patzer_provider.dart';
@@ -28,6 +29,8 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_zauber_liste_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_grossmeister_rules.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_lage_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_patzer_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
@@ -245,6 +248,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                             ),
                             GefechtAnordnung(
                               breite: constraints.maxWidth,
+                              meisterschaft: _meisterschaft(s, snapshot),
                               vitalwerte: ressourcen,
                               angriff: angriff,
                               verteidigung: verteidigung,
@@ -314,6 +318,33 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                     },
                   ),
           ),
+        ),
+      ),
+    );
+  }
+
+  // Waffenmeister/Großmeister-Karte; der GE-Schalter schreibt frisch.
+  Widget? _meisterschaft(Gefechtszustand s, HeroComputedSnapshot snapshot) {
+    final m = snapshot.combatPreviewStats.meisterschaft;
+    if (!m.sichtbar) return null;
+    return GefechtGrossmeisterkarte(
+      meisterschaft: m,
+      poolFrei: gefechtsGrossmeisterPoolFrei(s, snapshot),
+      gesperrt: _busy,
+      onGeStattKk: (an) => _run(
+        () => aendereHeldAusserhalbPlanung(
+          ref,
+          widget.heroId,
+          (held) => held.copyWith(
+            combatConfig: held.combatConfig.copyWith(
+              specialRules: held.combatConfig.specialRules.copyWith(
+                grossmeisterGeStattKk: an,
+              ),
+            ),
+          ),
+          sperre:
+              'Während einer offenen Steigerungsrunde bleibt der Kampfbogen '
+              'unverändert.',
         ),
       ),
     );

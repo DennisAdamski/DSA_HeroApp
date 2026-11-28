@@ -91,6 +91,7 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
         ? slot.name
         : slot.weaponType,
     activeTalentId: slot.talentId,
+    aktiveKampfSfIds: config.specialRules.activeCombatSpecialAbilityIds,
   );
 
   // Spezialisierung
@@ -103,12 +104,15 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
   final paSpecBonus = specApplies && !isRanged ? 1 : 0;
 
   // TP/KK
-  final wmKkBase = slot.kkBase + wmEffects.tpKkBaseReduction;
-  final wmKkThreshold = slot.kkThreshold + wmEffects.tpKkThresholdReduction;
-  final usesTpKk = _usesTpKkThreshold(
-    kkBase: slot.kkBase,
-    kkThreshold: slot.kkThreshold,
-  );
+  final gmFest = wmEffects.grossmeister;
+  final wmKkBase =
+      gmFest.tpKkFestBasis ?? slot.kkBase + wmEffects.tpKkBaseReduction;
+  final wmKkThreshold =
+      gmFest.tpKkFestSchwelle ??
+      slot.kkThreshold + wmEffects.tpKkThresholdReduction;
+  final usesTpKk =
+      gmFest.tpKkFestBasis != null ||
+      _usesTpKkThreshold(kkBase: slot.kkBase, kkThreshold: slot.kkThreshold);
   final kkThreshold = usesTpKk && wmKkThreshold < 1 ? 1 : wmKkThreshold;
   // Karnifilo: KK +5 verbessert die TP (LC S. 136), ohne AT/PA neu zu rechnen.
   final zauberKk = derived.zauberEffekte.eigenschaftsMods.kk;
@@ -232,6 +236,7 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
     axxeleratusActive: axxeleratusActive,
     talentName: selectedTalent?.name,
     reloadDivisor: wmEffects.reloadTimeHalved ? 2 : 1,
+    reloadModifier: wmEffects.grossmeister.ladezeit,
     beKampf: beKampf,
   );
 
@@ -246,6 +251,7 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
     effectiveGe: effectiveSheet.attributes.ge,
     catalogTalents: catalogTalents,
     waffenmeisterschaften: config.waffenmeisterschaften,
+    aktiveKampfSfIds: config.specialRules.activeCombatSpecialAbilityIds,
   );
 
   final weaponTypeLabel = slot.weaponType.trim().isEmpty
@@ -349,6 +355,7 @@ _WeaponInitiativeSnapshot _computeWeaponInitiativeSnapshot({
   required int effectiveGe,
   required List<TalentDef> catalogTalents,
   required List<WaffenmeisterConfig> waffenmeisterschaften,
+  required List<String> aktiveKampfSfIds,
 }) {
   final selectedTalent = _findTalentDefById(catalogTalents, slot.talentId);
   final legacyRanged = isRangedCombatTalent(selectedTalent);
@@ -359,6 +366,7 @@ _WeaponInitiativeSnapshot _computeWeaponInitiativeSnapshot({
         ? slot.name
         : slot.weaponType,
     activeTalentId: slot.talentId,
+    aktiveKampfSfIds: aktiveKampfSfIds,
   );
   final wmKkBase = slot.kkBase + wmEffects.tpKkBaseReduction;
   final wmKkThreshold = slot.kkThreshold + wmEffects.tpKkThresholdReduction;
@@ -366,9 +374,14 @@ _WeaponInitiativeSnapshot _computeWeaponInitiativeSnapshot({
     kkBase: slot.kkBase,
     kkThreshold: slot.kkThreshold,
   );
-  final kkThreshold = usesTpKkThreshold && wmKkThreshold < 1
+  final kkThresholdTp = usesTpKkThreshold && wmKkThreshold < 1
       ? 1
       : wmKkThreshold;
+  // Säbel-Großmeister: GE/INI-Schwelle −1, solange sie dabei positiv bleibt.
+  final kkThreshold =
+      7 - kkThresholdTp + wmEffects.grossmeister.geIniSchwelle >= 1
+      ? kkThresholdTp - wmEffects.grossmeister.geIniSchwelle
+      : kkThresholdTp;
   final geBase = usesTpKkThreshold ? 26 - wmKkBase : 0;
   final geThreshold = usesTpKkThreshold ? 7 - kkThreshold : 0;
   final iniGe = usesTpKkThreshold

@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_auftrag_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_grossmeister_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_zielwert_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
@@ -69,6 +70,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
   final _zielErleichterung = TextEditingController(text: '0');
   final _meisterparade = TextEditingController(text: '0');
   final _schildgrenze = TextEditingController();
+  final _pool = TextEditingController(text: '0');
   Gefechtsaktion? _manuelleKampfaktion;
   String? _dk;
   bool _grosserGegner = false, _grosserSchild = false;
@@ -129,6 +131,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
       _zielErleichterung,
       _meisterparade,
       _schildgrenze,
+      _pool,
     ]) {
       c.dispose();
     }
@@ -160,6 +163,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
     meisterparadeAnsage: int.tryParse(_meisterparade.text) ?? 0,
     schildAnsagegrenze: int.tryParse(_schildgrenze.text),
     manuelleKampfaktion: _manuelleKampfaktion,
+    grossmeisterPool: int.tryParse(_pool.text) ?? 0,
     zielwert: int.tryParse(_ziel.text),
     dk: _dk,
     dauer: _aktion == Gefechtsaktion.zusatzaktion
@@ -181,6 +185,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
         (_fernkampfansage, 'Fernkampfansage'),
         (_zielErleichterung, 'Optionale Zielerleichterung'),
         (_meisterparade, 'Meisterparade-Ansage'),
+        (_pool, 'Säbel-Pool'),
       ])
         if (int.tryParse(e.$1.text) == null)
           '${e.$2} muss eine ganze Zahl sein.',
@@ -361,6 +366,21 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                     'die aktuelle Schild-PA.',
                   ),
                 ],
+              ],
+              if (gefechtsPoolMoeglich(
+                widget.werte,
+                widget.manoever,
+                kampfmittel: _mittel,
+              )) ...[
+                _zahl(
+                  _pool,
+                  'Säbel-Pool (frei: ${gefechtsGrossmeisterPoolFrei(widget.zustand, widget.werte, kampfmittel: _mittel)})',
+                  key: 'gefecht-saebel-pool',
+                ),
+                const Text(
+                  'Großmeister: Pool-Punkte erleichtern dieses Manöver und '
+                  'sind für den Rest der KR verbraucht.',
+                ),
               ],
               if (kontextAktion == Gefechtsaktion.angriff && !_distanzwechsel)
                 GefechtAnsagefelder(

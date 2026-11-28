@@ -5523,6 +5523,21 @@
         "note": "Aventurisches Arsenal S. 76 (Chunk 129) und Wege des Schwerts S. 71 (Chunk 7015) erneut gelesen: zweihändig geführte Waffen nicht zugleich mit anderer Waffe oder Schild, Parierwaffen nicht mit zweihändig geführten Waffen oder Schild."
       }
     },
+    "test/rules/gefecht_grossmeister_rules_test.dart": {
+      "kind": "house_rule",
+      "status": "verified",
+      "summary": "Säbel-Großmeister im Gefecht: Pool-Punkte in Höhe des GE/INI-Bonus (GE 21, Amazonensäbel 15/2 → 3) je KR frei auf Betäubungsschlag, Entwaffnen, Klingensturm und Klingenwand verteilbar, verbraucht bis zur nächsten KR; Bonusschaden aus GE statt KK nur ohne Wuchtschlag (dann zählt der KK-Zuschlag). Buchung, Sperrtexte und Kampfwertleiste sind Produktvertrag.",
+      "sources": [
+        {
+          "title": "Epische Stufen",
+          "pages": "18 (Waffen-Großmeister Säbel)",
+          "mcpChunks": [
+            25749
+          ],
+          "checkedOn": "2026-11-28"
+        }
+      ]
+    },
     "test/rules/gefecht_held_rules_test.dart": {
       "kind": "official",
       "status": "conflict",

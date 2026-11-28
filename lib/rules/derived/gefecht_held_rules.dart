@@ -68,6 +68,12 @@ Gefechtswerte gefechtswerteFuer(
               ?.optionFor(TwoWeaponActionType.extraOffhandAttack)
               ?.isAvailable ==
           true;
+  final wm = computeWaffenmeisterEffects(
+    waffenmeisterschaften: config.waffenmeisterschaften,
+    activeWeaponType: waffe?.weaponType ?? '',
+    activeTalentId: waffe?.talentId ?? '',
+    aktiveKampfSfIds: config.specialRules.activeCombatSpecialAbilityIds,
+  );
   final nebenParade =
       zusatzBelegung &&
       c.twoWeaponCombat
@@ -104,7 +110,11 @@ Gefechtswerte gefechtswerteFuer(
     stabUmwandlung:
         waffe?.talentId == 'tal_staebe' &&
         (snapshot.hero.talents['tal_staebe']?.talentValue ?? 0) >= 10,
-    zusatzaktionen: schildZusatz || nebenAttacke || nebenParade ? 1 : 0,
+    // Großmeister-Zusatzaktionen sind kumulativ, höchstens 4 Aktionen je KR.
+    zusatzaktionen:
+        ((schildZusatz || nebenAttacke || nebenParade ? 1 : 0) +
+                wm.grossmeister.zusatzaktionen)
+            .clamp(0, 2),
     zusatzAttacke: nebenAttacke,
     zusatzParade: nebenParade,
     waffeVorhanden: waffe != null && waffe.name.trim().isNotEmpty,
@@ -115,11 +125,7 @@ Gefechtswerte gefechtswerteFuer(
     waffe: waffe,
     scharfschuetze: kennt('man_scharfschuetze'),
     meisterschuetze: kennt('man_meisterschuetze'),
-    waffenmeister: computeWaffenmeisterEffects(
-      waffenmeisterschaften: config.waffenmeisterschaften,
-      activeWeaponType: waffe?.weaponType ?? '',
-      activeTalentId: waffe?.talentId ?? '',
-    ).isActive,
+    waffenmeister: wm.isActive,
     defensiverKampfstil: kennt('man_defensiver_kampfstil'),
     halbschwert: kennt('man_halbschwert'),
     umwandlungVerboten:

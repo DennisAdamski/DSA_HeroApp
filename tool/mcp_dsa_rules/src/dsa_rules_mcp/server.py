@@ -11,6 +11,7 @@ from typing import Any
 from dsa_rules_mcp.config import DEFAULT_SEARCH_SOURCES, McpConfig, ensure_data_dirs, load_config
 from dsa_rules_mcp.indexer.embedder import Embedder
 from dsa_rules_mcp.store.db import open_database
+from dsa_rules_mcp.tools.compare_hausregeln import run_compare_hausregeln
 from dsa_rules_mcp.tools.find_topic import run_find_topic
 from dsa_rules_mcp.tools.get_context import run_get_context
 from dsa_rules_mcp.tools.list_sources import run_list_sources
@@ -169,6 +170,25 @@ def _build_mcp() -> Any:
             )
         finally:
             logger.info("find_topic done in %.2fs (topic=%r, limit=%d)", time.perf_counter() - t0, topic, limit)
+
+    @mcp.tool()
+    def compare_hausregeln(document: str | None = None) -> dict[str, object]:
+        """Vergleicht neue Hausregel-Fassungen aus `hausregeln/Neu/` mit den alten.
+
+        Liefert je Dokument die geaenderten Abschnitte (satzweise, mit Seiten)
+        und dazu passende Katalogeintraege samt Dart-Dateien, die deren ID
+        verwenden. Grundlage fuer die Entscheidung, ob Katalog oder Code
+        angepasst werden muessen.
+
+        Parameter:
+            document: Optionaler Teil des Dateinamens, um nur ein Dokument zu vergleichen.
+        """
+
+        t0 = time.perf_counter()
+        try:
+            return run_compare_hausregeln(_context.config, document=document)
+        finally:
+            logger.info("compare_hausregeln done in %.2fs (document=%r)", time.perf_counter() - t0, document)
 
     return mcp
 

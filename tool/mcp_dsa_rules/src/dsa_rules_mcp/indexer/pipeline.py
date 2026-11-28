@@ -12,6 +12,7 @@ from typing import Callable, Sequence
 
 from dsa_rules_mcp.config import McpConfig, SourceConfig
 from dsa_rules_mcp.indexer.chunker import Chunk, PageText, chunk_pages
+from dsa_rules_mcp.config import INBOX_DIRNAME
 from dsa_rules_mcp.indexer.embedder import Embedder, embedding_to_bytes
 from dsa_rules_mcp.indexer.pdf_extract import (
     ExtractedPage,
@@ -123,6 +124,8 @@ def refresh_index(
             path
             for suffix in supported_document_suffixes()
             for path in target.path.rglob(f"*{suffix}")
+            # Eingangsordner neuer Hausregel-Fassungen erst nach dem Abgleich indexieren.
+            if INBOX_DIRNAME not in path.relative_to(target.path).parts
         )
 
         for pdf_path in document_paths:

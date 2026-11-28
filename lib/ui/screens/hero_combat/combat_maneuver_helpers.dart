@@ -183,6 +183,8 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
           ? slot.name
           : slot.weaponType,
       activeTalentId: slot.talentId,
+      aktiveKampfSfIds:
+          _draftCombatConfig.specialRules.activeCombatSpecialAbilityIds,
     );
     for (final raw in wmEffects.additionalManeuvers) {
       final id = canonicalManeuverIdFromName(

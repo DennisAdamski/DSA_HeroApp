@@ -14,6 +14,7 @@ from dsa_rules_mcp.config import ensure_data_dirs, load_config
 from dsa_rules_mcp.indexer.embedder import Embedder
 from dsa_rules_mcp.publish import PublishError, build_release, upload_commands
 from dsa_rules_mcp.store.db import open_database
+from dsa_rules_mcp.tools.compare_hausregeln import run_compare_hausregeln
 from dsa_rules_mcp.tools.find_topic import run_find_topic
 from dsa_rules_mcp.tools.list_sources import run_list_sources
 from dsa_rules_mcp.tools.refresh_index import run_refresh_index
@@ -48,6 +49,11 @@ def _parser() -> argparse.ArgumentParser:
     topic.add_argument("--limit", type=int, default=15)
 
     sub.add_parser("list", help="Indexierte PDFs anzeigen")
+
+    compare = sub.add_parser(
+        "compare", help="Neue Hausregel-Fassungen (hausregeln/Neu) mit den alten vergleichen"
+    )
+    compare.add_argument("--document", default=None, help="Teil des Dateinamens")
 
     publish = sub.add_parser(
         "publish",
@@ -119,6 +125,8 @@ def _publish(db_path: Path, out: str | None, bucket: str | None, data_dir: Path)
 def main(argv: Sequence[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
+    # Windows-Konsolen nutzen sonst cp1252 und brechen an Zeichen wie U+2212 ab.
+    sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
 
     config = load_config()
     ensure_data_dirs(config)
@@ -177,6 +185,11 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         if args.command == "list":
             result = run_list_sources(connection, config)
+            print(json.dumps(result, indent=2, ensure_ascii=False))
+            return 0
+
+        if args.command == "compare":
+            result = run_compare_hausregeln(config, document=args.document)
             print(json.dumps(result, indent=2, ensure_ascii=False))
             return 0
 

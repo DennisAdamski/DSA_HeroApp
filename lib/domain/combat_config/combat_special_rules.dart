@@ -28,6 +28,7 @@ class CombatSpecialRules {
     this.activeCombatSpecialAbilityIds = const <String>[],
     this.gladiatorStyleTalent = '',
     this.activeManeuvers = const <String>[],
+    this.grossmeisterGeStattKk = false,
     this.unbekannteFelder = const <String, Object?>{},
   });
 
@@ -91,6 +92,10 @@ class CombatSpecialRules {
   /// Liste der aktuell aktiven Manoever-IDs (dedupliziert, kein Leerstring).
   final List<String> activeManeuvers;
 
+  /// Waffen-Großmeister (Säbel): Bonusschaden aus GE statt KK (Epische
+  /// Stufen S. 18); wirkt nur, solange der Großmeister es erlaubt.
+  final bool grossmeisterGeStattKk;
+
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
@@ -121,6 +126,7 @@ class CombatSpecialRules {
     'activeManeuvers',
     'schnellladenBogen',
     'schnellladenArmbrust',
+    'grossmeisterGeStattKk',
   };
 
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
@@ -146,6 +152,7 @@ class CombatSpecialRules {
     List<String>? activeCombatSpecialAbilityIds,
     String? gladiatorStyleTalent,
     List<String>? activeManeuvers,
+    bool? grossmeisterGeStattKk,
     Map<String, Object?>? unbekannteFelder,
   }) {
     return CombatSpecialRules(
@@ -173,6 +180,8 @@ class CombatSpecialRules {
       activeManeuvers: _normalizeStringList(
         activeManeuvers ?? this.activeManeuvers,
       ),
+      grossmeisterGeStattKk:
+          grossmeisterGeStattKk ?? this.grossmeisterGeStattKk,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
@@ -201,6 +210,8 @@ class CombatSpecialRules {
       ),
       'gladiatorStyleTalent': gladiatorStyleTalent.trim(),
       'activeManeuvers': _normalizeStringList(activeManeuvers),
+      // Nur bei Belegung, damit Bestandshelden ihren Hash behalten.
+      if (grossmeisterGeStattKk) 'grossmeisterGeStattKk': true,
     }, unbekannteFelder);
   }
 
@@ -242,6 +253,7 @@ class CombatSpecialRules {
       gladiatorStyleTalent:
           (json['gladiatorStyleTalent'] as String?)?.trim() ?? '',
       activeManeuvers: _normalizeStringList(rawManeuvers),
+      grossmeisterGeStattKk: getBool('grossmeisterGeStattKk'),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
