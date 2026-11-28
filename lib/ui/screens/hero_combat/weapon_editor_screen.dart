@@ -60,6 +60,8 @@ class WeaponEditorScreenState extends ConsumerState<WeaponEditorScreen> {
   late final TextEditingController _breakFactorController;
   late final TextEditingController _kkBaseController;
   late final TextEditingController _kkThresholdController;
+  late final TextEditingController _kkBaseModController;
+  late final TextEditingController _kkThresholdModController;
   late final TextEditingController _iniModController;
   late final TextEditingController _wmAtController;
   late final TextEditingController _wmPaController;
@@ -84,6 +86,8 @@ class WeaponEditorScreenState extends ConsumerState<WeaponEditorScreen> {
     _breakFactorController = TextEditingController();
     _kkBaseController = TextEditingController();
     _kkThresholdController = TextEditingController();
+    _kkBaseModController = TextEditingController();
+    _kkThresholdModController = TextEditingController();
     _iniModController = TextEditingController();
     _wmAtController = TextEditingController();
     _wmPaController = TextEditingController();
@@ -133,6 +137,8 @@ class WeaponEditorScreenState extends ConsumerState<WeaponEditorScreen> {
     _breakFactorController.dispose();
     _kkBaseController.dispose();
     _kkThresholdController.dispose();
+    _kkBaseModController.dispose();
+    _kkThresholdModController.dispose();
     _iniModController.dispose();
     _wmAtController.dispose();
     _wmPaController.dispose();
@@ -179,6 +185,8 @@ class WeaponEditorScreenState extends ConsumerState<WeaponEditorScreen> {
     _breakFactorController.text = _draftWeapon.breakFactor.toString();
     _kkBaseController.text = _draftWeapon.kkBase.toString();
     _kkThresholdController.text = _draftWeapon.kkThreshold.toString();
+    _kkBaseModController.text = _draftWeapon.kkBaseMod.toString();
+    _kkThresholdModController.text = _draftWeapon.kkThresholdMod.toString();
     _iniModController.text = _draftWeapon.iniMod.toString();
     _wmAtController.text = _draftWeapon.wmAt.toString();
     _wmPaController.text = _draftWeapon.wmPa.toString();

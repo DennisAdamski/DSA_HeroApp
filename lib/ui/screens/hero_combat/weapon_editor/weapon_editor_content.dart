@@ -119,6 +119,8 @@ extension _WeaponEditorContent on WeaponEditorScreenState {
                     tpFlatController: _tpFlatController,
                     kkBaseController: _kkBaseController,
                     kkThresholdController: _kkThresholdController,
+                    kkBaseModController: _kkBaseModController,
+                    kkThresholdModController: _kkThresholdModController,
                     onTpDiceCountChanged: (value) => _setDraftWeapon(
                       _draftWeapon.copyWith(tpDiceCount: value < 1 ? 1 : value),
                     ),
@@ -128,6 +130,12 @@ extension _WeaponEditorContent on WeaponEditorScreenState {
                         _setDraftWeapon(_draftWeapon.copyWith(kkBase: value)),
                     onKkThresholdChanged: (value) => _setDraftWeapon(
                       _draftWeapon.copyWith(kkThreshold: value),
+                    ),
+                    onKkBaseModChanged: (value) => _setDraftWeapon(
+                      _draftWeapon.copyWith(kkBaseMod: value),
+                    ),
+                    onKkThresholdModChanged: (value) => _setDraftWeapon(
+                      _draftWeapon.copyWith(kkThresholdMod: value),
                     ),
                   ),
                   const SizedBox(height: 12),

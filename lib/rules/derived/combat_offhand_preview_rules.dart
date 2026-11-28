@@ -105,11 +105,15 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
 
   // TP/KK
   final gmFest = wmEffects.grossmeister;
-  final wmKkBase =
-      gmFest.tpKkFestBasis ?? slot.kkBase + wmEffects.tpKkBaseReduction;
-  final wmKkThreshold =
-      gmFest.tpKkFestSchwelle ??
-      slot.kkThreshold + wmEffects.tpKkThresholdReduction;
+  final wirksameTpKk = computeWirksameTpKk(
+    slot: slot,
+    meisterschaftBasis: wmEffects.tpKkBaseReduction,
+    meisterschaftSchwelle: wmEffects.tpKkThresholdReduction,
+    festBasis: gmFest.tpKkFestBasis,
+    festSchwelle: gmFest.tpKkFestSchwelle,
+  );
+  final wmKkBase = wirksameTpKk.basis;
+  final wmKkThreshold = wirksameTpKk.schwelle;
   final usesTpKk =
       gmFest.tpKkFestBasis != null ||
       _usesTpKkThreshold(kkBase: slot.kkBase, kkThreshold: slot.kkThreshold);
@@ -148,6 +152,8 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
     kkSchwelle: kkThreshold,
     waffenmeisterKkBasis: wmEffects.tpKkBaseReduction,
     waffenmeisterKkSchwelle: wmEffects.tpKkThresholdReduction,
+    verbesserungKkBasis: slot.kkBaseMod,
+    verbesserungKkSchwelle: slot.kkThresholdMod,
     zauberTpKk: tpKk - tpKkOhneZauber,
     zauberKk: zauberKk,
     zauberName: zauberEigenschaftsName(derived.zauberEffekte),
@@ -368,27 +374,29 @@ _WeaponInitiativeSnapshot _computeWeaponInitiativeSnapshot({
     activeTalentId: slot.talentId,
     aktiveKampfSfIds: aktiveKampfSfIds,
   );
-  final wmKkBase = slot.kkBase + wmEffects.tpKkBaseReduction;
-  final wmKkThreshold = slot.kkThreshold + wmEffects.tpKkThresholdReduction;
+  // INI/GE rechnet mit den Grundwerten der unveränderten Waffe (Hausregel
+  // „Erweiterung und Überarbeitung des Regelwerks“): Verbesserungen der Waffe
+  // und TP/KK-Verschiebungen durch Waffen- oder Großmeister wirken nur auf den
+  // Schaden. Nur die ausdrückliche GE/INI-Verschiebung des Säbel-Großmeisters
+  // (Schwelle −1, solange sie positiv bleibt) gilt hier.
   final usesTpKkThreshold = _usesTpKkThreshold(
     kkBase: slot.kkBase,
     kkThreshold: slot.kkThreshold,
   );
-  final kkThresholdTp = usesTpKkThreshold && wmKkThreshold < 1
-      ? 1
-      : wmKkThreshold;
-  // Säbel-Großmeister: GE/INI-Schwelle −1, solange sie dabei positiv bleibt.
-  final kkThreshold =
-      7 - kkThresholdTp + wmEffects.grossmeister.geIniSchwelle >= 1
-      ? kkThresholdTp - wmEffects.grossmeister.geIniSchwelle
-      : kkThresholdTp;
-  final geBase = usesTpKkThreshold ? 26 - wmKkBase : 0;
-  final geThreshold = usesTpKkThreshold ? 7 - kkThreshold : 0;
+  final geSchwelleMod = wmEffects.grossmeister.geIniSchwelle;
+  final geBase = usesTpKkThreshold ? computeGeBasis(slot.kkBase) : 0;
+  final geThreshold = usesTpKkThreshold
+      ? computeGeSchwelle(
+          kkThreshold: slot.kkThreshold,
+          geSchwelleMod: geSchwelleMod,
+        )
+      : 0;
   final iniGe = usesTpKkThreshold
       ? computeIniGe(
           ge: effectiveGe,
-          kkBase: wmKkBase,
-          kkThreshold: kkThreshold,
+          kkBase: slot.kkBase,
+          kkThreshold: slot.kkThreshold,
+          geSchwelleMod: geSchwelleMod,
         )
       : 0;
   final activeProjectile = slot.rangedProfile.selectedProjectileOrNull;

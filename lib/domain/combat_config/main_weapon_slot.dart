@@ -18,6 +18,9 @@ class MainWeaponSlot {
     this.distanceClass = '',
     this.kkBase = 0,
     this.kkThreshold = 1,
+    this.kkBaseMod = 0,
+    this.kkThresholdMod = 0,
+    this.katalogTpKkAkzeptiert = '',
     this.breakFactor = 0,
     this.tpDiceCount = 1,
     this.tpDiceSides = 6,
@@ -65,11 +68,40 @@ class MainWeaponSlot {
   /// Entfernungsklasse der Waffe.
   final String distanceClass;
 
-  /// KK-Basiswert fuer TP-Bonus-Berechnung.
+  /// KK-Basis der unveraenderten Waffe (Grundwert aus der Waffentabelle).
+  ///
+  /// Grundlage fuer TP/KK und INI/GE. Verbesserungen der Waffe stehen in
+  /// [kkBaseMod], Waffenmeister-Boni kommen aus der Kampfmeisterschaft.
   final int kkBase;
 
-  /// KK-Schwellenwert fuer TP-Stufen.
+  /// KK-Schwelle der unveraenderten Waffe (Grundwert aus der Waffentabelle).
+  ///
+  /// Grundlage fuer TP/KK und INI/GE; Verbesserungen stehen in
+  /// [kkThresholdMod].
   final int kkThreshold;
+
+  /// Veraenderung der KK-Basis durch die Waffe selbst, z. B. `-1` fuer eine
+  /// meisterlich geschmiedete Klinge.
+  ///
+  /// Wirkt nur auf TP/KK; INI/GE rechnet weiter mit [kkBase]. Wird nur
+  /// geschrieben, wenn belegt.
+  final int kkBaseMod;
+
+  /// Veraenderung der KK-Schwelle durch die Waffe selbst, z. B. `-1` fuer
+  /// eine meisterlich geschmiedete Klinge.
+  ///
+  /// Wirkt nur auf TP/KK; INI/GE rechnet weiter mit [kkThreshold]. Wird nur
+  /// geschrieben, wenn belegt.
+  final int kkThresholdMod;
+
+  /// Bestätigte Abweichung der TP/KK-Grundwerte vom Katalog.
+  ///
+  /// Hält fest, welche Kombination aus Waffe und Katalogwaffe der Nutzer als
+  /// gewollt akzeptiert hat (Schlüssel aus `waffen_katalog_abgleich_rules`).
+  /// Ändern sich Waffe oder Katalog, passt der Schlüssel nicht mehr und die
+  /// Prüfung meldet die Abweichung erneut. Leer, solange nichts akzeptiert
+  /// ist; nur geschrieben, wenn belegt.
+  final String katalogTpKkAkzeptiert;
 
   /// Bruchfaktor der Waffe.
   final int breakFactor;
@@ -136,6 +168,9 @@ class MainWeaponSlot {
     'distanceClass',
     'kkBase',
     'kkThreshold',
+    'kkBaseMod',
+    'kkThresholdMod',
+    'katalogTpKkAkzeptiert',
     'breakFactor',
     'tpDiceCount',
     'tpDiceSides',
@@ -178,6 +213,9 @@ class MainWeaponSlot {
     String? distanceClass,
     int? kkBase,
     int? kkThreshold,
+    int? kkBaseMod,
+    int? kkThresholdMod,
+    String? katalogTpKkAkzeptiert,
     int? breakFactor,
     int? tpDiceCount,
     int? tpDiceSides,
@@ -205,6 +243,10 @@ class MainWeaponSlot {
       distanceClass: distanceClass ?? this.distanceClass,
       kkBase: kkBase ?? this.kkBase,
       kkThreshold: kkThreshold ?? this.kkThreshold,
+      kkBaseMod: kkBaseMod ?? this.kkBaseMod,
+      kkThresholdMod: kkThresholdMod ?? this.kkThresholdMod,
+      katalogTpKkAkzeptiert:
+          katalogTpKkAkzeptiert ?? this.katalogTpKkAkzeptiert,
       breakFactor: breakFactor ?? this.breakFactor,
       tpDiceCount: tpDiceCount ?? this.tpDiceCount,
       // W6 ist im aktuellen Hausregel-Waffenfluss fest.
@@ -243,6 +285,11 @@ class MainWeaponSlot {
         'distanceClass': distanceClass,
         'kkBase': kkBase,
         'kkThreshold': kkThreshold,
+        // Nur bei Belegung, damit Bestandshelden ihren Inhalts-Hash behalten.
+        if (kkBaseMod != 0) 'kkBaseMod': kkBaseMod,
+        if (kkThresholdMod != 0) 'kkThresholdMod': kkThresholdMod,
+        if (katalogTpKkAkzeptiert.isNotEmpty)
+          'katalogTpKkAkzeptiert': katalogTpKkAkzeptiert,
         'breakFactor': breakFactor,
         'tpDiceCount': tpDiceCount,
         // Als W6 persistiert fuer Schema-Kompatibilitaet.
@@ -300,6 +347,9 @@ class MainWeaponSlot {
       distanceClass: getString('distanceClass'),
       kkBase: getInt('kkBase', 0),
       kkThreshold: getInt('kkThreshold', 1),
+      kkBaseMod: getInt('kkBaseMod', 0),
+      kkThresholdMod: getInt('kkThresholdMod', 0),
+      katalogTpKkAkzeptiert: getString('katalogTpKkAkzeptiert'),
       breakFactor: getInt('breakFactor', 0),
       tpDiceCount: getInt('tpDiceCount', 1),
       tpDiceSides: 6,

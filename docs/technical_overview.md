@@ -811,8 +811,11 @@ desselben Feldes entspricht; abweichende Einträge bleiben stehen.
 | `combatType` | `WeaponCombatType` | Explizite Einordnung als Nah- oder Fernkampfwaffe |
 | `weaponType` | `String` | Waffenkategorie |
 | `distanceClass` | `String` | Distanzklasse der Nahkampfwaffe (Legacy-kompatibel) |
-| `kkBase` | `int` | KK-Basis für TP-Bonus-Berechnung; `0` zusammen mit `kkThreshold = 0` deaktiviert TP/KK und INI/GE |
-| `kkThreshold` | `int` | KK-Schwelle für TP-Schritte; `0` ist nur zusammen mit `kkBase = 0` als Deaktivierung erlaubt |
+| `kkBase` | `int` | KK-Basis der unveränderten Waffe (Grundwert der Waffentabelle) für TP/KK und INI/GE; `0` zusammen mit `kkThreshold = 0` deaktiviert TP/KK und INI/GE |
+| `kkThreshold` | `int` | KK-Schwelle der unveränderten Waffe für TP-Schritte und INI/GE; `0` ist nur zusammen mit `kkBase = 0` als Deaktivierung erlaubt |
+| `kkBaseMod` | `int` | Verbesserung der KK-Basis durch die Waffe selbst (z. B. meisterlich geschmiedet `-1`); wirkt nur auf TP/KK, nur geschrieben, wenn belegt |
+| `kkThresholdMod` | `int` | Verbesserung der KK-Schwelle durch die Waffe selbst (z. B. `-1`); wirkt nur auf TP/KK, nur geschrieben, wenn belegt |
+| `katalogTpKkAkzeptiert` | `String` | Bestätigte Abweichung der TP/KK-Grundwerte vom Katalog, Schlüssel `<Waffe>\|<Katalogname> <Katalog-TP/KK>` (z. B. `11/2\|Schwert 12/3`); nur geschrieben, wenn belegt |
 | `breakFactor` | `int` | Bruchfaktor der Waffe |
 | `tpDiceCount` | `int` | Anzahl TP-Würfel |
 | `tpDiceSides` | `int` (= 6) | Seiten des TP-Würfels (immer 6) |
@@ -1766,12 +1769,36 @@ temporaere Zustandseffekte.
 | Wert | Formel |
 |---|---|
 | IniBase | `round((MU + MU + INN + GE) / 5) + iniBase-Mod` |
-| IniGe | `truncate((GE − geBase) / geThreshold)` (Waffen-Komponente) |
+| IniGe | `truncate((GE − geBase) / geThreshold)` (Waffen-Komponente, mindestens 0) |
+| geBase | `26 − kkBase` der unveränderten Waffe (`computeGeBasis`) |
+| geThreshold | `7 − kkThreshold` der unveränderten Waffe, plus GE/INI-Verschiebung des Säbel-Großmeisters, solange ≥ 1 (`computeGeSchwelle`) |
 | IniDiceCount | `1` (normal) oder `2` (Klingentänzer) |
 | IniParadeMod | `max(0, truncate((kampfIni − 11) / 10))` |
 
 Bei aktivem Axxeleratus wird der berechnete `IniBase`-Anteil in der
 Heldeninitiative verdoppelt. Der Ini-Wurf selbst bleibt unverändert.
+
+INI/GE rechnet immer mit den Grundwerten der unveränderten Waffe
+(`MainWeaponSlot.kkBase`/`kkThreshold`). Verbesserungen der Waffe
+(`kkBaseMod`/`kkThresholdMod`) und TP/KK-Verschiebungen durch Waffen- oder
+Großmeister wirken nur auf den Schaden: Eine 12/3-Waffe behält GE/INI 14/4,
+auch wenn sie meisterlich geschmiedet mit TP/KK 11/2 zuschlägt. Die wirksame
+TP/KK für den Schaden bildet `computeWirksameTpKk` in `waffen_rules.dart`.
+
+Bestandswaffen tragen verbesserte Werte oft noch direkt im Grundwert. Der
+Laufzeitabgleich `pruefeWaffenGegenKatalog`
+(`waffen_katalog_abgleich_rules.dart`) vergleicht deshalb `kkBase`/`kkThreshold`
+jeder Waffe mit der Katalogwaffe gleichen Namens (Waffenart, ersatzweise
+Waffenname) und Kampftyps. Kein Befund gibt es ohne Katalogtreffer, ohne
+lesbare Katalog-TP/KK, bei 0/0 und bei akzeptierter Abweichung. Die Waffen-
+Unteransicht des Kampf-Tabs zeigt die Befunde in `WaffenKatalogAbgleichKarte`
+mit drei Aktionen: **Als Modifikation** (`uebernimmKatalogAbweichungAlsModifikation`:
+Katalogwert wird Grundwert, der Unterschied geht in `kkBaseMod`/`kkThresholdMod`,
+die wirksame TP/KK bleibt gleich), **Bearbeiten** (öffnet den Waffen-Editor) und
+**Akzeptieren** (`akzeptiereKatalogAbweichung` setzt `katalogTpKkAkzeptiert`;
+ändern sich Waffe oder Katalogwert, erscheint die Meldung wieder). Beide
+Schreibaktionen laufen über den frischen Schreibweg `onWeaponSlotUpdate`
+(`aendereWaffe`) und den Planungsschutz.
 
 Sonderfertigkeits-Boni auf IniBase:
 

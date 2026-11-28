@@ -16,6 +16,7 @@ part 'combat_basis_cases.dart';
 part 'combat_waffen_cases.dart';
 part 'combat_nebenhand_cases.dart';
 part 'combat_episch_cases.dart';
+part 'combat_ini_ge_cases.dart';
 
 const state = HeroState(
   currentLep: 0,
@@ -114,4 +115,5 @@ void main() {
   _combatWaffen();
   _combatNebenhand();
   _combatEpisch();
+  _combatIniGe();
 }

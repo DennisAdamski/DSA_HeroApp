@@ -118,6 +118,11 @@ extension _WeaponEditorStateHelpers on WeaponEditorScreenState {
       ).clamp(0, 9999),
       kkBase: _readInt(_kkBaseController, _draftWeapon.kkBase),
       kkThreshold: _readInt(_kkThresholdController, _draftWeapon.kkThreshold),
+      kkBaseMod: _readInt(_kkBaseModController, _draftWeapon.kkBaseMod),
+      kkThresholdMod: _readInt(
+        _kkThresholdModController,
+        _draftWeapon.kkThresholdMod,
+      ),
       iniMod: _readInt(_iniModController, _draftWeapon.iniMod),
       wmAt: _readInt(_wmAtController, _draftWeapon.wmAt),
       wmPa: _readInt(_wmPaController, _draftWeapon.wmPa),

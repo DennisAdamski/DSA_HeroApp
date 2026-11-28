@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_editor/weapon_editor_section_card.dart';
 
 /// Bearbeitet Schadensprofil und KK-Skalierung einer Waffe.
+///
+/// KK-Basis und KK-Schwelle sind die Grundwerte der unveränderten Waffe; sie
+/// bestimmen auch INI/GE. Verbesserungen der Waffe (z. B. meisterlich
+/// geschmiedet) werden getrennt als Mod erfasst und wirken nur auf TP/KK.
 class WeaponDamageSection extends StatelessWidget {
   /// Erstellt die Schadens-Sektion des Waffen-Editors.
   const WeaponDamageSection({
@@ -11,20 +15,36 @@ class WeaponDamageSection extends StatelessWidget {
     required this.tpFlatController,
     required this.kkBaseController,
     required this.kkThresholdController,
+    required this.kkBaseModController,
+    required this.kkThresholdModController,
     required this.onTpDiceCountChanged,
     required this.onTpFlatChanged,
     required this.onKkBaseChanged,
     required this.onKkThresholdChanged,
+    required this.onKkBaseModChanged,
+    required this.onKkThresholdModChanged,
   });
 
   final TextEditingController tpDiceCountController;
   final TextEditingController tpFlatController;
   final TextEditingController kkBaseController;
   final TextEditingController kkThresholdController;
+
+  /// Verbesserung der KK-Basis durch die Waffe selbst.
+  final TextEditingController kkBaseModController;
+
+  /// Verbesserung der KK-Schwelle durch die Waffe selbst.
+  final TextEditingController kkThresholdModController;
   final ValueChanged<int> onTpDiceCountChanged;
   final ValueChanged<int> onTpFlatChanged;
   final ValueChanged<int> onKkBaseChanged;
   final ValueChanged<int> onKkThresholdChanged;
+
+  /// Meldet eine geänderte Verbesserung der KK-Basis.
+  final ValueChanged<int> onKkBaseModChanged;
+
+  /// Meldet eine geänderte Verbesserung der KK-Schwelle.
+  final ValueChanged<int> onKkThresholdModChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +77,26 @@ class WeaponDamageSection extends StatelessWidget {
             label: 'KK-Schwelle',
             controller: kkThresholdController,
             onChanged: onKkThresholdChanged,
+          ),
+          _numberField(
+            keyName: 'combat-weapon-form-kk-base-mod',
+            label: 'KK-Basis Mod',
+            controller: kkBaseModController,
+            onChanged: onKkBaseModChanged,
+          ),
+          _numberField(
+            keyName: 'combat-weapon-form-kk-threshold-mod',
+            label: 'KK-Schwelle Mod',
+            controller: kkThresholdModController,
+            onChanged: onKkThresholdModChanged,
+          ),
+          Text(
+            'KK-Basis und -Schwelle sind die Grundwerte der Waffe und '
+            'bestimmen auch INI/GE. Verbesserungen der Waffe, z. B. '
+            'meisterlich geschmiedet (−1/−1), als Mod eintragen; sie wirken '
+            'nur auf TP/KK.',
+            key: const ValueKey<String>('combat-weapon-form-kk-mod-hint'),
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
       ),

@@ -8,10 +8,12 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/waffen_katalog_abgleich_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_helpers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_weapons_overview_table.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/waffen_katalog_abgleich_karte.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_catalog_table.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_editor/helpers_catalog_slot.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_editor_screen.dart';
@@ -231,6 +233,50 @@ class _CombatWeaponsSectionState extends State<CombatWeaponsSection> {
     );
   }
 
+  /// Trägt den Unterschied zum Katalog als Verbesserung der Waffe ein.
+  ///
+  /// Geschrieben wird auf dem gespeicherten Slot; die Katalogwerte stammen
+  /// aus dem Befund.
+  Future<void> _uebernimmKatalogAbweichung(
+    WaffenKatalogAbweichung abweichung,
+  ) async {
+    final darfBearbeiten = await PlanungsBearbeitungsBereich.bestaetige(
+      context,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
+    widget.onWeaponSlotUpdate(
+      abweichung.slotIndex,
+      abweichung.waffe,
+      (gespeichert) => uebernimmKatalogAbweichungAlsModifikation(
+        gespeichert,
+        katalog: abweichung.katalog,
+      ),
+    );
+  }
+
+  /// Bestätigt die Abweichung vom Katalog als gewollt.
+  Future<void> _akzeptiereKatalogAbweichung(
+    WaffenKatalogAbweichung abweichung,
+  ) async {
+    final darfBearbeiten = await PlanungsBearbeitungsBereich.bestaetige(
+      context,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
+    widget.onWeaponSlotUpdate(
+      abweichung.slotIndex,
+      abweichung.waffe,
+      (gespeichert) => akzeptiereKatalogAbweichung(
+        gespeichert,
+        katalogName: abweichung.katalogName,
+        katalog: abweichung.katalog,
+      ),
+    );
+  }
+
   void _closeWideEditor() {
     setState(() {
       _editingSlotIndex = null;
@@ -279,13 +325,47 @@ class _CombatWeaponsSectionState extends State<CombatWeaponsSection> {
       onWeaponSlotUpdate: widget.onWeaponSlotUpdate,
       onFilterChanged: widget.onFilterChanged,
     );
-    if (!_isWideLayout) {
-      return table;
-    }
-    if (_editorSeedWeapon == null) {
-      return table;
-    }
+    final abweichungen = pruefeWaffenGegenKatalog(
+      waffen: widget.weapons,
+      catalog: widget.catalog,
+    );
+    final inhalt = !_isWideLayout || _editorSeedWeapon == null
+        ? table
+        : _mitEditor(table);
+    // Immer dieselbe Spalte, damit Tabelle und Editor beim Erscheinen oder
+    // Verschwinden der Katalogmeldung ihren Zustand behalten.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (abweichungen.isNotEmpty) ...[
+          // Begrenzt, damit viele Befunde die Tabelle nicht verdrängen.
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 240),
+            child: SingleChildScrollView(
+              primary: false,
+              child: WaffenKatalogAbgleichKarte(
+                abweichungen: abweichungen,
+                onUebernehmen: _uebernimmKatalogAbweichung,
+                onBearbeiten: (abweichung) =>
+                    _openEditor(slotIndex: abweichung.slotIndex),
+                onAkzeptieren: _akzeptiereKatalogAbweichung,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+        // Schlüssel, damit der Inhalt beim Einfügen der Meldung davor
+        // wiedererkannt statt neu aufgebaut wird.
+        Expanded(
+          key: const ValueKey<String>('combat-weapons-inhalt'),
+          child: inhalt,
+        ),
+      ],
+    );
+  }
 
+  // Tabelle mit dem seitlichen Editor im breiten Layout.
+  Widget _mitEditor(Widget table) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

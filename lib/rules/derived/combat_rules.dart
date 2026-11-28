@@ -506,11 +506,17 @@ CombatPreviewStats computeCombatPreviewStats(
   final atSpecBonus = specApplies ? (isRangedWeapon ? 2 : 1) : 0;
   final paSpecBonus = specApplies && !isRangedWeapon ? 1 : 0;
   final gmFest = wmEffects.grossmeister;
-  final wmKkBase =
-      gmFest.tpKkFestBasis ?? main.kkBase + wmEffects.tpKkBaseReduction;
-  final wmKkThreshold =
-      gmFest.tpKkFestSchwelle ??
-      main.kkThreshold + wmEffects.tpKkThresholdReduction;
+  // TP/KK aus Grundwert, Verbesserung der Waffe und Meisterschaft; INI/GE
+  // nutzt dagegen nur die Grundwerte (_computeWeaponInitiativeSnapshot).
+  final wirksameTpKk = computeWirksameTpKk(
+    slot: main,
+    meisterschaftBasis: wmEffects.tpKkBaseReduction,
+    meisterschaftSchwelle: wmEffects.tpKkThresholdReduction,
+    festBasis: gmFest.tpKkFestBasis,
+    festSchwelle: gmFest.tpKkFestSchwelle,
+  );
+  final wmKkBase = wirksameTpKk.basis;
+  final wmKkThreshold = wirksameTpKk.schwelle;
   final usesTpKkThreshold =
       gmFest.tpKkFestBasis != null ||
       _usesTpKkThreshold(kkBase: main.kkBase, kkThreshold: main.kkThreshold);
@@ -575,6 +581,8 @@ CombatPreviewStats computeCombatPreviewStats(
     kkSchwelle: kkThreshold,
     waffenmeisterKkBasis: wmEffects.tpKkBaseReduction,
     waffenmeisterKkSchwelle: wmEffects.tpKkThresholdReduction,
+    verbesserungKkBasis: main.kkBaseMod,
+    verbesserungKkSchwelle: main.kkThresholdMod,
     zauberTpKk: tpKk - tpKkOhneZauber,
     zauberKk: zauberKk,
     zauberName: zauberEigenschaftsName(derived.zauberEffekte),
@@ -732,7 +740,8 @@ CombatPreviewStats computeCombatPreviewStats(
               grossmeister.tpKkSchwelle != 0 ||
               grossmeister.tpKkFestBasis != null))
         'TP/KK $wmKkBase/$kkThreshold statt '
-            '${main.kkBase}/${main.kkThreshold} der Waffe',
+            '${main.kkBase + main.kkBaseMod}/'
+            '${main.kkThreshold + main.kkThresholdMod} der Waffe',
       if (usesTpKkThreshold && grossmeister.geIniSchwelle != 0)
         'GE/INI $geBase/$geThreshold statt '
             '$geBase/${geThreshold - grossmeister.geIniSchwelle}: '

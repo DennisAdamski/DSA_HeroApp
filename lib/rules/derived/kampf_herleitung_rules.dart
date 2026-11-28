@@ -630,7 +630,8 @@ Herleitung herleitePaMitIniParade({
 
 /// Fester TP-Zuschlag zu den Würfeln der Waffe.
 ///
-/// [kkBasis] und [kkSchwelle] sind die wirksamen Werte nach Waffenmeister;
+/// [kkBasis] und [kkSchwelle] sind die wirksamen Werte nach Verbesserung der
+/// Waffe ([verbesserungKkBasis]/[verbesserungKkSchwelle]) und Waffenmeister;
 /// [nutztTpKk] `false` steht für eine bewusst deaktivierte TP/KK-Regel (0/0).
 Herleitung herleiteTpZuschlag({
   required int tpGrundwert,
@@ -643,6 +644,8 @@ Herleitung herleiteTpZuschlag({
   required int kkSchwelle,
   int waffenmeisterKkBasis = 0,
   int waffenmeisterKkSchwelle = 0,
+  int verbesserungKkBasis = 0,
+  int verbesserungKkSchwelle = 0,
   int zauberTpKk = 0,
   int zauberKk = 0,
   String? zauberName,
@@ -656,6 +659,20 @@ Herleitung herleiteTpZuschlag({
       ? 'Waffenmeister: Basis ${mitVorzeichen(waffenmeisterKkBasis, nullText: '+0')}, '
             'Schwelle ${mitVorzeichen(waffenmeisterKkSchwelle, nullText: '+0')}'
       : null;
+  final verbesserungHinweis =
+      verbesserungKkBasis != 0 || verbesserungKkSchwelle != 0
+      ? 'Verbesserung der Waffe: '
+            'Basis ${mitVorzeichen(verbesserungKkBasis, nullText: '+0')}, '
+            'Schwelle ${mitVorzeichen(verbesserungKkSchwelle, nullText: '+0')}'
+      : null;
+  final grossmeisterHinweis = eigenschaft == 'KK'
+      ? null
+      : 'Großmeister: $eigenschaft statt KK';
+  final tpKkHinweise = <String>[
+    ?verbesserungHinweis,
+    ?wmHinweis,
+    ?grossmeisterHinweis,
+  ];
   return Herleitung(
     bezeichnung: 'TP',
     schritte: <HerleitungsSchritt>[
@@ -672,9 +689,7 @@ Herleitung herleiteTpZuschlag({
         formel: nutztTpKk
             ? '($eigenschaft $kk − $kkBasis) / $kkSchwelle, ganzzahlig'
             : 'deaktiviert (0/0)',
-        bedingung: eigenschaft == 'KK'
-            ? wmHinweis
-            : [?wmHinweis, 'Großmeister: $eigenschaft statt KK'].join('; '),
+        bedingung: tpKkHinweise.isEmpty ? null : tpKkHinweise.join('; '),
       ),
       // Zauber, die nur die KK für die TP ändern (Karnifilo, LC S. 136): der
       // Unterschied des TP/KK-Zuschlags mit der veränderten KK.
